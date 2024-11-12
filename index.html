@@ -1,6 +1,50 @@
-<div style="position: relative; width: 100%; height: 0; padding-top: 56.2225%; padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden; border-radius: 8px; will-change: transform;">
-  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0; margin: 0;"
-    src="https://www.canva.com/design/DAGP9s6QM00/oQTc3PKB6MZn7fxnhICx_Q/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
-  </iframe>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canva 埋め込みデザイン</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
+    .embed-container {
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        height: 0;
+        padding-top: 56.25%; /* 16:9 アスペクト比 */
+        box-shadow: 0 2px 8px rgba(63, 69, 81, 0.16);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+    iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="embed-container">
+    <iframe loading="lazy"
+        src="https://www.canva.com/design/DAGP9s6QM00/oQTc3PKB6MZn7fxnhICx_Q/view?embed"
+        allowfullscreen="allowfullscreen" allow="fullscreen">
+    </iframe>
 </div>
 <p>O Sさんによる<a href="https://www.canva.com/design/DAGP9s6QM00/oQTc3PKB6MZn7fxnhICx_Q/view?utm_content=DAGP9s6QM00&utm_campaign=designshare&utm_medium=embeds&utm_source=link" target="_blank" rel="noopener">コメントｰ36件</a></p>
+
+</body>
+</html>
