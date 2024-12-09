@@ -49,8 +49,9 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   }
 
+  /* 裏面 (TRUMP.png) を設定 */
   .card-front {
-    background: url('card-back-design.png') center/cover no-repeat; /* トランプの裏面画像ファイル */
+    background: url('TRUMP.png') center/cover no-repeat; 
   }
 
   .card-back {
@@ -72,9 +73,7 @@
 <body>
 
 <div class="cards-container">
-  <!-- ここで30枚分繰り返す -->
-  <!-- 実際には、サーバーサイドスクリプトやJSループで生成しても良い -->
-  <!-- 以下は例として3枚程度表示 -->
+  <!-- ここで30枚分繰り返す例 -->
   <div class="card">
     <div class="card-inner">
       <div class="card-front"></div>
@@ -102,8 +101,7 @@
     </div>
   </div>
 
-  <!-- ... ここに合計30枚分配置 ... -->
-  
+  <!-- 以下同様にカードを並べて30枚に拡張 -->
 </div>
 
 </body>
