@@ -3,48 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canva 埋め込みデザイン</title>
 <style>
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #f0f0f0;
-        font-family: Arial, sans-serif;
-        height: 100vh;
-        margin: 0;
-        padding: 20px;
-    }
-    .embed-container {
-        position: relative;
-        width: 100%;
-        max-width: 800px;
-        height: 0;
-        padding-top: 56.25%; /* 16:9 アスペクト比 */
-        box-shadow: 0 2px 8px rgba(63, 69, 81, 0.16);
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: #ffffff;
-    }
-    iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
+  body {
+    background: #f5f5f5;
+    font-family: sans-serif;
+  }
+
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 900px; /* カードサイズと行列数に合わせて調整 */
+    margin: 50px auto;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    width: 120px;
+    height: 180px;
+    perspective: 1000px;
+    margin: 10px;
+    position: relative;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+
+  /* ホバーでめくる場合 */
+  .card:hover .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .card-front {
+    background: url('card-back-design.png') center/cover no-repeat; /* トランプの裏面画像ファイル */
+  }
+
+  .card-back {
+    background: #fff;
+    transform: rotateY(180deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card-back a {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+  }
+
 </style>
 </head>
 <body>
 
-<div class="embed-container">
-    <iframe loading="lazy"
-        src="https://www.canva.com/design/DAGP9s6QM00/oQTc3PKB6MZn7fxnhICx_Q/view?embed"
-        allowfullscreen="allowfullscreen" allow="fullscreen">
-    </iframe>
+<div class="cards-container">
+  <!-- ここで30枚分繰り返す -->
+  <!-- 実際には、サーバーサイドスクリプトやJSループで生成しても良い -->
+  <!-- 以下は例として3枚程度表示 -->
+  <div class="card">
+    <div class="card-inner">
+      <div class="card-front"></div>
+      <div class="card-back">
+        <a href="link1.html">Link 1</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-inner">
+      <div class="card-front"></div>
+      <div class="card-back">
+        <a href="link2.html">Link 2</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-inner">
+      <div class="card-front"></div>
+      <div class="card-back">
+        <a href="link3.html">Link 3</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ... ここに合計30枚分配置 ... -->
+  
 </div>
-<p>O Sさんによる<a href="https://www.canva.com/design/DAGP9s6QM00/oQTc3PKB6MZn7fxnhICx_Q/view?utm_content=DAGP9s6QM00&utm_campaign=designshare&utm_medium=embeds&utm_source=link" target="_blank" rel="noopener">コメントｰ36件</a></p>
 
 </body>
 </html>
