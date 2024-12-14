@@ -167,6 +167,15 @@
 
         // 1秒ごとにカウントダウンを更新
         setInterval(updateCountdown, 1000);
+
+            // プログレスバーの更新
+            const progressBar = document.getElementById('progressBar');
+            const totalDuration = targetDate - startDate;
+            const elapsed = now - startDate;
+            const progressPercent = Math.min((elapsed / totalDuration) * 100, 100).toFixed(2);
+            progressBar.style.width = `${progressPercent}%`;
+            progressBar.innerHTML = `${progressPercent}%`;
+        
     </script>
 
 </body>
