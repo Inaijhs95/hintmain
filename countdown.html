@@ -71,6 +71,8 @@
             max-width: 450px;
             width: 100%;
             position: relative;
+            height: 60px; /* 高さを固定してレイアウトが崩れないように */
+            overflow: hidden;
         }
 
         .tips {
@@ -114,6 +116,7 @@
             }
             .tips-container {
                 padding: 15px;
+                height: 50px;
             }
             .tips {
                 font-size: 0.9em;
@@ -138,13 +141,13 @@
             <div class="tips">TIPS 6: ハズレてもOK！正解にたどり着くまで何度もトライ！</div>
             <div class="tips">TIPS 7: 5番目の正解で+1Pt！駆け引きが勝負！</div>
             <div class="tips">TIPS 8: 色んなワードに反応するよ！どんどんトークを送信してみよう</div>
-<div class="tips">TIPS 9: 隠しチャレンジはも見つけた？</div>
-            <div class="tips">TIPS 9: あんなところに隠れていたのか♡</div>
-                        <div class="tips">TIPS 10: ゲームコマンドって流行ったよね～！</div>
-            <div class="tips">TIPS 11: ○○い文字は反対から読むと何かが起こる！</div>
-              <div class="tips">TIPS 12: 1問につき1答とは限らない</div>
-              <div class="tips">TIPS 13: メモは隅々までよく確認！</div>
-            <div class="tips">TIPS 14: 話しかけることで何かが起こる！</div>
+            <div class="tips">TIPS 9: 隠しチャレンジも見つけた？</div>
+            <div class="tips">TIPS 10: あんなところに隠れていたのか♡</div>
+            <div class="tips">TIPS 11: ゲームコマンドって流行ったよね～！</div>
+            <div class="tips">TIPS 12: ○○い文字は反対から読むと何かが起こる！</div>
+            <div class="tips">TIPS 13: 1問につき1答とは限らない</div>
+            <div class="tips">TIPS 14: メモは隅々までよく確認！</div>
+            <div class="tips">TIPS 15: 話しかけることで何かが起こる！</div>
         </div>
     </div>
 
@@ -234,35 +237,37 @@
             }
         }
 
-        // TIPSの内容を定義
-        const tips = [
-            'TIPS 1: キャンペーン期間中は毎日チェックをお忘れなく！',
-            'TIPS 2: 友達を招待してボーナスポイントをゲット！',
-            'TIPS 3: 質問に正確に回答してチャンスを増やしましょう。',
-            'TIPS 4: 最新情報は公式SNSで随時更新中！',
-            'TIPS 5: キャンペーン終了後の抽選結果をお楽しみに。'
-        ];
+        // 現在のTIPSインデックスを保持する変数
+        let currentTipIndex = -1; // 初期値を-1に設定
 
-        let currentTipIndex = 0;
+        // TIPSの要素を取得
         const tipsElements = document.querySelectorAll('.tips');
+        const totalTips = tipsElements.length;
 
-        // TIPSを切り替える関数
+        // TIPSを切り替える関数（ランダム）
         function rotateTips() {
+            let newTipIndex;
+            do {
+                newTipIndex = Math.floor(Math.random() * totalTips);
+            } while (newTipIndex === currentTipIndex && totalTips > 1); // 同じTIPSが連続しないように
+
             // 現在のTIPSを非アクティブにする
-            tipsElements[currentTipIndex].classList.remove('active');
+            if (currentTipIndex !== -1) {
+                tipsElements[currentTipIndex].classList.remove('active');
+            }
 
-            // 次のTIPSのインデックスを計算
-            currentTipIndex = (currentTipIndex + 1) % tips.length;
+            // 新しいTIPSをアクティブにする
+            tipsElements[newTipIndex].classList.add('active');
 
-            // 次のTIPSをアクティブにする
-            tipsElements[currentTipIndex].classList.add('active');
+            // 現在のTIPSインデックスを更新
+            currentTipIndex = newTipIndex;
         }
 
         // 初回実行
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
-        // TIPSの自動切り替え
+        // TIPSの自動切り替え（ランダム）
         setInterval(rotateTips, 3000);
     </script>
 
