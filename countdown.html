@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>状況確認</title>
     <!-- Google Fontsの追加 -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@500&display=swap" rel="stylesheet">
     <style>
         /* 全体のスタイル */
         body {
@@ -12,69 +12,126 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #ece9e6, #ffffff);
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: #333;
+            overflow: hidden;
+        }
+
+        /* コンテナのスタイル */
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+            animation: fadeIn 1s ease-in-out;
         }
 
         /* タイトルのスタイル */
         h1 {
-            font-size: 3em;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5em;
             margin-bottom: 10px;
             color: #2c3e50;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
         }
 
         /* メッセージのスタイル */
         #message {
-            font-size: 1.5em;
-            margin-bottom: 30px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
             color: #555;
+            transition: color 0.3s ease;
         }
 
         /* カウントダウンのスタイル */
         #countdown {
-            font-size: 2.5em;
-            margin-top: 20px;
+            font-size: 2em;
+            margin-top: 10px;
             color: #27ae60;
             font-weight: bold;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
         }
 
+        /* プログレスバーのコンテナ */
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 25px;
+            overflow: hidden;
+            margin-top: 30px;
+            height: 20px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
 
-        /* レスポンシブデザイン */
+        /* プログレスバー */
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            border-radius: 25px 0 0 25px;
+            transition: width 1s ease-in-out;
+        }
+
+        /* フッターのスタイル */
+        footer {
+            position: absolute;
+            bottom: 10px;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
         @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
             h1 {
                 font-size: 2em;
             }
             #countdown {
-                font-size: 2em;
+                font-size: 1.8em;
             }
             .progress-container {
-                width: 90%;
+                height: 15px;
             }
         }
     </style>
 </head>
 <body>
 
-    <h1>状況確認</h1>
-    <div id="message"></div>
-    <div id="countdown">Loading...</div>
+    <div class="container">
+        <h1>状況確認</h1>
+        <div id="message"></div>
+        <div id="countdown">Loading...</div>
 
-    <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
     </div>
+
+    <footer>
+        © 2025 あなたの会社名. All rights reserved.
+    </footer>
 
     <script>
         // カウントダウン対象の日時とメッセージを配列で定義
         const countdownTargets = [
             {
                 date: new Date('2025-04-06T19:00:00'),
-                message: '第1問配信開始（第2問回答受付終了）まで'
+                message: '第1問配信開始まで'
             },
             {
                 date: new Date('2025-04-13T19:00:00'),
@@ -96,6 +153,32 @@
 
         // 最終メッセージ
         const finalMessage = 'キャンペーンは終了しました<br>同窓会での抽選をお楽しみに！';
+
+        // プログレスバーの更新関数
+        function updateProgressBar() {
+            const now = new Date();
+            let target = null;
+
+            for (let i = 0; i < countdownTargets.length; i++) {
+                if (now < countdownTargets[i].date) {
+                    target = countdownTargets[i].date;
+                    break;
+                }
+            }
+
+            const progressBar = document.getElementById('progressBar');
+
+            if (target) {
+                const startDate = countdownTargets[0].date;
+                const endDate = countdownTargets[countdownTargets.length - 1].date;
+                const totalDuration = endDate - startDate;
+                const elapsed = now - startDate;
+                const progress = Math.min((elapsed / totalDuration) * 100, 100);
+                progressBar.style.width = progress + '%';
+            } else {
+                progressBar.style.width = '100%';
+            }
+        }
 
         // カウントダウンを更新する関数
         function updateCountdown() {
@@ -129,6 +212,15 @@
                 messageElement.innerHTML = currentMessage;
                 countdownElement.innerHTML = `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`;
 
+                // カウントダウンの色を変化
+                if (diff <= 86400000) { // 1日未満
+                    countdownElement.style.color = '#e74c3c';
+                } else if (diff <= 604800000) { // 1週間未満
+                    countdownElement.style.color = '#f39c12';
+                } else {
+                    countdownElement.style.color = '#27ae60';
+                }
+
                 // 2025年4月30日23時59分59秒を過ぎたら最終メッセージを表示
                 if (target.getTime() === countdownTargets[countdownTargets.length -1].date.getTime() && diff <= 0) {
                     messageElement.innerHTML = finalMessage;
@@ -140,6 +232,9 @@
                 messageElement.innerHTML = finalMessage;
                 countdownElement.innerHTML = '';
             }
+
+            // プログレスバーの更新
+            updateProgressBar();
         }
 
         // 初回実行
@@ -147,7 +242,6 @@
 
         // 1秒ごとにカウントダウンを更新
         setInterval(updateCountdown, 1000);
-        
     </script>
 
 </body>
