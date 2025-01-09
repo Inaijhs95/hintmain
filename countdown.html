@@ -237,12 +237,18 @@
             }
         }
 
-        // 現在のTIPSインデックスを保持する変数
-        let currentTipIndex = -1; // 初期値を-1に設定
-
         // TIPSの要素を取得
         const tipsElements = document.querySelectorAll('.tips');
         const totalTips = tipsElements.length;
+
+        // 初期のactiveクラスを持つTIPSのインデックスを取得
+        let currentTipIndex = Array.from(tipsElements).findIndex(tip => tip.classList.contains('active'));
+
+        // もしactiveクラスを持つTIPSがなければ、初期値を0に設定
+        if (currentTipIndex === -1) {
+            currentTipIndex = 0;
+            tipsElements[currentTipIndex].classList.add('active');
+        }
 
         // TIPSを切り替える関数（ランダム）
         function rotateTips() {
@@ -251,12 +257,10 @@
                 newTipIndex = Math.floor(Math.random() * totalTips);
             } while (newTipIndex === currentTipIndex && totalTips > 1); // 同じTIPSが連続しないように
 
-            // 現在のTIPSを非アクティブにする
-            if (currentTipIndex !== -1) {
-                tipsElements[currentTipIndex].classList.remove('active');
-            }
+            // すべてのTIPSからactiveクラスを削除
+            tipsElements.forEach(tip => tip.classList.remove('active'));
 
-            // 新しいTIPSをアクティブにする
+            // 新しいTIPSにactiveクラスを追加
             tipsElements[newTipIndex].classList.add('active');
 
             // 現在のTIPSインデックスを更新
