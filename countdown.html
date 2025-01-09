@@ -31,6 +31,7 @@
             max-width: 500px;
             width: 90%;
             animation: fadeIn 1s ease-in-out;
+            position: relative;
         }
 
         /* タイトルのスタイル */
@@ -60,24 +61,31 @@
             transition: color 0.3s ease;
         }
 
-        /* プログレスバーのコンテナ */
-        .progress-container {
-            width: 100%;
-            background: #e0e0e0;
-            border-radius: 25px;
-            overflow: hidden;
+        /* TIPSセクションのスタイル */
+        .tips-container {
             margin-top: 30px;
-            height: 20px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+            padding: 20px;
+            background: #f0f4f8;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 100%;
+            position: relative;
         }
 
-        /* プログレスバー */
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #27ae60, #2ecc71);
-            border-radius: 25px 0 0 25px;
-            transition: width 1s ease-in-out;
+        .tips {
+            font-size: 1em;
+            color: #2c3e50;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .tips.active {
+            opacity: 1;
         }
 
         /* フッターのスタイル */
@@ -104,8 +112,11 @@
             #countdown {
                 font-size: 1.8em;
             }
-            .progress-container {
-                height: 15px;
+            .tips-container {
+                padding: 15px;
+            }
+            .tips {
+                font-size: 0.9em;
             }
         }
     </style>
@@ -117,8 +128,13 @@
         <div id="message"></div>
         <div id="countdown">Loading...</div>
 
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
+        <!-- TIPSセクションの追加 -->
+        <div class="tips-container">
+            <div class="tips active">TIPS 1: キャンペーン期間中は毎日チェックをお忘れなく！</div>
+            <div class="tips">TIPS 2: 友達を招待してボーナスポイントをゲット！</div>
+            <div class="tips">TIPS 3: 質問に正確に回答してチャンスを増やしましょう。</div>
+            <div class="tips">TIPS 4: 最新情報は公式SNSで随時更新中！</div>
+            <div class="tips">TIPS 5: キャンペーン終了後の抽選結果をお楽しみに。</div>
         </div>
     </div>
 
@@ -131,7 +147,7 @@
         const countdownTargets = [
             {
                 date: new Date('2025-04-06T19:00:00'),
-                message: '第1問配信開始まで'
+                message: '第1問配信開始（第2問回答受付終了）まで'
             },
             {
                 date: new Date('2025-04-13T19:00:00'),
@@ -153,32 +169,6 @@
 
         // 最終メッセージ
         const finalMessage = 'キャンペーンは終了しました<br>同窓会での抽選をお楽しみに！';
-
-        // プログレスバーの更新関数
-        function updateProgressBar() {
-            const now = new Date();
-            let target = null;
-
-            for (let i = 0; i < countdownTargets.length; i++) {
-                if (now < countdownTargets[i].date) {
-                    target = countdownTargets[i].date;
-                    break;
-                }
-            }
-
-            const progressBar = document.getElementById('progressBar');
-
-            if (target) {
-                const startDate = countdownTargets[0].date;
-                const endDate = countdownTargets[countdownTargets.length - 1].date;
-                const totalDuration = endDate - startDate;
-                const elapsed = now - startDate;
-                const progress = Math.min((elapsed / totalDuration) * 100, 100);
-                progressBar.style.width = progress + '%';
-            } else {
-                progressBar.style.width = '100%';
-            }
-        }
 
         // カウントダウンを更新する関数
         function updateCountdown() {
@@ -232,16 +222,38 @@
                 messageElement.innerHTML = finalMessage;
                 countdownElement.innerHTML = '';
             }
+        }
 
-            // プログレスバーの更新
-            updateProgressBar();
+        // TIPSの内容を定義
+        const tips = [
+            'TIPS 1: キャンペーン期間中は毎日チェックをお忘れなく！',
+            'TIPS 2: 友達を招待してボーナスポイントをゲット！',
+            'TIPS 3: 質問に正確に回答してチャンスを増やしましょう。',
+            'TIPS 4: 最新情報は公式SNSで随時更新中！',
+            'TIPS 5: キャンペーン終了後の抽選結果をお楽しみに。'
+        ];
+
+        let currentTipIndex = 0;
+        const tipsElements = document.querySelectorAll('.tips');
+
+        // TIPSを切り替える関数
+        function rotateTips() {
+            // 現在のTIPSを非アクティブにする
+            tipsElements[currentTipIndex].classList.remove('active');
+
+            // 次のTIPSのインデックスを計算
+            currentTipIndex = (currentTipIndex + 1) % tips.length;
+
+            // 次のTIPSをアクティブにする
+            tipsElements[currentTipIndex].classList.add('active');
         }
 
         // 初回実行
         updateCountdown();
-
-        // 1秒ごとにカウントダウンを更新
         setInterval(updateCountdown, 1000);
+
+        // TIPSの自動切り替え
+        setInterval(rotateTips, 3000);
     </script>
 
 </body>
