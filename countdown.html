@@ -25,10 +25,10 @@
         /* コンテナのスタイル */
         .container {
             background: rgba(255, 255, 255, 0.85);
-            padding: 40px 30px;
+            padding: 30px 20px;
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            max-width: 600px; /* 拡大 */
+            max-width: 600px;
             width: 90%;
             animation: fadeIn 1s ease-in-out;
             position: relative;
@@ -37,7 +37,7 @@
         /* タイトルのスタイル */
         h1 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.5em;
+            font-size: 2.2em;
             margin-bottom: 10px;
             color: #2c3e50;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
@@ -45,15 +45,15 @@
 
         /* メッセージのスタイル */
         #message {
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
             color: #555;
             transition: color 0.3s ease;
         }
 
         /* カウントダウンのスタイル */
         #countdown {
-            font-size: 2em;
+            font-size: 1.8em;
             margin-top: 10px;
             color: #27ae60;
             font-weight: bold;
@@ -63,28 +63,28 @@
 
         /* TIPSセクションのスタイル */
         .tips-container {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px 10px;
             background: #f0f4f8;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 550px; /* 拡大 */
+            max-width: 550px;
             width: 100%;
             position: relative;
-            height: 60px; /* 高さを固定してレイアウトが崩れないように */
             overflow: hidden;
         }
 
         .tips {
-            font-size: 1em;
+            font-size: 0.95em;
             color: #2c3e50;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             position: absolute;
             width: 100%;
-            top: 0;
-            left: 0;
-            white-space: nowrap; /* 追加: テキストを1行に表示 */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
         }
 
         .tips.active {
@@ -95,7 +95,7 @@
         footer {
             position: absolute;
             bottom: 10px;
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #777;
         }
 
@@ -105,24 +105,43 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        @media (max-width: 600px) {
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
             .container {
-                padding: 30px 20px;
-                max-width: 90%; /* 幅を柔軟に */
+                padding: 25px 15px;
+                max-width: 90%;
             }
             h1 {
                 font-size: 2em;
             }
             #countdown {
-                font-size: 1.8em;
+                font-size: 1.6em;
             }
             .tips-container {
-                padding: 15px;
-                height: 50px;
-                max-width: 90%; /* 幅を柔軟に */
+                padding: 12px 8px;
+                max-width: 90%;
             }
             .tips {
                 font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 10px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            #countdown {
+                font-size: 1.4em;
+            }
+            .tips-container {
+                padding: 10px 5px;
+                max-width: 100%;
+            }
+            .tips {
+                font-size: 0.85em;
             }
         }
     </style>
@@ -227,7 +246,7 @@
                     countdownElement.style.color = '#27ae60';
                 }
 
-                // 2025年4月30日23時59分59秒を過ぎたら最終メッセージを表示
+                // 最終ターゲットを過ぎた場合の処理
                 if (target.getTime() === countdownTargets[countdownTargets.length -1].date.getTime() && diff <= 0) {
                     messageElement.innerHTML = finalMessage;
                     countdownElement.innerHTML = '';
@@ -275,7 +294,7 @@
         setInterval(updateCountdown, 1000);
 
         // TIPSの自動切り替え（ランダム）
-        setInterval(rotateTips, 6000); // 変更: 6000ミリ秒（6秒）
+        setInterval(rotateTips, 6000); // 6秒に設定
     </script>
 
 </body>
