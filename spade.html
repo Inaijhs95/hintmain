@@ -79,8 +79,8 @@
         let timerInterval = null;
         let spawnInterval = null;
         const TARGET_SCORE = 20; // 目標ポイント
-        const SPAWN_INTERVAL_TIME = 1000; // オブジェクトが出現する間隔（ミリ秒）
-        const OBJECT_LIFETIME = 1500; // オブジェクトが表示される時間（ミリ秒）
+        const SPAWN_INTERVAL_TIME = 300; // オブジェクトが出現する間隔（ミリ秒）
+        const OBJECT_LIFETIME = 1000; // オブジェクトが表示される時間（ミリ秒）
 
         // ゲームを開始
         function startGame() {
@@ -110,7 +110,7 @@
         // オブジェクトを出現させる
         function spawnObject() {
             // オブジェクトの種類をランダムに決定（スペードかパンダ）
-            const isSpade = Math.random() < 0.7; // 70%がスペード、30%がパンダ
+            const isSpade = Math.random() < 0.5; // 70%がスペード、30%がパンダ
             const object = document.createElement('div');
 
             if (isSpade) {
