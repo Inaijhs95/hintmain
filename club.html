@@ -57,24 +57,25 @@
             align-items: center;
             width: 120px;
             height: 100px; /* 高さをトップバーに収まるように調整 */
-            background-color: #fff;
+            background-color: #444; /* ダークグレーに変更 */
             border-radius: 10px;
             padding: 10px;
             text-align: center;
-            color: #000;
+            color: #fff; /* テキスト色を白に変更 */
         }
 
         #wanted-poster img {
-            width: 80px;
-            height: 80px;
+            width: 60px; /* 20%小さく */
+            height: 60px; /* 20%小さく */
             border-radius: 50%;
         }
 
         #wanted-poster p {
-            margin-top: 10px;
+            margin-top: 5px;
             font-weight: bold;
-            font-size: 16px;
-            color: #000; /* テキスト色を黒に変更 */
+            font-size: 14px; /* フォントサイズを小さく */
+            color: #fff; /* テキスト色を白に変更 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* テキストの視認性向上 */
         }
 
         /* ゲームエリアのスタイル */
@@ -196,28 +197,28 @@
                 font-size: 14px;
             }
 
-          /* 手配書のスタイル */
-#wanted-poster {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 120px;
-    height: 100px; /* 高さをトップバーに収まるように調整 */
-    background-color: rgba(0, 0, 0, 0.7); /* 半透明の暗い背景色に変更 */
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-    color: #fff; /* テキスト色を白に変更 */
-}
+            /* 手配書のスタイル */
+            #wanted-poster {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 120px;
+                height: 100px; /* 高さをトップバーに収まるように調整 */
+                background-color: rgba(0, 0, 0, 0.7); /* 半透明の暗い背景色に変更 */
+                border-radius: 10px;
+                padding: 10px;
+                text-align: center;
+                color: #fff; /* テキスト色を白に変更 */
+            }
 
-/* 手配書内のテキストスタイル */
-#wanted-poster p {
-    margin-top: 10px;
-    font-weight: bold;
-    font-size: 16px;
-    color: #fff; /* テキスト色を白に変更 */
-}
-
+            /* 手配書内のテキストスタイル */
+            #wanted-poster p {
+                margin-top: 5px;
+                font-weight: bold;
+                font-size: 14px; /* フォントサイズを小さく */
+                color: #fff; /* テキスト色を白に変更 */
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* テキストの視認性向上 */
+            }
 
             .character {
                 cursor: pointer;
