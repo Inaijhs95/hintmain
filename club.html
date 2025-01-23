@@ -1,274 +1,351 @@
-// 画像のパス（必要に応じて変更してください）
-const PANDA_SRC = 'panda.png';
-const DRAGON_SRC = 'dragon.png';
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ドラゴンを探せ！</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* リセットスタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-// ゲーム設定
-const TOTAL_IMAGES = 100;
-const INITIAL_TIME = 15.0;
-const TIME_DECREMENT = 0.3;
-const MIN_TIME = 3.0;
-const TOTAL_LEVELS = 4;
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
 
-// レベルごとの設定
-const levels = [
-    {
-        name: '静止画',
-        dynamic: false,
-        movement: false,
-        darkness: false
-    },
-    {
-        name: '無作為に移動',
-        dynamic: true,
-        movement: true,
-        darkness: false
-    },
-    {
-        name: '暗闇と照らされる範囲の拡大',
-        dynamic: false,
-        movement: false,
-        darkness: true
-    },
-    {
-        name: '無作為に移動し、スピードがバラバラ',
-        dynamic: true,
-        movement: true,
-        variableSpeed: true,
-        darkness: false
-    }
-];
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #222;
+        }
 
-// ゲームステータス
-let currentLevel = 0;
-let score = 0;
-let timeLimit = INITIAL_TIME;
-let timerInterval = null;
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 20px;
+            font-size: 18px;
+            color: #fff;
+        }
 
-// DOM要素
-const gameArea = document.getElementById('game-area');
-const levelDisplay = document.getElementById('level');
-const timerDisplay = document.getElementById('timer');
-const scoreDisplay = document.getElementById('score');
-const messageDiv = document.getElementById('message');
-const modal = document.getElementById('modal');
-const modalText = document.getElementById('modal-text');
-const modalClose = document.getElementById('modal-close');
+        #game-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-// 初期化
-startLevel();
+        .image {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+        }
 
-// 関数定義
+        .hidden {
+            display: none;
+        }
 
-function startLevel() {
-    if (currentLevel >= TOTAL_LEVELS) {
-        currentLevel = 0; // ループする場合
-    }
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1001;
+        }
 
-    const levelConfig = levels[currentLevel];
-    levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
-    scoreDisplay.textContent = `クリア数: ${score}`;
+        #message h2 {
+            margin-bottom: 10px;
+        }
 
-    // 画面をクリア
-    gameArea.innerHTML = '';
+        #message a {
+            color: #007BFF;
+            text-decoration: none;
+            font-size: 18px;
+        }
 
-    // 暗闇設定
-    if (levelConfig.darkness) {
-        addDarknessEffect();
-    }
+        /* 暗闇効果 */
+        #darkness-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            pointer-events: none;
+            transition: clip-path 1s linear;
+            z-index: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="hud">
+            <div id="level">レベル: 1</div>
+            <div id="timer">残り時間: 15.0秒</div>
+            <div id="score">クリア数: 0</div>
+        </div>
+        <div id="game-area"></div>
+        <div id="message" class="hidden">
+            <h2>おめでとうございます！</h2>
+            <a href="https://inaijhs95.github.io/4lamp/?link=1" target="_blank">♣のトランプをゲットする</a>
+        </div>
+        <div id="darkness-overlay" class="hidden"></div>
+    </div>
 
-    // 画像を配置
-    placeImages(levelConfig);
+    <script>
+        // 画像のパス（必要に応じて変更してください）
+        const PANDA_SRC = 'panda.png'; // またはオンライン画像のURL
+        const DRAGON_SRC = 'dragon.png'; // またはオンライン画像のURL
 
-    // タイマー開始
-    startTimer();
-}
+        // ゲーム設定
+        const TOTAL_IMAGES = 100;
+        const INITIAL_TIME = 15.0;
+        const TIME_DECREMENT = 0.3;
+        const MIN_TIME = 3.0;
+        const TOTAL_PATTERNS = 4;
 
-function placeImages(config) {
-    // 位置の重複を避けるための座標リスト
-    const positions = [];
+        // レベルごとの設定
+        const patterns = [
+            {
+                name: '静止画',
+                dynamic: false,
+                variableSpeed: false,
+                darkness: false
+            },
+            {
+                name: '無作為に移動',
+                dynamic: true,
+                variableSpeed: false,
+                darkness: false
+            },
+            {
+                name: '暗闇と照らされる範囲の拡大',
+                dynamic: false,
+                variableSpeed: false,
+                darkness: true
+            },
+            {
+                name: '無作為に移動し、スピードがバラバラ',
+                dynamic: true,
+                variableSpeed: true,
+                darkness: false
+            }
+        ];
 
-    // 画面サイズ取得
-    const areaWidth = gameArea.clientWidth;
-    const areaHeight = gameArea.clientHeight;
+        // ゲームステータス
+        let currentPatternIndex = 0;
+        let score = 0;
+        let timeLimit = INITIAL_TIME;
+        let timerInterval = null;
+        let countdownInterval = null;
+        let darknessRadius = 50;
+        let darknessInterval = null;
 
-    // ドラゴンのランダム位置
-    const dragonPos = getRandomPosition(areaWidth, areaHeight);
-    positions.push(dragonPos);
+        // DOM要素
+        const gameArea = document.getElementById('game-area');
+        const levelDisplay = document.getElementById('level');
+        const timerDisplay = document.getElementById('timer');
+        const scoreDisplay = document.getElementById('score');
+        const messageDiv = document.getElementById('message');
+        const darknessOverlay = document.getElementById('darkness-overlay');
 
-    // ドラゴン以外のパンダを配置
-    for (let i = 0; i < TOTAL_IMAGES; i++) {
-        let pos;
-        do {
-            pos = getRandomPosition(areaWidth, areaHeight);
-        } while (isOverlapping(pos, positions));
-        positions.push(pos);
+        // 初期化
+        window.onload = startLevel;
 
-        createImage('panda', PANDA_SRC, pos.x, pos.y, config);
-    }
+        // 関数定義
 
-    // ドラゴンを最後に配置
-    createImage('dragon', DRAGON_SRC, dragonPos.x, dragonPos.y, config);
-}
+        function startLevel() {
+            if (score >= 4) {
+                // 4問以上正解した場合
+                showFinalMessage();
+                return;
+            }
 
-function createImage(type, src, x, y, config) {
-    const img = document.createElement('img');
-    img.src = src;
-    img.classList.add('image');
-    img.dataset.type = type;
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
+            const pattern = patterns[currentPatternIndex % TOTAL_PATTERNS];
+            levelDisplay.textContent = `レベル: ${currentPatternIndex + 1}`;
+            scoreDisplay.textContent = `クリア数: ${score}`;
 
-    // 動的移動の設定
-    if (config.movement) {
-        const speed = config.variableSpeed ? getRandomSpeed() : 2; // スピード設定
-        img.dataset.speed = speed;
-        moveImage(img, speed, config);
-    }
+            // ゲームエリアをクリア
+            gameArea.innerHTML = '';
 
-    img.addEventListener('click', onImageClick);
+            // 暗闇設定
+            if (pattern.darkness) {
+                addDarknessEffect();
+            } else {
+                darknessOverlay.classList.add('hidden');
+                darknessOverlay.style.clipPath = 'circle(0px at center)';
+            }
 
-    gameArea.appendChild(img);
-}
+            // 画像を配置
+            placeImages(pattern);
 
-function moveImage(img, speed, config) {
-    // ランダムな方向を選択
-    let directionX = Math.random() < 0.5 ? -1 : 1;
-    let directionY = Math.random() < 0.5 ? -1 : 1;
+            // タイマー開始
+            startTimer();
 
-    function animate() {
-        let x = parseFloat(img.style.left);
-        let y = parseFloat(img.style.top);
+            // 次のパターンへ進む準備
+            currentPatternIndex++;
+        }
 
-        const areaWidth = gameArea.clientWidth;
-        const areaHeight = gameArea.clientHeight;
-        const imgWidth = img.clientWidth;
-        const imgHeight = img.clientHeight;
+        function placeImages(pattern) {
+            const areaWidth = gameArea.clientWidth;
+            const areaHeight = gameArea.clientHeight;
 
-        // 移動
-        x += directionX * speed;
-        y += directionY * speed;
+            // ドラゴンのランダム位置
+            const dragonPos = getRandomPosition(areaWidth, areaHeight);
+            createImage('dragon', DRAGON_SRC, dragonPos.x, dragonPos.y, pattern);
 
-        // 画面端で方向を反転
-        if (x <= 0 || x >= areaWidth - imgWidth) directionX *= -1;
-        if (y <= 0 || y >= areaHeight - imgHeight) directionY *= -1;
+            // パンダを配置
+            for (let i = 0; i < TOTAL_IMAGES; i++) {
+                const pos = getRandomPosition(areaWidth, areaHeight);
+                createImage('panda', PANDA_SRC, pos.x, pos.y, pattern);
+            }
+        }
 
-        img.style.left = `${x}px`;
-        img.style.top = `${y}px`;
+        function createImage(type, src, x, y, pattern) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.classList.add('image');
+            img.dataset.type = type;
+            img.style.left = `${x}px`;
+            img.style.top = `${y}px`;
 
-        // 次のフレームで再度移動
-        img.animationFrame = requestAnimationFrame(animate);
-    }
+            // 動的移動の設定
+            if (pattern.dynamic) {
+                const speed = pattern.variableSpeed ? getRandomSpeed() : 2; // スピード設定
+                img.dataset.speed = speed;
+                moveImage(img, speed);
+            }
 
-    animate();
-}
+            // タッチイベントとクリックイベントの設定
+            img.addEventListener('click', onImageClick);
+            img.addEventListener('touchstart', onImageClick);
 
-function onImageClick(event) {
-    const type = event.target.dataset.type;
-    if (type === 'dragon') {
-        clearInterval(timerInterval);
-        score++;
-        currentLevel++;
-        checkGameClear();
-        startLevel();
-    } else {
-        // パンダをクリックした場合の処理（必要に応じて）
-        // 例: ミスカウント、エフェクト表示など
-    }
-}
+            gameArea.appendChild(img);
+        }
 
-function startTimer() {
-    timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
-    timerInterval = setInterval(() => {
-        timeLimit -= 0.1;
-        if (timeLimit <= 0) {
-            clearInterval(timerInterval);
-            timeUp();
-        } else {
+        function moveImage(img, speed) {
+            // ランダムな方向を選択
+            let directionX = Math.random() < 0.5 ? -1 : 1;
+            let directionY = Math.random() < 0.5 ? -1 : 1;
+
+            function animate() {
+                let x = parseFloat(img.style.left);
+                let y = parseFloat(img.style.top);
+
+                const areaWidth = gameArea.clientWidth;
+                const areaHeight = gameArea.clientHeight;
+                const imgWidth = img.clientWidth;
+                const imgHeight = img.clientHeight;
+
+                // 移動
+                x += directionX * speed;
+                y += directionY * speed;
+
+                // 画面端で方向を反転
+                if (x <= 0 || x >= areaWidth - imgWidth) directionX *= -1;
+                if (y <= 0 || y >= areaHeight - imgHeight) directionY *= -1;
+
+                img.style.left = `${x}px`;
+                img.style.top = `${y}px`;
+
+                // 次のフレームで再度移動
+                img.animationFrame = requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        function onImageClick(event) {
+            const type = event.target.dataset.type;
+            if (type === 'dragon') {
+                // ドラゴンをクリックした場合
+                clearInterval(timerInterval);
+                clearInterval(countdownInterval);
+                clearInterval(darknessInterval);
+                cancelAnimationFrame(event.target.animationFrame);
+                score++;
+                startLevel();
+            } else {
+                // パンダをクリックした場合（必要に応じて処理を追加）
+                // 例: ミスカウント、エフェクト表示など
+            }
+        }
+
+        function startTimer() {
             timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
+            timerInterval = setInterval(() => {
+                timeLimit -= 0.1;
+                if (timeLimit <= 0) {
+                    clearInterval(timerInterval);
+                    timeUp();
+                } else {
+                    timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
+                }
+            }, 100);
         }
-    }, 100);
-}
 
-function timeUp() {
-    // ゲームオーバーまたは次のレベルへ
-    currentLevel++;
-    checkGameClear();
-    startLevel();
-}
-
-function checkGameClear() {
-    if (score >= 4) {
-        // ゲームクリア
-        gameArea.innerHTML = '';
-        messageDiv.classList.remove('hidden');
-    } else {
-        // 時間を減少
-        timeLimit = Math.max(timeLimit - TIME_DECREMENT, MIN_TIME);
-    }
-}
-
-function addDarknessEffect() {
-    // 画面を暗くし、照らされる範囲を拡大
-    const darkness = document.createElement('div');
-    darkness.id = 'darkness';
-    darkness.style.position = 'absolute';
-    darkness.style.top = '0';
-    darkness.style.left = '0';
-    darkness.style.width = '100%';
-    darkness.style.height = '100%';
-    darkness.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-    darkness.style.pointerEvents = 'none';
-    darkness.style.transition = 'clip-path 15s linear';
-    gameArea.appendChild(darkness);
-
-    // 初期の照らし範囲
-    let radius = 50;
-    const maxRadius = Math.max(gameArea.clientWidth, gameArea.clientHeight) * 1.5;
-
-    const interval = setInterval(() => {
-        radius += 50;
-        if (radius >= maxRadius) {
-            clearInterval(interval);
-            darkness.style.clipPath = `circle(${maxRadius}px at center)`;
-        } else {
-            darkness.style.clipPath = `circle(${radius}px at center)`;
+        function timeUp() {
+            // タイムアップ時の処理
+            clearInterval(countdownInterval);
+            clearInterval(darknessInterval);
+            gameArea.innerHTML = '';
+            startLevel();
         }
-    }, 1000);
-}
 
-function getRandomPosition(width, height) {
-    const x = Math.random() * (width - 50); // 画像の幅を考慮
-    const y = Math.random() * (height - 50); // 画像の高さを考慮
-    return { x, y };
-}
+        function addDarknessEffect() {
+            darknessOverlay.classList.remove('hidden');
+            darknessRadius = 50;
+            darknessOverlay.style.clipPath = `circle(${darknessRadius}px at center)`;
 
-function isOverlapping(pos, positions) {
-    for (let p of positions) {
-        const dx = pos.x - p.x;
-        const dy = pos.y - p.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 50) { // 画像のサイズを基準に重なり判定
-            return true;
+            darknessInterval = setInterval(() => {
+                darknessRadius += 50;
+                darknessOverlay.style.clipPath = `circle(${darknessRadius}px at center)`;
+
+                // 最大半径を超えたらクリア
+                const maxRadius = Math.max(gameArea.clientWidth, gameArea.clientHeight) * 1.5;
+                if (darknessRadius >= maxRadius) {
+                    clearInterval(darknessInterval);
+                }
+            }, 1000);
         }
-    }
-    return false;
-}
 
-function getRandomSpeed() {
-    return Math.random() * 3 + 1; // スピード1〜4
-}
+        function getRandomPosition(width, height) {
+            const x = Math.random() * (width - 40); // 画像の幅を考慮
+            const y = Math.random() * (height - 40); // 画像の高さを考慮
+            return { x, y };
+        }
 
-// モーダルの処理
-modalClose.addEventListener('click', () => {
-    modal.classList.add('hidden');
-});
+        function getRandomSpeed() {
+            return Math.random() * 3 + 1; // スピード1〜4
+        }
 
-function showModal(message) {
-    modalText.textContent = message;
-    modal.classList.remove('hidden');
-}
+        function showFinalMessage() {
+            messageDiv.classList.remove('hidden');
+        }
 
-// ウィンドウリサイズ時の対応
-window.addEventListener('resize', () => {
-    // ゲームエリアの再配置や調整が必要な場合はここに追加
-});
+        // ウィンドウリサイズ時の対応
+        window.addEventListener('resize', () => {
+            // ゲームエリアの再配置や調整が必要な場合はここに追加
+        });
+    </script>
+</body>
+</html>
