@@ -27,16 +27,22 @@
             height: 100%;
         }
 
+        /* HUDのスタイル */
         #hud {
             position: absolute;
             top: 10px;
             left: 10px;
             z-index: 1000;
             display: flex;
-            gap: 20px;
-            font-size: 18px;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 16px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
         }
 
+        /* 手配書のスタイル */
         #wanted-poster {
             position: absolute;
             top: 10px;
@@ -49,6 +55,7 @@
             padding: 5px;
             text-align: center;
             z-index: 1000;
+            color: #000;
         }
 
         #wanted-poster img {
@@ -59,9 +66,9 @@
         #wanted-poster p {
             margin-top: 5px;
             font-weight: bold;
-            color: #000;
         }
 
+        /* ゲームエリアのスタイル */
         #game-area {
             position: absolute;
             top: 0;
@@ -80,6 +87,7 @@
             touch-action: manipulation;
         }
 
+        /* メッセージのスタイル */
         #message {
             position: absolute;
             top: 50%;
@@ -111,6 +119,7 @@
             font-size: 16px;
         }
 
+        /* 暗闇オーバーレイのスタイル */
         #darkness-overlay {
             position: absolute;
             top: 0;
@@ -123,32 +132,62 @@
             clip-path: circle(50px at center);
             transition: clip-path 1s linear;
         }
+
+        /* レスポンシブ調整 */
+        @media (max-width: 600px) {
+            #hud {
+                font-size: 14px;
+            }
+
+            #wanted-poster {
+                width: 80px;
+                height: 120px;
+            }
+
+            #wanted-poster img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .character {
+                width: 35px;
+                height: 35px;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
+        <!-- HUD: レベル、タイマー、スコア -->
         <div id="hud">
             <div id="level">レベル: 1</div>
             <div id="timer">残り時間: 15.0秒</div>
             <div id="score">クリア数: 0</div>
         </div>
+
+        <!-- 手配書: 探すキャラクターの表示 -->
         <div id="wanted-poster">
             <img id="target-image" src="" alt="探すキャラクター">
             <p>探してください</p>
         </div>
+
+        <!-- ゲームエリア: キャラクターが表示される場所 -->
         <div id="game-area"></div>
+
+        <!-- メッセージ表示: ゲームクリアまたはゲームオーバー時 -->
         <div id="message">
             <h2 id="final-message"></h2>
             <a href="https://inaijhs95.github.io/4lamp/?link=1" id="get-link" target="_blank" style="display: none;">♣のトランプをゲットする</a>
             <button id="retry-button" style="display: none;">再チャレンジ</button>
         </div>
+
+        <!-- 暗闇オーバーレイ -->
         <div id="darkness-overlay"></div>
     </div>
 
     <script>
-        // キャラクターの種類
+        // キャラクターの種類（panda.pngを除く4種）
         const CHARACTERS = [
-            'panda.png',
             'gorilla.png',
             'tengu.png',
             'namahage.png',
@@ -159,7 +198,7 @@
         const TOTAL_CHARACTERS = 100;
         const INITIAL_TIME = 15.0;
         const TIME_DECREMENT = 0.3;
-        const MIN_TIME = 3.0;
+        const MIN_TIME = 5.0;
         const TOTAL_LEVELS = 4;
 
         // レベルごとの設定
@@ -180,8 +219,7 @@
                 name: '暗闇と照らされる範囲の移動',
                 dynamic: false,
                 variableSpeed: false,
-                darkness: true,
-                movingLight: true
+                darkness: true
             },
             {
                 name: '無作為に移動し、スピードがバラバラ',
@@ -197,8 +235,7 @@
         let timeLimit = INITIAL_TIME;
         let timerInterval = null;
         let darknessInterval = null;
-        let lightPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        let lightDirection = { x: 1, y: 1 };
+        let lightOn = false; // 暗闇ステージでの明暗切替フラグ
 
         // DOM要素
         const gameArea = document.getElementById('game-area');
@@ -216,8 +253,7 @@
         // 初期化
         window.onload = startGame;
 
-        // 関数定義
-
+        // ゲーム開始
         function startGame() {
             currentLevelIndex = 0;
             score = 0;
@@ -227,6 +263,7 @@
             startLevel();
         }
 
+        // レベル開始
         function startLevel() {
             if (score >= 4) {
                 showFinalMessage(true);
@@ -248,7 +285,7 @@
 
             // 暗闇設定
             if (currentLevel.darkness) {
-                addDarknessEffect(currentLevel);
+                addDarknessEffect();
             } else {
                 darknessOverlay.style.display = 'none';
                 darknessOverlay.style.clipPath = 'circle(0px at center)';
@@ -268,7 +305,8 @@
             currentLevelIndex++;
         }
 
-        function placeCharacters(targetCharacter, currentLevel) {
+        // キャラクターの配置
+        function placeCharacters(targetCharacter, levelConfig) {
             const areaWidth = gameArea.clientWidth;
             const areaHeight = gameArea.clientHeight;
 
@@ -278,19 +316,20 @@
 
             // ターゲットを配置
             const targetPosition = getRandomPosition(areaWidth, areaHeight);
-            createCharacter(targetCharacter, targetPosition.x, targetPosition.y, true, currentLevel);
+            createCharacter(targetCharacter, targetPosition.x, targetPosition.y, true, levelConfig);
 
-            // 他のキャラクター（ターゲット以外）を配置
+            // ディストラクターを配置
             for (let i = 0; i < distractorCount; i++) {
                 let character;
                 do {
                     character = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
                 } while (character === targetCharacter);
                 const pos = getRandomPosition(areaWidth, areaHeight);
-                createCharacter(character, pos.x, pos.y, false, currentLevel);
+                createCharacter(character, pos.x, pos.y, false, levelConfig);
             }
         }
 
+        // キャラクターの作成
         function createCharacter(character, x, y, isTarget, levelConfig) {
             const img = document.createElement('img');
             img.src = character;
@@ -313,6 +352,7 @@
             gameArea.appendChild(img);
         }
 
+        // キャラクターの移動
         function moveCharacter(img, speed) {
             let directionX = Math.random() < 0.5 ? -1 : 1;
             let directionY = Math.random() < 0.5 ? -1 : 1;
@@ -344,12 +384,15 @@
             animate();
         }
 
+        // キャラクタークリック時の処理
         function onCharacterClick(event) {
             const type = event.target.dataset.type;
             if (type === 'target') {
                 // ターゲットをクリックした場合
                 clearInterval(timerInterval);
-                clearInterval(darknessInterval);
+                if (levels[currentLevelIndex - 1].darkness) {
+                    clearInterval(darknessInterval);
+                }
                 cancelAnimationFrame(event.target.animationFrame);
                 score++;
                 startLevel();
@@ -359,6 +402,7 @@
             }
         }
 
+        // タイマーの開始
         function startTimer() {
             timerInterval = setInterval(() => {
                 timeLimit -= 0.1;
@@ -371,17 +415,21 @@
             }, 100);
         }
 
+        // ゲームオーバー時の処理
         function gameOver() {
             // ゲームオーバー処理
             gameArea.innerHTML = '';
             clearInterval(timerInterval);
-            clearInterval(darknessInterval);
+            if (levels[currentLevelIndex - 1].darkness) {
+                clearInterval(darknessInterval);
+            }
             messageDiv.style.display = 'block';
             finalMessage.textContent = 'ゲームオーバー！';
             getLink.style.display = 'none';
             retryButton.style.display = 'inline-block';
         }
 
+        // 最終メッセージの表示
         function showFinalMessage(isClear) {
             // ゲームクリア時のメッセージ表示
             gameArea.innerHTML = '';
@@ -397,40 +445,35 @@
             }
         }
 
+        // 暗闇効果の追加
         function addDarknessEffect(levelConfig) {
             darknessOverlay.style.display = 'block';
-            darknessOverlay.style.clipPath = 'circle(50px at center)';
-            darknessOverlay.style.transition = 'clip-path 1s linear';
+            darknessOverlay.style.clipPath = 'circle(0px at center)';
+            lightOn = false;
 
-            // 照らす範囲をランダムに移動
-            function moveLight() {
-                const radius = 100; // 照らす円の半径
-                const areaWidth = gameArea.clientWidth;
-                const areaHeight = gameArea.clientHeight;
-
-                lightPosition.x += lightDirection.x * 5;
-                lightPosition.y += lightDirection.y * 5;
-
-                // 画面端で方向を反転
-                if (lightPosition.x <= radius || lightPosition.x >= areaWidth - radius) {
-                    lightDirection.x *= -1;
+            // 1秒ごとに明暗を切り替える
+            darknessInterval = setInterval(() => {
+                lightOn = !lightOn;
+                if (lightOn) {
+                    // ランダムな位置に照らす
+                    const x = Math.random() * gameArea.clientWidth;
+                    const y = Math.random() * gameArea.clientHeight;
+                    darknessOverlay.style.clipPath = `circle(100px at ${x}px ${y}px)`;
+                } else {
+                    // 全画面を暗闇に戻す
+                    darknessOverlay.style.clipPath = `circle(0px at center)`;
                 }
-                if (lightPosition.y <= radius || lightPosition.y >= areaHeight - radius) {
-                    lightDirection.y *= -1;
-                }
-
-                darknessOverlay.style.clipPath = `circle(${radius}px at ${lightPosition.x}px ${lightPosition.y}px)`;
-            }
-
-            darknessInterval = setInterval(moveLight, 100);
+            }, 1000);
         }
 
+        // ランダムな位置の取得
         function getRandomPosition(width, height) {
             const x = Math.random() * (width - 40); // 画像の幅を考慮
             const y = Math.random() * (height - 40); // 画像の高さを考慮
             return { x, y };
         }
 
+        // ランダムな速度の取得
         function getRandomSpeed() {
             return Math.random() * 3 + 1; // スピード1〜4
         }
