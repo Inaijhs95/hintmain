@@ -9,28 +9,30 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            margin: 20px;
             background-color: #f0f0f0;
         }
 
         h1 {
             color: #333;
+            font-size: 2em;
+            margin-bottom: 20px;
         }
 
         #timer {
-            font-size: 48px;
+            font-size: 3em;
             margin: 20px 0;
             color: #000;
         }
 
         #error, #title {
-            font-size: 24px;
+            font-size: 1.5em;
             margin: 10px 0;
             color: #555;
         }
 
         button {
-            font-size: 20px;
+            font-size: 1.2em;
             padding: 10px 20px;
             margin: 10px;
             cursor: pointer;
@@ -39,6 +41,7 @@
             background-color: #4CAF50;
             color: white;
             transition: background-color 0.3s;
+            width: 150px;
         }
 
         button:disabled {
@@ -50,29 +53,9 @@
             background-color: #45a049;
         }
 
-        input {
-            font-size: 18px;
-            padding: 5px;
-            width: 80px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-
-        a {
-            color: #1E90FF;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
         .instructions {
-            margin-top: 30px;
-            font-size: 16px;
+            margin-top: 20px;
+            font-size: 1em;
             color: #333;
         }
 
@@ -80,24 +63,50 @@
             margin: 5px 0;
         }
 
-        /* 黒丸スタイル */
-        .black-circle {
-            width: 50px;
-            height: 50px;
-            background-color: #000;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-            margin: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+        /* リンク表示スタイル */
+        #gameLink {
+            display: none; /* 初期状態は非表示 */
+            margin-top: 20px;
         }
 
-        .black-circle:hover {
-            background-color: #333;
+        #gameLink a {
+            color: #1E90FF;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        #gameLink a:hover {
+            text-decoration: underline;
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            #timer {
+                font-size: 2.5em;
+            }
+
+            #error, #title {
+                font-size: 1.2em;
+            }
+
+            button {
+                font-size: 1em;
+                padding: 8px 16px;
+                width: 120px;
+            }
+
+            .instructions p {
+                font-size: 0.9em;
+            }
+
+            #gameLink a {
+                font-size: 1em;
+            }
         }
     </style>
 </head>
@@ -110,26 +119,16 @@
     <button id="stopButton" disabled>ストップ</button>
     <button id="resetButton" disabled>リセット</button>
 
-    <div style="margin-top: 20px;">
-        <label for="customTime">目標時間（秒）:</label>
-        <input type="number" id="customTime" value="17.1" step="0.1" min="0.1">
-        <button id="setTimeButton">設定</button>
-    </div>
-
     <div class="instructions">
+        <p>ルール:</p>
+        <p>スタートを押して、ストップを押す</p>
+        <p>誤差に応じて称号が与えられます</p>
         <p>クリア条件：誤差0.5秒以内ならクリア</p>
-        <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">ゲームリンク</a></p>
-        <p>できなければもう一度挑戦してください。</p>
-        <p>黒丸にはあなたがちょうどいい塩梅だと思う数値を入力してみてください。</p>
         <p>3分以内にクリアできるレベル！</p>
     </div>
 
-    <div style="margin-top: 30px;">
-        <div class="black-circle" id="circle1">1</div>
-        <div class="black-circle" id="circle2">2</div>
-        <div class="black-circle" id="circle3">3</div>
-        <div class="black-circle" id="circle4">4</div>
-        <div class="black-circle" id="circle5">5</div>
+    <div id="gameLink">
+        <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">ゲームリンク</a></p>
     </div>
 
     <script>
@@ -137,7 +136,8 @@
 
         let startTime;
         let timerInterval;
-        let targetTime = 17.1; // 目標時間（秒）
+        let hideTimerTimeout;
+        const targetTime = 17.1; // 目標時間（秒）
 
         const timerDisplay = document.getElementById('timer');
         const errorDisplay = document.getElementById('error');
@@ -145,9 +145,7 @@
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
         const resetButton = document.getElementById('resetButton');
-        const customTimeInput = document.getElementById('customTime');
-        const setTimeButton = document.getElementById('setTimeButton');
-        const circles = document.querySelectorAll('.black-circle');
+        const gameLink = document.getElementById('gameLink');
 
         // タイトルの設定（誤差に応じて変更）
         function setTitle(error) {
@@ -175,24 +173,20 @@
         function updateTimer() {
             const currentTime = (Date.now() - startTime) / 1000;
             timerDisplay.textContent = `${currentTime.toFixed(1)}秒`;
-
-            // 3分（180秒）以内のクリア条件
-            if (currentTime >= 180) {
-                clearInterval(timerInterval);
-                alert('時間切れです。もう一度挑戦してください。');
-                resetGame();
-            }
         }
 
         // ゲームのリセット
         function resetGame() {
             clearInterval(timerInterval);
+            clearTimeout(hideTimerTimeout);
             timerDisplay.textContent = '0.0秒';
             errorDisplay.textContent = '誤差: 0.0秒';
             titleDisplay.textContent = '称号: -';
             startButton.disabled = false;
             stopButton.disabled = true;
             resetButton.disabled = true;
+            gameLink.style.display = 'none';
+            timerDisplay.style.display = 'block';
         }
 
         // スタートボタンのクリックイベント
@@ -204,22 +198,32 @@
             resetButton.disabled = true;
             errorDisplay.textContent = '誤差: 0.0秒';
             titleDisplay.textContent = '称号: -';
+            gameLink.style.display = 'none';
+
+            // 5秒後にタイマーを非表示にする
+            hideTimerTimeout = setTimeout(() => {
+                timerDisplay.style.display = 'none';
+            }, 5000);
         });
 
         // ストップボタンのクリックイベント
         stopButton.addEventListener('click', () => {
             clearInterval(timerInterval);
+            clearTimeout(hideTimerTimeout);
             const elapsedTime = (Date.now() - startTime) / 1000;
+            timerDisplay.style.display = 'block';
             timerDisplay.textContent = `${elapsedTime.toFixed(1)}秒`;
             const error = elapsedTime - targetTime;
             errorDisplay.textContent = `誤差: ${error.toFixed(1)}秒`;
             setTitle(error);
 
-            // クリア条件の判定（例：0.5秒以内）
+            // クリア条件の判定（誤差0.5秒以内）
             if (Math.abs(error) <= 0.5) {
                 alert('クリアしました！');
+                gameLink.style.display = 'block'; // ゲームリンクを表示
             } else {
                 alert('クリアできませんでした。もう一度挑戦してください。');
+                gameLink.style.display = 'none';
             }
 
             startButton.disabled = false;
@@ -230,35 +234,6 @@
         // リセットボタンのクリックイベント
         resetButton.addEventListener('click', () => {
             resetGame();
-        });
-
-        // 目標時間の設定ボタンのクリックイベント
-        setTimeButton.addEventListener('click', () => {
-            const newTarget = parseFloat(customTimeInput.value);
-            if (!isNaN(newTarget) && newTarget > 0) {
-                targetTime = newTarget;
-                alert(`目標時間を${newTarget}秒に設定しました！`);
-                // リセット
-                resetGame();
-            } else {
-                alert('有効な数値を入力してください。');
-            }
-        });
-
-        // 黒丸のクリックイベント（ユーザー定義数値の入力）
-        circles.forEach(circle => {
-            circle.addEventListener('click', () => {
-                const currentNumber = circle.textContent;
-                const userNumber = prompt(`黒丸${currentNumber}に表示する数値を入力してください:`, currentNumber);
-                if (userNumber !== null) {
-                    const parsedNumber = parseFloat(userNumber);
-                    if (!isNaN(parsedNumber)) {
-                        circle.textContent = parsedNumber;
-                    } else {
-                        alert('有効な数値を入力してください。');
-                    }
-                }
-            });
         });
     </script>
 </body>
