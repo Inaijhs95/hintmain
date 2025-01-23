@@ -16,7 +16,9 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            box-sizing: border-box;
         }
 
         h1 {
@@ -42,17 +44,26 @@
             color: #FF4500;
         }
 
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
         button {
-            font-size: 1.2em;
+            font-size: 1.5em;
             padding: 15px 30px;
-            margin: 10px;
+            margin: 10px 0;
             cursor: pointer;
             border: none;
             border-radius: 10px;
             background-color: #1E90FF;
             color: white;
             transition: background-color 0.3s;
-            width: 200px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button:disabled {
@@ -83,25 +94,25 @@
         /* レスポンシブデザイン */
         @media (max-width: 600px) {
             h1 {
-                font-size: 1.5em;
+                font-size: 1.8em;
             }
 
             #levelDisplay {
-                font-size: 1.2em;
+                font-size: 1.3em;
             }
 
             #statusDisplay {
-                font-size: 1em;
+                font-size: 1.1em;
             }
 
             #message {
-                font-size: 2em;
+                font-size: 2.5em;
             }
 
             button {
-                font-size: 1em;
-                padding: 10px 20px;
-                width: 150px;
+                font-size: 1.2em;
+                padding: 12px 24px;
+                width: 80%;
             }
 
             #gameLink a {
@@ -115,8 +126,10 @@
     <div id="levelDisplay">レベル: 1</div>
     <div id="statusDisplay">ゲーム開始準備中...</div>
     <div id="message">！</div>
-    <button id="startButton">スタート</button>
-    <button id="slashButton" disabled>斬</button>
+    <div class="button-container">
+        <button id="startButton">スタート</button>
+        <button id="slashButton" disabled>斬</button>
+    </div>
     <div id="gameLink">
         <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
     </div>
@@ -124,8 +137,8 @@
     <script>
         // JavaScript機能
 
-        const levels = [0.63, 0.50, 0.4, 0.3, 0.25];
-        const oniLevels = [0.3, 0.27, 0.23, 0.2, 0.16];
+        const levels = [1.0, 0.8, 0.6, 0.5, 0.4]; // 通常モードのレベルタイム（秒）
+        const oniLevels = [0.5, 0.4, 0.3, 0.25, 0.2]; // 鬼モードのレベルタイム（秒）
         let currentLevel = 0;
         let isOniMode = false;
         let reactionTimeout;
@@ -177,7 +190,7 @@
                 return;
             }
 
-            levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
+            levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
             statusDisplay.textContent = '次のレベル準備中...';
@@ -242,8 +255,6 @@
                 }
             }, timeLimit * 1000);
         }
-
-        // "！"が表示される前に"斬"をタップした場合の処理は上記で対応済み
 
         // ゲーム開始時の初期化
         resetGame();
