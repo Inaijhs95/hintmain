@@ -196,16 +196,28 @@
                 font-size: 14px;
             }
 
-            #wanted-poster {
-                width: 80px;
-                height: 80px;
-                padding: 5px;
-            }
+          /* 手配書のスタイル */
+#wanted-poster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    height: 100px; /* 高さをトップバーに収まるように調整 */
+    background-color: rgba(0, 0, 0, 0.7); /* 半透明の暗い背景色に変更 */
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    color: #fff; /* テキスト色を白に変更 */
+}
 
-            #wanted-poster img {
-                width: 60px;
-                height: 60px;
-            }
+/* 手配書内のテキストスタイル */
+#wanted-poster p {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    color: #fff; /* テキスト色を白に変更 */
+}
+
 
             .character {
                 cursor: pointer;
