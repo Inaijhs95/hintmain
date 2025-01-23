@@ -2,75 +2,75 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>17.1秒を目指すゲーム</title>
+    <title>刹那の見切り</title>
     <style>
         /* CSSスタイル */
 
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 20px;
-            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100vh;
         }
 
         h1 {
-            color: #333;
             font-size: 2em;
+            margin-bottom: 20px;
+            color: #FFD700;
+        }
+
+        #levelDisplay {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        #statusDisplay {
+            font-size: 1.2em;
             margin-bottom: 20px;
         }
 
-        #timer {
+        #message {
             font-size: 3em;
             margin: 20px 0;
-            color: #000;
-        }
-
-        #error, #title {
-            font-size: 1.5em;
-            margin: 10px 0;
-            color: #555;
+            display: none;
+            color: #FF4500;
         }
 
         button {
             font-size: 1.2em;
-            padding: 10px 20px;
+            padding: 15px 30px;
             margin: 10px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            background-color: #4CAF50;
+            border-radius: 10px;
+            background-color: #1E90FF;
             color: white;
             transition: background-color 0.3s;
-            width: 150px;
+            width: 200px;
         }
 
         button:disabled {
-            background-color: #a5d6a7;
+            background-color: #696969;
             cursor: not-allowed;
         }
 
         button:hover:not(:disabled) {
-            background-color: #45a049;
+            background-color: #00BFFF;
         }
 
-        .instructions {
-            margin-top: 20px;
-            font-size: 1em;
-            color: #333;
-        }
-
-        .instructions p {
-            margin: 5px 0;
-        }
-
-        /* リンク表示スタイル */
         #gameLink {
-            display: none; /* 初期状態は非表示 */
+            display: none;
             margin-top: 20px;
         }
 
         #gameLink a {
-            color: #1E90FF;
+            color: #32CD32;
             text-decoration: none;
             font-weight: bold;
             font-size: 1.2em;
@@ -83,25 +83,25 @@
         /* レスポンシブデザイン */
         @media (max-width: 600px) {
             h1 {
-                font-size: 1.8em;
+                font-size: 1.5em;
             }
 
-            #timer {
-                font-size: 2.5em;
-            }
-
-            #error, #title {
+            #levelDisplay {
                 font-size: 1.2em;
+            }
+
+            #statusDisplay {
+                font-size: 1em;
+            }
+
+            #message {
+                font-size: 2em;
             }
 
             button {
                 font-size: 1em;
-                padding: 8px 16px;
-                width: 120px;
-            }
-
-            .instructions p {
-                font-size: 0.9em;
+                padding: 10px 20px;
+                width: 150px;
             }
 
             #gameLink a {
@@ -111,130 +111,142 @@
     </style>
 </head>
 <body>
-    <h1>17.1秒を目指すゲーム</h1>
-    <div id="timer">0.0秒</div>
-    <div id="error">誤差: 0.0秒</div>
-    <div id="title">称号: -</div>
+    <h1>刹那の見切り</h1>
+    <div id="levelDisplay">レベル: 1</div>
+    <div id="statusDisplay">ゲーム開始準備中...</div>
+    <div id="message">！</div>
     <button id="startButton">スタート</button>
-    <button id="stopButton" disabled>ストップ</button>
-    <button id="resetButton" disabled>リセット</button>
-
-    <div class="instructions">
-        <p>ルール:</p>
-        <p>スタートを押して、ストップを押す</p>
-        <p>誤差に応じて称号が与えられます</p>
-        <p>クリア条件：誤差0.5秒以内ならクリア</p>
-        <p>3分以内にクリアできるレベル！</p>
-    </div>
-
+    <button id="slashButton" disabled>斬</button>
     <div id="gameLink">
-        <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">ゲームリンク</a></p>
+        <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
     </div>
 
     <script>
         // JavaScript機能
 
-        let startTime;
-        let timerInterval;
-        let hideTimerTimeout;
-        const targetTime = 17.1; // 目標時間（秒）
+        const levels = [0.63, 0.50, 0.4, 0.3, 0.25];
+        const oniLevels = [0.3, 0.27, 0.23, 0.2, 0.16];
+        let currentLevel = 0;
+        let isOniMode = false;
+        let reactionTimeout;
+        let randomDelayTimeout;
+        let isWaitingForSlash = false;
 
-        const timerDisplay = document.getElementById('timer');
-        const errorDisplay = document.getElementById('error');
-        const titleDisplay = document.getElementById('title');
         const startButton = document.getElementById('startButton');
-        const stopButton = document.getElementById('stopButton');
-        const resetButton = document.getElementById('resetButton');
+        const slashButton = document.getElementById('slashButton');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const message = document.getElementById('message');
         const gameLink = document.getElementById('gameLink');
 
-        // タイトルの設定（誤差に応じて変更）
-        function setTitle(error) {
-            const absError = Math.abs(error);
-            let title = '';
+        // ゲームの初期化
+        function resetGame() {
+            currentLevel = 0;
+            isOniMode = false;
+            levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
+            statusDisplay.textContent = 'ゲーム開始準備中...';
+            message.style.display = 'none';
+            startButton.disabled = false;
+            slashButton.disabled = true;
+            gameLink.style.display = 'none';
+        }
 
-            if (absError === 0) {
-                title = '完璧！';
-            } else if (absError <= 0.1) {
-                title = '極めて正確';
-            } else if (absError <= 0.3) {
-                title = '非常に良い';
-            } else if (absError <= 0.5) {
-                title = '良い';
-            } else if (absError <= 1.0) {
-                title = '普通';
-            } else {
-                title = '頑張ろう！';
+        // 次のレベルに進む
+        function nextLevel() {
+            currentLevel++;
+            if (isOniMode && currentLevel >= oniLevels.length) {
+                // 鬼モードクリア
+                statusDisplay.textContent = '鬼モードをクリアしました！';
+                gameLink.style.display = 'none';
+                slashButton.disabled = true;
+                startButton.disabled = true;
+                return;
+            } else if (!isOniMode && currentLevel >= levels.length) {
+                // 通常モードクリア、鬼モード開始
+                statusDisplay.textContent = '通常モードをクリアしました！鬼モードに挑戦します。';
+                gameLink.style.display = 'none';
+                slashButton.disabled = true;
+                startButton.disabled = true;
+                setTimeout(() => {
+                    isOniMode = true;
+                    currentLevel = 0;
+                    levelDisplay.textContent = `鬼モード レベル: ${currentLevel + 1}`;
+                    statusDisplay.textContent = '鬼モード開始！';
+                    startButton.disabled = false;
+                }, 2000);
+                return;
             }
 
-            titleDisplay.textContent = `称号: ${title}`;
-        }
-
-        // タイマーの更新
-        function updateTimer() {
-            const currentTime = (Date.now() - startTime) / 1000;
-            timerDisplay.textContent = `${currentTime.toFixed(1)}秒`;
-        }
-
-        // ゲームのリセット
-        function resetGame() {
-            clearInterval(timerInterval);
-            clearTimeout(hideTimerTimeout);
-            timerDisplay.textContent = '0.0秒';
-            errorDisplay.textContent = '誤差: 0.0秒';
-            titleDisplay.textContent = '称号: -';
+            levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
-            stopButton.disabled = true;
-            resetButton.disabled = true;
-            gameLink.style.display = 'none';
-            timerDisplay.style.display = 'block';
+            slashButton.disabled = true;
+            statusDisplay.textContent = '次のレベル準備中...';
+        }
+
+        // ゲームオーバー
+        function gameOver(messageText) {
+            alert(messageText);
+            resetGame();
         }
 
         // スタートボタンのクリックイベント
         startButton.addEventListener('click', () => {
-            startTime = Date.now();
-            timerInterval = setInterval(updateTimer, 100);
             startButton.disabled = true;
-            stopButton.disabled = false;
-            resetButton.disabled = true;
-            errorDisplay.textContent = '誤差: 0.0秒';
-            titleDisplay.textContent = '称号: -';
-            gameLink.style.display = 'none';
+            slashButton.disabled = false;
+            statusDisplay.textContent = '待機中...';
 
-            // 5秒後にタイマーを非表示にする
-            hideTimerTimeout = setTimeout(() => {
-                timerDisplay.style.display = 'none';
-            }, 5000);
+            // ランダムな遅延（2〜10秒）
+            const randomDelay = Math.random() * (10 - 2) + 2; // 秒
+            randomDelayTimeout = setTimeout(() => {
+                showExclamation();
+            }, randomDelay * 1000);
         });
 
-        // ストップボタンのクリックイベント
-        stopButton.addEventListener('click', () => {
-            clearInterval(timerInterval);
-            clearTimeout(hideTimerTimeout);
-            const elapsedTime = (Date.now() - startTime) / 1000;
-            timerDisplay.style.display = 'block';
-            timerDisplay.textContent = `${elapsedTime.toFixed(1)}秒`;
-            const error = elapsedTime - targetTime;
-            errorDisplay.textContent = `誤差: ${error.toFixed(1)}秒`;
-            setTitle(error);
-
-            // クリア条件の判定（誤差0.5秒以内）
-            if (Math.abs(error) <= 0.5) {
-                alert('クリアしました！');
-                gameLink.style.display = 'block'; // ゲームリンクを表示
-            } else {
-                alert('クリアできませんでした。もう一度挑戦してください。');
-                gameLink.style.display = 'none';
+        // "斬"ボタンのクリックイベント
+        slashButton.addEventListener('click', () => {
+            if (!isWaitingForSlash) {
+                // "！"が表示される前に"斬"をタップ
+                gameOver('「！」が表示される前に「斬」をタップしました。負けです！');
+                return;
             }
 
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            resetButton.disabled = false;
+            const reactionTime = (Date.now() - exclamationTime) / 1000; // 秒
+            const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
+
+            if (reactionTime <= timeLimit) {
+                alert(`成功！反応時間: ${reactionTime.toFixed(3)}秒`);
+                clearTimeout(reactionTimeout);
+                isWaitingForSlash = false;
+                nextLevel();
+            } else {
+                alert(`時間切れ！反応時間: ${reactionTime.toFixed(3)}秒\n負けです！`);
+                resetGame();
+            }
         });
 
-        // リセットボタンのクリックイベント
-        resetButton.addEventListener('click', () => {
-            resetGame();
-        });
+        let exclamationTime = 0;
+
+        // "！"を表示する
+        function showExclamation() {
+            message.style.display = 'block';
+            exclamationTime = Date.now();
+            isWaitingForSlash = true;
+            statusDisplay.textContent = '「！」が表示されました！「斬」をタップしてください。';
+
+            // 既定時間内に"斬"をタップしなければ負け
+            const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
+            reactionTimeout = setTimeout(() => {
+                if (isWaitingForSlash) {
+                    isWaitingForSlash = false;
+                    gameOver('時間切れです。負けです！');
+                }
+            }, timeLimit * 1000);
+        }
+
+        // "！"が表示される前に"斬"をタップした場合の処理は上記で対応済み
+
+        // ゲーム開始時の初期化
+        resetGame();
     </script>
 </body>
 </html>
