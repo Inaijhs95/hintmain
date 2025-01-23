@@ -35,10 +35,10 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
-            height: 100px; /* 高さを固定 */
+            height: 120px; /* 高さを固定 */
         }
 
         /* HUDのスタイル */
@@ -46,7 +46,8 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            font-size: 16px;
+            font-size: 18px;
+            color: #FFD700; /* ゴールドカラー */
         }
 
         /* 手配書のスタイル */
@@ -54,25 +55,29 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100px;
-            height: 150px;
+            width: 120px;
+            height: 180px;
             background-color: #fff;
-            border: 2px solid #fff;
+            border: 2px solid #FFD700; /* ゴールドカラーの枠線 */
             border-radius: 10px;
-            padding: 5px;
+            padding: 10px;
             text-align: center;
             color: #000;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* ゴールドのシャドウ */
         }
 
         #wanted-poster img {
             width: 80px;
             height: 80px;
+            border-radius: 50%;
+            border: 2px solid #FFD700; /* ゴールドカラーの枠線 */
         }
 
         #wanted-poster p {
-            margin-top: 5px;
+            margin-top: 10px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
+            color: #D2691E; /* チョコレートカラー */
         }
 
         /* ゲームエリアのスタイル */
@@ -91,6 +96,18 @@
             cursor: pointer;
             user-select: none;
             touch-action: manipulation;
+            transition: transform 0.3s ease;
+        }
+
+        /* サイズ変化アニメーション */
+        @keyframes sizeVariation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .size-variation {
+            animation: sizeVariation 3s infinite;
         }
 
         /* メッセージのスタイル */
@@ -99,30 +116,38 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 10px;
+            background-color: rgba(0,0,0,0.85);
+            padding: 25px 30px;
+            border-radius: 15px;
             text-align: center;
             z-index: 1001;
             display: none;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); /* ゴールドのシャドウ */
         }
 
         #message h2 {
-            margin-bottom: 10px;
-            color: #fff;
+            margin-bottom: 15px;
+            color: #FFD700; /* ゴールドカラー */
+            font-size: 24px;
         }
 
         #message a, #message button {
             display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: #fff;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background-color: #FFD700; /* ゴールドカラー */
+            color: #222;
             text-decoration: none;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #message a:hover, #message button:hover {
+            background-color: #FFA500; /* オレンジカラー */
+            color: #fff;
         }
 
         /* 暗闇オーバーレイのスタイル */
@@ -191,6 +216,15 @@
                 width: 35px;
                 height: 35px;
             }
+
+            #message h2 {
+                font-size: 20px;
+            }
+
+            #message a, #message button {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
         }
     </style>
 </head>
@@ -252,24 +286,28 @@
                 name: '静止画',
                 dynamic: false,
                 variableSpeed: false,
+                sizeVariation: false,
                 darkness: false
             },
             {
                 name: '無作為に移動',
                 dynamic: true,
                 variableSpeed: false,
+                sizeVariation: false,
                 darkness: false
             },
             {
-                name: '暗闇と照らされる範囲の移動',
-                dynamic: false,
+                name: '移動とサイズ変化',
+                dynamic: true,
                 variableSpeed: false,
-                darkness: true
+                sizeVariation: true,
+                darkness: false
             },
             {
                 name: '無作為に移動し、スピードがバラバラ',
                 dynamic: true,
                 variableSpeed: true,
+                sizeVariation: false,
                 darkness: false
             }
         ];
@@ -387,6 +425,11 @@
                 const speed = levelConfig.variableSpeed ? getRandomSpeed() : 2;
                 img.dataset.speed = speed;
                 moveCharacter(img, speed);
+            }
+
+            // サイズ変化の設定
+            if (levelConfig.sizeVariation) {
+                img.classList.add('size-variation');
             }
 
             // タップとクリックイベントの設定
