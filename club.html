@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>4文字日本語Wordleゲーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121213;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        #game-container {
+            display: grid;
+            grid-template-rows: repeat(10, 50px);
+            grid-gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(4, 50px);
+            grid-gap: 5px;
+        }
+
+        .tile {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #3a3a3c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-transform: uppercase;
+            box-sizing: border-box;
+        }
+
+        .tile.correct {
+            background-color: #538d4e;
+            border-color: #538d4e;
+            color: #ffffff;
+        }
+
+        .tile.present {
+            background-color: #b59f3b;
+            border-color: #b59f3b;
+            color: #ffffff;
+        }
+
+        .tile.absent {
+            background-color: #3a3a3c;
+            border-color: #3a3a3c;
+            color: #ffffff;
+        }
+
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #guess-input {
+            width: 220px;
+            padding: 10px;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #3a3a3c;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        #submit-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #538d4e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #submit-button:hover {
+            background-color: #6aaa64;
+        }
+
+        #message {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        #keyboard {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-gap: 5px;
+        }
+
+        .key {
+            width: 40px;
+            height: 40px;
+            background-color: #818384;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .key.correct {
+            background-color: #538d4e;
+        }
+
+        .key.present {
+            background-color: #b59f3b;
+        }
+
+        .key.absent {
+            background-color: #3a3a3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>4文字日本語Wordle</h1>
+    <div id="game-container">
+        <!-- 10試行分のグリッド -->
+        <!-- JavaScriptで動的に生成 -->
+    </div>
+    <div id="input-container">
+        <input type="text" id="guess-input" maxlength="4" placeholder="4文字の単語" autofocus>
+        <button id="submit-button">送信</button>
+    </div>
+    <div id="message"></div>
+    <div id="keyboard">
+        <!-- 仮想キーボード -->
+        <!-- 日本語のキーを簡略化して表示 -->
+        <!-- 必要に応じてカスタマイズ可能 -->
+    </div>
+
+    <script>
+        const WORD_LIST = [
+            "りんご", "さくら", "みずき", "たけし", "かずみ",
+            "ひかり", "ゆうき", "なおみ", "まさと", "あきら",
+            "ゆきこ", "けんじ", "あやか", "しんじ", "まいこ",
+            "けいこ", "はるき", "ゆたか", "さとみ", "りょう",
+            "あおい", "なおこ", "ゆみこ", "しおり", "かほり",
+            "まゆみ", "かりん", "ひなた", "りおん", "すみれ"
+        ];
+
+        let targetWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+        // デバッグ用: 正解をコンソールに表示
+        console.log("ターゲット単語:", targetWord);
+
+        let currentAttempt = 0;
+        const maxAttempts = 10;
+        const gameContainer = document.getElementById('game-container');
+        const guessInput = document.getElementById('guess-input');
+        const submitButton = document.getElementById('submit-button');
+        const messageDiv = document.getElementById('message');
+        const keyboardDiv = document.getElementById('keyboard');
+
+        // 仮想キーボードの作成（簡略化）
+        const keys = [
+            "あ","い","う","え","お",
+            "か","き","く","け","こ",
+            "さ","し","す","せ","そ",
+            "た","ち","つ","て","と",
+            "な","に","ぬ","ね","の",
+            "は","ひ","ふ","へ","ほ",
+            "ま","み","む","め","も",
+            "や","ゆ","よ",
+            "ら","り","る","れ","ろ",
+            "わ","を","ん"
+        ];
+
+        const keyElements = {};
+
+        keys.forEach(key => {
+            const keyDiv = document.createElement('div');
+            keyDiv.classList.add('key');
+            keyDiv.textContent = key;
+            keyDiv.addEventListener('click', () => {
+                handleKeyPress(key);
+            });
+            keyboardDiv.appendChild(keyDiv);
+            keyElements[key] = keyDiv;
+        });
+
+        function handleKeyPress(key) {
+            if (key === '←') {
+                guessInput.value = guessInput.value.slice(0, -1);
+            } else {
+                if (guessInput.value.length < 4) {
+                    guessInput.value += key;
+                }
+            }
+        }
+
+        // ゲームのグリッドを作成
+        for (let i = 0; i < maxAttempts; i++) {
+            const row = document.createElement('div');
+            row.classList.add('row');
+            for (let j = 0; j < 4; j++) {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                row.appendChild(tile);
+            }
+            gameContainer.appendChild(row);
+        }
+
+        submitButton.addEventListener('click', () => {
+            const guess = guessInput.value.trim();
+            if (guess.length !== 4) {
+                showMessage("4文字の単語を入力してください。");
+                return;
+            }
+            if (!WORD_LIST.includes(guess)) {
+                showMessage("有効な4文字の単語を入力してください。");
+                return;
+            }
+
+            // 既に試行回数が上限に達している場合
+            if (currentAttempt >= maxAttempts) {
+                return;
+            }
+
+            const row = gameContainer.children[currentAttempt];
+            const feedback = getFeedback(guess, targetWord);
+            const guessChars = guess.split('');
+
+            for (let i = 0; i < 4; i++) {
+                const tile = row.children[i];
+                tile.textContent = guessChars[i];
+                if (feedback[i] === 'correct') {
+                    tile.classList.add('correct');
+                    updateKeyboard(guessChars[i], 'correct');
+                } else if (feedback[i] === 'present') {
+                    tile.classList.add('present');
+                    updateKeyboard(guessChars[i], 'present');
+                } else {
+                    tile.classList.add('absent');
+                    updateKeyboard(guessChars[i], 'absent');
+                }
+            }
+
+            if (guess === targetWord) {
+                showMessage(`おめでとうございます！${currentAttempt + 1}回目で正解しました。`);
+                guessInput.disabled = true;
+                submitButton.disabled = true;
+                return;
+            }
+
+            currentAttempt++;
+            guessInput.value = '';
+
+            if (currentAttempt === maxAttempts) {
+                showMessage(`ゲームオーバー！正しい単語は「${targetWord}」でした。`);
+                guessInput.disabled = true;
+                submitButton.disabled = true;
+            }
+        });
+
+        // Enterキーで送信
+        guessInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitButton.click();
+            }
+        });
+
+        function getFeedback(guess, target) {
+            const feedback = Array(4).fill('absent');
+            const targetChars = target.split('');
+            const guessChars = guess.split('');
+
+            // 正しい位置の文字をチェック
+            for (let i = 0; i < 4; i++) {
+                if (guessChars[i] === targetChars[i]) {
+                    feedback[i] = 'correct';
+                    targetChars[i] = null;
+                    guessChars[i] = null;
+                }
+            }
+
+            // 正しい文字だが位置が違う場合をチェック
+            for (let i = 0; i < 4; i++) {
+                if (guessChars[i] && targetChars.includes(guessChars[i])) {
+                    feedback[i] = 'present';
+                    const index = targetChars.indexOf(guessChars[i]);
+                    targetChars[index] = null;
+                }
+            }
+
+            return feedback;
+        }
+
+        function showMessage(msg) {
+            messageDiv.textContent = msg;
+            setTimeout(() => {
+                messageDiv.textContent = '';
+            }, 3000);
+        }
+
+        function updateKeyboard(char, status) {
+            if (keyElements[char]) {
+                if (status === 'correct') {
+                    keyElements[char].classList.remove('present', 'absent');
+                    keyElements[char].classList.add('correct');
+                } else if (status === 'present') {
+                    if (!keyElements[char].classList.contains('correct')) {
+                        keyElements[char].classList.remove('absent');
+                        keyElements[char].classList.add('present');
+                    }
+                } else {
+                    if (!keyElements[char].classList.contains('correct') && !keyElements[char].classList.contains('present')) {
+                        keyElements[char].classList.add('absent');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
