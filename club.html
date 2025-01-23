@@ -38,6 +38,7 @@
             padding: 10px;
             background-color: rgba(0, 0, 0, 0.7);
             z-index: 1000;
+            height: 100px; /* 高さを固定 */
         }
 
         /* HUDのスタイル */
@@ -139,9 +140,9 @@
 
         .light-spot {
             position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            width: 100px; /* 照らす範囲の直径を小さく */
+            height: 100px;
+            background: radial-gradient(circle at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%);
             border-radius: 50%;
             pointer-events: none;
             animation: moveSpot 5s linear infinite;
@@ -499,6 +500,11 @@
                 const spot = document.createElement('div');
                 spot.classList.add('light-spot');
                 spot.style.animationDelay = `${Math.random() * 5}s`;
+                // スポットの開始位置をランダムに設定
+                const startX = Math.random() * 100; // パーセンテージ
+                const startY = Math.random() * 100; // パーセンテージ
+                spot.style.top = `${startY}%`;
+                spot.style.left = `${startX}%`;
                 darknessOverlay.appendChild(spot);
             }
         }
