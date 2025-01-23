@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ドラゴンを探せ！</title>
+    <title>あいつを探せ！</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* リセットスタイル */
@@ -17,14 +17,14 @@
             height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #222;
+            color: #fff;
         }
 
         #game-container {
             position: relative;
             width: 100%;
             height: 100%;
-            background-color: #222;
         }
 
         #hud {
@@ -35,7 +35,31 @@
             display: flex;
             gap: 20px;
             font-size: 18px;
-            color: #fff;
+        }
+
+        #wanted-poster {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px;
+            height: 150px;
+            background-color: #fff;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 5px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        #wanted-poster img {
+            width: 80px;
+            height: 80px;
+        }
+
+        #wanted-poster p {
+            margin-top: 5px;
+            font-weight: bold;
+            color: #000;
         }
 
         #game-area {
@@ -47,7 +71,7 @@
             overflow: hidden;
         }
 
-        .image {
+        .character {
             position: absolute;
             width: 40px;
             height: 40px;
@@ -56,33 +80,37 @@
             touch-action: manipulation;
         }
 
-        .hidden {
-            display: none;
-        }
-
         #message {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(255,255,255,0.9);
+            background-color: rgba(0,0,0,0.8);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             z-index: 1001;
+            display: none;
         }
 
         #message h2 {
             margin-bottom: 10px;
+            color: #fff;
         }
 
-        #message a {
-            color: #007BFF;
+        #message a, #message button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
             text-decoration: none;
-            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
         }
 
-        /* 暗闇効果 */
         #darkness-overlay {
             position: absolute;
             top: 0;
@@ -91,8 +119,9 @@
             height: 100%;
             background-color: rgba(0,0,0,0.9);
             pointer-events: none;
-            transition: clip-path 1s linear;
             z-index: 500;
+            clip-path: circle(50px at center);
+            transition: clip-path 1s linear;
         }
     </style>
 </head>
@@ -103,28 +132,38 @@
             <div id="timer">残り時間: 15.0秒</div>
             <div id="score">クリア数: 0</div>
         </div>
-        <div id="game-area"></div>
-        <div id="message" class="hidden">
-            <h2>おめでとうございます！</h2>
-            <a href="https://inaijhs95.github.io/4lamp/?link=1" target="_blank">♣のトランプをゲットする</a>
+        <div id="wanted-poster">
+            <img id="target-image" src="" alt="探すキャラクター">
+            <p>探してください</p>
         </div>
-        <div id="darkness-overlay" class="hidden"></div>
+        <div id="game-area"></div>
+        <div id="message">
+            <h2 id="final-message"></h2>
+            <a href="https://inaijhs95.github.io/4lamp/?link=1" id="get-link" target="_blank" style="display: none;">♣のトランプをゲットする</a>
+            <button id="retry-button" style="display: none;">再チャレンジ</button>
+        </div>
+        <div id="darkness-overlay"></div>
     </div>
 
     <script>
-        // 画像のパス（必要に応じて変更してください）
-        const PANDA_SRC = 'panda.png'; // またはオンライン画像のURL
-        const DRAGON_SRC = 'dragon.png'; // またはオンライン画像のURL
+        // キャラクターの種類
+        const CHARACTERS = [
+            'panda.png',
+            'gorilla.png',
+            'tengu.png',
+            'namahage.png',
+            'koala.png'
+        ];
 
         // ゲーム設定
-        const TOTAL_IMAGES = 100;
+        const TOTAL_CHARACTERS = 100;
         const INITIAL_TIME = 15.0;
         const TIME_DECREMENT = 0.3;
         const MIN_TIME = 3.0;
-        const TOTAL_PATTERNS = 4;
+        const TOTAL_LEVELS = 4;
 
         // レベルごとの設定
-        const patterns = [
+        const levels = [
             {
                 name: '静止画',
                 dynamic: false,
@@ -138,10 +177,11 @@
                 darkness: false
             },
             {
-                name: '暗闇と照らされる範囲の拡大',
+                name: '暗闇と照らされる範囲の移動',
                 dynamic: false,
                 variableSpeed: false,
-                darkness: true
+                darkness: true,
+                movingLight: true
             },
             {
                 name: '無作為に移動し、スピードがバラバラ',
@@ -152,98 +192,128 @@
         ];
 
         // ゲームステータス
-        let currentPatternIndex = 0;
+        let currentLevelIndex = 0;
         let score = 0;
         let timeLimit = INITIAL_TIME;
         let timerInterval = null;
-        let countdownInterval = null;
-        let darknessRadius = 50;
         let darknessInterval = null;
+        let lightPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let lightDirection = { x: 1, y: 1 };
 
         // DOM要素
         const gameArea = document.getElementById('game-area');
         const levelDisplay = document.getElementById('level');
         const timerDisplay = document.getElementById('timer');
         const scoreDisplay = document.getElementById('score');
+        const wantedPoster = document.getElementById('wanted-poster');
+        const targetImage = document.getElementById('target-image');
         const messageDiv = document.getElementById('message');
+        const finalMessage = document.getElementById('final-message');
+        const getLink = document.getElementById('get-link');
+        const retryButton = document.getElementById('retry-button');
         const darknessOverlay = document.getElementById('darkness-overlay');
 
         // 初期化
-        window.onload = startLevel;
+        window.onload = startGame;
 
         // 関数定義
 
+        function startGame() {
+            currentLevelIndex = 0;
+            score = 0;
+            timeLimit = INITIAL_TIME;
+            scoreDisplay.textContent = `クリア数: ${score}`;
+            messageDiv.style.display = 'none';
+            startLevel();
+        }
+
         function startLevel() {
             if (score >= 4) {
-                // 4問以上正解した場合
-                showFinalMessage();
+                showFinalMessage(true);
                 return;
             }
 
-            const pattern = patterns[currentPatternIndex % TOTAL_PATTERNS];
-            levelDisplay.textContent = `レベル: ${currentPatternIndex + 1}`;
+            if (currentLevelIndex >= levels.length) {
+                currentLevelIndex = 0; // レベルをループさせる場合
+            }
+
+            const currentLevel = levels[currentLevelIndex];
+            levelDisplay.textContent = `レベル: ${currentLevelIndex + 1}`;
             scoreDisplay.textContent = `クリア数: ${score}`;
+            timeLimit = Math.max(INITIAL_TIME - TIME_DECREMENT * score, MIN_TIME);
+            timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
 
             // ゲームエリアをクリア
             gameArea.innerHTML = '';
 
             // 暗闇設定
-            if (pattern.darkness) {
-                addDarknessEffect();
+            if (currentLevel.darkness) {
+                addDarknessEffect(currentLevel);
             } else {
-                darknessOverlay.classList.add('hidden');
+                darknessOverlay.style.display = 'none';
                 darknessOverlay.style.clipPath = 'circle(0px at center)';
             }
 
+            // 探すキャラクターをランダムに選択
+            const targetCharacter = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+            targetImage.src = targetCharacter;
+
             // 画像を配置
-            placeImages(pattern);
+            placeCharacters(targetCharacter, currentLevel);
 
             // タイマー開始
             startTimer();
 
-            // 次のパターンへ進む準備
-            currentPatternIndex++;
+            // レベルインデックスを更新
+            currentLevelIndex++;
         }
 
-        function placeImages(pattern) {
+        function placeCharacters(targetCharacter, currentLevel) {
             const areaWidth = gameArea.clientWidth;
             const areaHeight = gameArea.clientHeight;
 
-            // ドラゴンのランダム位置
-            const dragonPos = getRandomPosition(areaWidth, areaHeight);
-            createImage('dragon', DRAGON_SRC, dragonPos.x, dragonPos.y, pattern);
+            // ターゲットキャラクターを1つ選択
+            const targetCount = 1;
+            const distractorCount = TOTAL_CHARACTERS - targetCount;
 
-            // パンダを配置
-            for (let i = 0; i < TOTAL_IMAGES; i++) {
+            // ターゲットを配置
+            const targetPosition = getRandomPosition(areaWidth, areaHeight);
+            createCharacter(targetCharacter, targetPosition.x, targetPosition.y, true, currentLevel);
+
+            // 他のキャラクター（ターゲット以外）を配置
+            for (let i = 0; i < distractorCount; i++) {
+                let character;
+                do {
+                    character = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+                } while (character === targetCharacter);
                 const pos = getRandomPosition(areaWidth, areaHeight);
-                createImage('panda', PANDA_SRC, pos.x, pos.y, pattern);
+                createCharacter(character, pos.x, pos.y, false, currentLevel);
             }
         }
 
-        function createImage(type, src, x, y, pattern) {
+        function createCharacter(character, x, y, isTarget, levelConfig) {
             const img = document.createElement('img');
-            img.src = src;
-            img.classList.add('image');
-            img.dataset.type = type;
+            img.src = character;
+            img.classList.add('character');
             img.style.left = `${x}px`;
             img.style.top = `${y}px`;
+            img.dataset.type = isTarget ? 'target' : 'distractor';
 
             // 動的移動の設定
-            if (pattern.dynamic) {
-                const speed = pattern.variableSpeed ? getRandomSpeed() : 2; // スピード設定
+            if (levelConfig.dynamic) {
+                const speed = levelConfig.variableSpeed ? getRandomSpeed() : 2;
                 img.dataset.speed = speed;
-                moveImage(img, speed);
+                moveCharacter(img, speed);
             }
 
-            // タッチイベントとクリックイベントの設定
-            img.addEventListener('click', onImageClick);
-            img.addEventListener('touchstart', onImageClick);
+            // タップとクリックイベントの設定
+            img.addEventListener('click', onCharacterClick);
+            img.addEventListener('touchstart', onCharacterClick);
 
             gameArea.appendChild(img);
         }
 
-        function moveImage(img, speed) {
-            // ランダムな方向を選択
+        function moveCharacter(img, speed) {
             let directionX = Math.random() < 0.5 ? -1 : 1;
             let directionY = Math.random() < 0.5 ? -1 : 1;
 
@@ -274,58 +344,85 @@
             animate();
         }
 
-        function onImageClick(event) {
+        function onCharacterClick(event) {
             const type = event.target.dataset.type;
-            if (type === 'dragon') {
-                // ドラゴンをクリックした場合
+            if (type === 'target') {
+                // ターゲットをクリックした場合
                 clearInterval(timerInterval);
-                clearInterval(countdownInterval);
                 clearInterval(darknessInterval);
                 cancelAnimationFrame(event.target.animationFrame);
                 score++;
                 startLevel();
             } else {
-                // パンダをクリックした場合（必要に応じて処理を追加）
+                // ディストラクターをクリックした場合（必要に応じて処理を追加）
                 // 例: ミスカウント、エフェクト表示など
             }
         }
 
         function startTimer() {
-            timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
             timerInterval = setInterval(() => {
                 timeLimit -= 0.1;
                 if (timeLimit <= 0) {
                     clearInterval(timerInterval);
-                    timeUp();
+                    gameOver();
                 } else {
                     timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
                 }
             }, 100);
         }
 
-        function timeUp() {
-            // タイムアップ時の処理
-            clearInterval(countdownInterval);
-            clearInterval(darknessInterval);
+        function gameOver() {
+            // ゲームオーバー処理
             gameArea.innerHTML = '';
-            startLevel();
+            clearInterval(timerInterval);
+            clearInterval(darknessInterval);
+            messageDiv.style.display = 'block';
+            finalMessage.textContent = 'ゲームオーバー！';
+            getLink.style.display = 'none';
+            retryButton.style.display = 'inline-block';
         }
 
-        function addDarknessEffect() {
-            darknessOverlay.classList.remove('hidden');
-            darknessRadius = 50;
-            darknessOverlay.style.clipPath = `circle(${darknessRadius}px at center)`;
+        function showFinalMessage(isClear) {
+            // ゲームクリア時のメッセージ表示
+            gameArea.innerHTML = '';
+            messageDiv.style.display = 'block';
+            if (isClear) {
+                finalMessage.textContent = 'おめでとうございます！';
+                getLink.style.display = 'inline-block';
+                retryButton.style.display = 'none';
+            } else {
+                finalMessage.textContent = 'もう一度挑戦してください！';
+                getLink.style.display = 'none';
+                retryButton.style.display = 'inline-block';
+            }
+        }
 
-            darknessInterval = setInterval(() => {
-                darknessRadius += 50;
-                darknessOverlay.style.clipPath = `circle(${darknessRadius}px at center)`;
+        function addDarknessEffect(levelConfig) {
+            darknessOverlay.style.display = 'block';
+            darknessOverlay.style.clipPath = 'circle(50px at center)';
+            darknessOverlay.style.transition = 'clip-path 1s linear';
 
-                // 最大半径を超えたらクリア
-                const maxRadius = Math.max(gameArea.clientWidth, gameArea.clientHeight) * 1.5;
-                if (darknessRadius >= maxRadius) {
-                    clearInterval(darknessInterval);
+            // 照らす範囲をランダムに移動
+            function moveLight() {
+                const radius = 100; // 照らす円の半径
+                const areaWidth = gameArea.clientWidth;
+                const areaHeight = gameArea.clientHeight;
+
+                lightPosition.x += lightDirection.x * 5;
+                lightPosition.y += lightDirection.y * 5;
+
+                // 画面端で方向を反転
+                if (lightPosition.x <= radius || lightPosition.x >= areaWidth - radius) {
+                    lightDirection.x *= -1;
                 }
-            }, 1000);
+                if (lightPosition.y <= radius || lightPosition.y >= areaHeight - radius) {
+                    lightDirection.y *= -1;
+                }
+
+                darknessOverlay.style.clipPath = `circle(${radius}px at ${lightPosition.x}px ${lightPosition.y}px)`;
+            }
+
+            darknessInterval = setInterval(moveLight, 100);
         }
 
         function getRandomPosition(width, height) {
@@ -338,13 +435,15 @@
             return Math.random() * 3 + 1; // スピード1〜4
         }
 
-        function showFinalMessage() {
-            messageDiv.classList.remove('hidden');
-        }
+        // リトライボタンの設定
+        retryButton.addEventListener('click', () => {
+            messageDiv.style.display = 'none';
+            startGame();
+        });
 
         // ウィンドウリサイズ時の対応
         window.addEventListener('resize', () => {
-            // ゲームエリアの再配置や調整が必要な場合はここに追加
+            // 必要に応じてゲームエリアの再配置や調整を行います
         });
     </script>
 </body>
