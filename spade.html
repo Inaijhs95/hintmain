@@ -63,8 +63,8 @@
         }
 
         button {
-            font-size: 2em; /* フォントサイズを大きく */
-            padding: 20px 40px; /* パディングを大きく */
+            font-size: 3em; /* フォントサイズをさらに大きく */
+            padding: 25px 50px; /* パディングをさらに大きく */
             margin: 15px 0; /* マージンを増やす */
             cursor: pointer;
             border: none;
@@ -139,8 +139,8 @@
             }
 
             button {
-                font-size: 1.5em; /* スマホでも大きめ */
-                padding: 15px 30px;
+                font-size: 2em; /* スマホでもさらに大きめ */
+                padding: 20px 40px;
                 width: 100%;
             }
 
@@ -242,6 +242,8 @@
         // 次のレベルに進む
         function nextLevel() {
             currentLevel++;
+            reactionHandled = false; // レベル進行時にフラグをリセット
+
             if (isOniMode && currentLevel >= oniLevels.length) {
                 // 鬼モードクリア
                 statusDisplay.textContent = '鬼モードをクリアしました！';
