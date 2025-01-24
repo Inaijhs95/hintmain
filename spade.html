@@ -61,9 +61,9 @@
         }
 
         button {
-            font-size: 1.5em;
-            padding: 15px 30px;
-            margin: 10px 0;
+            font-size: 2em; /* フォントサイズを大きく */
+            padding: 20px 40px; /* パディングを大きく */
+            margin: 15px 0; /* マージンを増やす */
             cursor: pointer;
             border: none;
             border-radius: 10px;
@@ -136,8 +136,8 @@
             }
 
             button {
-                font-size: 1.2em;
-                padding: 12px 24px;
+                font-size: 1.5em; /* スマホでも大きめ */
+                padding: 15px 30px;
                 width: 80%;
             }
 
@@ -150,9 +150,9 @@
 <body>
     <!-- 初期画面 -->
     <div id="initialScreen">
-        <h1>刹那の見切り</h1>
+        <h1>刹那の見斬り</h1>
         <div class="button-container">
-            <button id="normalModeButton">通常モード</button>
+            <button id="normalModeButton">はじめる</button>
             <button id="oniModeButton" style="display: none;">鬼モード</button>
             <button id="urlButton" style="display: none;">ゲームリンクへ</button>
         </div>
@@ -161,7 +161,7 @@
 
     <!-- ゲーム画面 -->
     <div id="gameScreen" style="display: none;">
-        <h1>刹那の見斬り</h1>
+        <h1>刹那の見切り</h1>
         <div id="levelDisplay">レベル: 1</div>
         <div id="statusDisplay">ゲーム開始準備中...</div>
         <div id="messageContainer">
@@ -180,8 +180,8 @@
         // JavaScript機能
 
         // レベルタイミング設定
-        const levels = [1.0, 0.9, 0.8, 0.7, 0.6]; // 通常モードのレベルタイム（秒）
-        const oniLevels = [0.5, 0.4, 0.3, 0.25, 0.2]; // 鬼モードのレベルタイム（秒）
+        const levels = [2.0, 1.5, 1.0, 0.8, 0.6]; // 通常モードのレベルタイム（秒）
+        const oniLevels = [0.5, 0.45, 0.40, 0.38, 0.35]; // 鬼モードのレベルタイム（秒）
         let currentLevel = 0;
         let isOniMode = false;
         let reactionTimeout;
@@ -224,6 +224,14 @@
             slashButton.disabled = true;
             gameLink.style.display = 'none';
             isWaitingForSlash = false;
+
+            // タイムアウトをクリア
+            if (reactionTimeout) {
+                clearTimeout(reactionTimeout);
+            }
+            if (randomDelayTimeout) {
+                clearTimeout(randomDelayTimeout);
+            }
         }
 
         // 次のレベルに進む
@@ -249,6 +257,9 @@
             startButton.disabled = false;
             slashButton.disabled = true;
             statusDisplay.textContent = '次のレベル準備中...';
+
+            // 次のレベル開始前にメッセージを非表示にする
+            message.style.display = 'none';
         }
 
         // ゲームオーバー
@@ -285,6 +296,8 @@
                 alert(`成功！反応時間: ${reactionTime.toFixed(3)}秒`);
                 clearTimeout(reactionTimeout);
                 isWaitingForSlash = false;
+                // 次のレベルに進む前にメッセージを非表示にする
+                message.style.display = 'none';
                 nextLevel();
             } else {
                 alert(`時間切れ！反応時間: ${reactionTime.toFixed(3)}秒\n負けです！`);
@@ -306,7 +319,7 @@
                     isWaitingForSlash = false;
                     gameOver('斬られてしまいました！');
                 }
-            }, timeLimit * 3000);
+            }, timeLimit * 1000); // 修正: timeLimit * 1000 ミリ秒
         }
 
         // 初期画面のボタンイベント
