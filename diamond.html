@@ -215,8 +215,8 @@
     const transitioningSpeed = 2;
     const fallingSpeed = 2;
     
-    const heroWidth = 30; // Increased for better resolution
-    const heroHeight = 50; // Increased for better resolution
+    const heroWidth = 60; // 30 * 2
+    const heroHeight = 75; // 50 * 1.5
     
     const canvas = document.getElementById("game");
     canvas.width = window.innerWidth; // Make the Canvas full screen
@@ -248,7 +248,7 @@
       imagesLoaded++;
       if (imagesLoaded === 2) {
         resetGame();
-        drawCharacterPreviews(); // Initialize previews after images are loaded
+        // drawCharacterPreviews(); // Not needed since using images
       }
     };
     
