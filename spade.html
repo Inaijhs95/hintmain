@@ -41,8 +41,8 @@
         }
 
         #messageContainer {
-            width: 200px; /* サイズを大きく */
-            height: 200px; /* サイズを大きく */
+            width: 250px; /* サイズをさらに大きく */
+            height: 250px; /* サイズをさらに大きく */
             margin: 20px 0;
             display: flex;
             justify-content: center;
@@ -157,6 +157,53 @@
             color: #FFD700;
         }
 
+        /* ルールオーバーレイのスタイル */
+        #rulesOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            z-index: 1100; /* 成功・失敗オーバーレイより前面 */
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #rulesOverlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #rulesOverlay p {
+            font-size: 1.5em;
+            color: #FFD700;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        #closeRulesButton {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #32CD32;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        #closeRulesButton:hover {
+            background-color: #3CB371;
+        }
+
         /* レスポンシブデザイン */
         @media (max-width: 600px) {
             h1 {
@@ -194,9 +241,19 @@
             #slashButton {
                 height: 30vh; /* スマホでも高さを調整 */
             }
+
+            /* ルールオーバーレイのスタイル調整 */
+            #rulesOverlay p {
+                font-size: 1.2em;
+            }
+
+            #closeRulesButton {
+                font-size: 1em;
+                padding: 8px 16px;
+            }
         }
 
-        /* 斬ボタンのサイズ調整 */
+        /* 斬ボタンのサイズ調整（デスクトップ） */
         #slashButton {
             height: 33vh; /* 高さの約3分の1 */
         }
@@ -244,6 +301,16 @@
         <p id="failMessage">失敗!</p>
     </div>
 
+    <!-- ルールオーバーレイ -->
+    <div id="rulesOverlay" class="overlay">
+        <p>
+            ルール説明<br><br>
+            「挑む!!」をタップし、!!（<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">）が出るまで待とう！<br>
+            !!が表示されたらすぐに「斬」をタップしよう
+        </p>
+        <button id="closeRulesButton">OK</button>
+    </div>
+
     <script>
         // JavaScript機能
 
@@ -277,10 +344,14 @@
         const failOverlay = document.getElementById('failOverlay');
         const failMessage = document.getElementById('failMessage');
 
+        const rulesOverlay = document.getElementById('rulesOverlay');
+        const closeRulesButton = document.getElementById('closeRulesButton');
+
         let exclamationTime = 0;
 
         // ローカルストレージから通常モードクリアのフラグを取得
         const normalModeCleared = localStorage.getItem('normalModeCleared') === 'true';
+        const rulesShown = localStorage.getItem('rulesShown') === 'true';
 
         // 初期画面のボタン表示制御
         if (normalModeCleared) {
@@ -343,7 +414,7 @@
 
         // ゲームオーバー
         function gameOver() {
-            // Alertを削除し、代わりにフェイルオーバーレイを表示
+            // 失敗オーバーレイを表示
             showFailOverlay();
         }
 
@@ -398,6 +469,26 @@
             resetGame();
         }
 
+        // ルールオーバーレイを表示
+        function showRulesOverlay() {
+            rulesOverlay.classList.add('visible');
+        }
+
+        // ルールオーバーレイを閉じる
+        function closeRulesOverlay() {
+            rulesOverlay.classList.remove('visible');
+            localStorage.setItem('rulesShown', 'true');
+            startGame();
+        }
+
+        // ゲーム開始のフロー
+        function startGame() {
+            initialScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            oniWarning.style.display = isOniMode ? 'block' : 'none';
+            resetGame();
+        }
+
         // スタートボタンのクリックイベント
         startButton.addEventListener('click', () => {
             startButton.disabled = true;
@@ -413,20 +504,24 @@
 
         // "斬"ボタンのクリックイベント
         slashButton.addEventListener('click', () => {
-            if (!isWaitingForSlash) {
-                // "挑む!!"を押す前または待機中に"斬"を押しても無反応にする
-                return;
+            if (isWaitingForSlash) {
+                // "!!"が表示されている場合
+                handleSlashEvent();
+            } else {
+                // "!!"が表示される前または待機中に"斬"を押した場合は失敗判定
+                gameOver();
             }
-            handleSlashEvent();
         });
 
         // "斬"ボタンのタッチイベント
         slashButton.addEventListener('touchstart', (e) => {
-            if (!isWaitingForSlash) {
-                // "挑む!!"を押す前または待機中に"斬"を押しても無反応にする
-                return;
+            if (isWaitingForSlash) {
+                // "!!"が表示されている場合
+                handleSlashEvent();
+            } else {
+                // "!!"が表示される前または待機中に"斬"を押した場合は失敗判定
+                gameOver();
             }
-            handleSlashEvent();
             // Prevents the subsequent click event from firing
             e.preventDefault();
         });
@@ -451,10 +546,12 @@
         // 初期画面のボタンイベント
         normalModeButton.addEventListener('click', () => {
             isOniMode = false;
-            initialScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            oniWarning.style.display = 'none'; // 通常モードでは警告非表示
-            resetGame();
+            // ルールを表示する必要があるか確認
+            if (!rulesShown) {
+                showRulesOverlay();
+            } else {
+                startGame();
+            }
         });
 
         oniModeButton.addEventListener('click', () => {
@@ -469,6 +566,11 @@
 
         urlButton.addEventListener('click', () => {
             window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
+        });
+
+        // ルールオーバーレイのボタンイベント
+        closeRulesButton.addEventListener('click', () => {
+            closeRulesOverlay();
         });
 
         // ゲーム開始時の初期化
