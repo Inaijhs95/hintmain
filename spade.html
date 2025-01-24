@@ -11,10 +11,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-image: url('tanbo.png'); /* 背景画像の設定 */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background-color: #000; /* 背景を黒色に変更 */
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -29,7 +26,7 @@
         h1 {
             font-size: 2.5em;
             margin-bottom: 20px;
-            color: #FFD700; /* ゴールド色に変更 */
+            color: #FFD700; /* ゴールド色 */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
             white-space: nowrap; /* 一行に表示 */
         }
@@ -37,14 +34,14 @@
         #levelDisplay {
             font-size: 1.8em;
             margin-bottom: 10px;
-            color: #FFD700; /* ゴールド色に変更 */
+            color: #FFD700; /* ゴールド色 */
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
         #statusDisplay {
             font-size: 1.3em;
             margin-bottom: 20px;
-            color: #FFD700; /* ゴールド色に変更 */
+            color: #FFD700; /* ゴールド色 */
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
@@ -103,18 +100,18 @@
 
         /* 「斬」ボタンのスタイル */
         #slashButton {
-            width: 66vw; /* 画面横幅の約3分の2 */
-            height: 66vw; /* 画面横幅の約3分の2、丸型にするため同じ値 */
-            max-width: 300px; /* 最大幅を設定 */
-            max-height: 300px; /* 最大高さを設定 */
+            width: 80vw; /* 画面横幅の約4分の3に拡大 */
+            height: 80vw; /* 画面横幅の約4分の3、丸型にするため同じ値 */
+            max-width: 350px; /* 最大幅を設定 */
+            max-height: 350px; /* 最大高さを設定 */
             background-image: url('kama.png'); /* kama.pngを設定 */
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            border: 5px solid #FFD700; /* 輝く金色のボーダー */
+            border: 5px solid #1E90FF; /* ボーダー色を青色に変更 */
             border-radius: 50%; /* 丸型にする */
             background-color: transparent; /* 塗りつぶしなし */
-            box-shadow: 0 0 20px #FFD700; /* 輝きを追加 */
+            box-shadow: 0 0 20px #1E90FF; /* ボーダーと同じ色に変更 */
             font-size: 0; /* テキストを非表示 */
             margin: 20px 0;
         }
@@ -122,7 +119,7 @@
         /* 「斬」ボタンのホバー時 */
         #slashButton:hover:not(:disabled) {
             background-image: url('kama_hover.png'); /* ホバー時の画像 */
-            box-shadow: 0 0 25px #FFD700; /* 輝きを強調 */
+            box-shadow: 0 0 25px #1E90FF; /* 輝きを強調 */
         }
 
         /* 「斬」ボタンの無効時 */
@@ -313,12 +310,12 @@
 
             /* 「斬」ボタンのサイズ調整 */
             #slashButton {
-                width: 66vw; /* 画面横幅の約3分の2 */
-                height: 66vw; /* 画面横幅の約3分の2、丸型にするため同じ値 */
-                max-width: 200px; /* 最大幅を設定 */
-                max-height: 200px; /* 最大高さを設定 */
-                border: 4px solid #FFD700; /* 輝く金色のボーダーを調整 */
-                box-shadow: 0 0 15px #FFD700; /* 輝きを調整 */
+                width: 80vw; /* 画面横幅の約4分の3 */
+                height: 80vw; /* 画面横幅の約4分の3、丸型にするため同じ値 */
+                max-width: 250px; /* 最大幅を設定 */
+                max-height: 250px; /* 最大高さを設定 */
+                border: 4px solid #1E90FF; /* ボーダー色を青色に変更 */
+                box-shadow: 0 0 15px #1E90FF; /* ボーダーと同じ色に変更 */
             }
 
             /* ルールオーバーレイのスタイル調整 */
@@ -338,7 +335,6 @@
                 width: 100%;
             }
 
-            /* #gameLink a が存在しないため削除 */
             /* .overlay p */
             .overlay p {
                 font-size: 1.5em;
