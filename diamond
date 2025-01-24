@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>シンプルな選択型ゲーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        #game-container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .option {
+            margin: 10px 0;
+        }
+        .option button {
+            padding: 10px 20px;
+            margin-right: 10px;
+        }
+        #status {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>冒険ゲーム</h1>
+    <div id="story">
+        <p>あなたは勇敢な冒険者です。前方に二つの道があります。どちらを選びますか？</p>
+    </div>
+    <div id="choices">
+        <div class="option">
+            <button onclick="choosePath('mobility')">機動力アップの道</button>
+            <button onclick="choosePath('attack')">攻撃力アップの道</button>
+        </div>
+    </div>
+    <div id="status">
+        <p>機動力: <span id="mobility">10</span></p>
+        <p>攻撃力: <span id="attack">10</span></p>
+    </div>
+</div>
+
+<script>
+    let mobility = 10;
+    let attack = 10;
+
+    function choosePath(choice) {
+        if (choice === 'mobility') {
+            mobility += 5;
+            document.getElementById('story').innerHTML = '<p>あなたは素早く移動できるようになりました。次の選択をどうしますか？</p>';
+            document.getElementById('choices').innerHTML = `
+                <div class="option">
+                    <button onclick="choosePath('buff')">バフを選ぶ</button>
+                    <button onclick="choosePath('debuff')">デバフを選ぶ</button>
+                </div>
+            `;
+        } else if (choice === 'attack') {
+            attack += 5;
+            document.getElementById('story').innerHTML = '<p>あなたの攻撃力が増しました。次の選択をどうしますか？</p>';
+            document.getElementById('choices').innerHTML = `
+                <div class="option">
+                    <button onclick="choosePath('buff')">バフを選ぶ</button>
+                    <button onclick="choosePath('debuff')">デバフを選ぶ</button>
+                </div>
+            `;
+        } else if (choice === 'buff') {
+            mobility += 3;
+            attack += 3;
+            document.getElementById('story').innerHTML = '<p>全体的なステータスが上昇しました。ボスが現れます！</p>';
+            document.getElementById('choices').innerHTML = `
+                <div class="option">
+                    <button onclick="fightBoss()">ボスと戦う</button>
+                </div>
+            `;
+        } else if (choice === 'debuff') {
+            mobility -= 2;
+            attack -= 2;
+            document.getElementById('story').innerHTML = '<p>ステータスが低下しましたが、ボスが現れます！</p>';
+            document.getElementById('choices').innerHTML = `
+                <div class="option">
+                    <button onclick="fightBoss()">ボスと戦う</button>
+                </div>
+            `;
+        }
+        updateStatus();
+    }
+
+    function updateStatus() {
+        document.getElementById('mobility').textContent = mobility;
+        document.getElementById('attack').textContent = attack;
+    }
+
+    function fightBoss() {
+        let bossHealth = 20;
+        let playerDamage = attack;
+        let bossDamage = 15;
+
+        bossHealth -= playerDamage;
+        let playerHealth = 20 - bossDamage;
+
+        if (bossHealth <= 0 && playerHealth > 0) {
+            document.getElementById('story').innerHTML = '<p>ボスを倒しました！あなたの勝利です！</p>';
+            document.getElementById('choices').innerHTML = '';
+        } else if (playerHealth <= 0) {
+            document.getElementById('story').innerHTML = '<p>ボスに敗北しました。ゲームオーバー。</p>';
+            document.getElementById('choices').innerHTML = '';
+        } else {
+            document.getElementById('story').innerHTML = '<p>ボスとの戦いが続きます...</p>';
+        }
+
+        updateStatus();
+    }
+</script>
+
+</body>
+</html>
