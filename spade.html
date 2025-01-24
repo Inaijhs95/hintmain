@@ -190,6 +190,7 @@
         let reactionTimeout;
         let randomDelayTimeout;
         let isWaitingForSlash = false;
+        let reactionHandled = false; // イベント重複防止フラグ
 
         // 要素の取得
         const initialScreen = document.getElementById('initialScreen');
@@ -227,6 +228,7 @@
             slashButton.disabled = true;
             gameLink.style.display = 'none';
             isWaitingForSlash = false;
+            reactionHandled = false;
 
             // タイムアウトをクリア
             if (reactionTimeout) {
@@ -272,26 +274,13 @@
             resetGame();
         }
 
-        // スタートボタンのクリックイベント
-        startButton.addEventListener('click', () => {
-            startButton.disabled = true;
-            slashButton.disabled = false;
-            statusDisplay.textContent = '待機中...';
-
-            // ランダムな遅延（2〜10秒）
-            const randomDelay = Math.random() * (10 - 2) + 2; // 秒
-            randomDelayTimeout = setTimeout(() => {
-                showExclamation();
-            }, randomDelay * 1000);
-        });
-
-        // "斬"ボタンのクリックイベント
-        slashButton.addEventListener('click', () => {
-            if (!isWaitingForSlash) {
-                // "！"が表示される前に"斬"をタップ
-                gameOver('やられてしまいました。負けです！');
+        // "斬"ボタンの反応処理
+        function handleSlashEvent() {
+            if (!isWaitingForSlash || reactionHandled) {
                 return;
             }
+
+            reactionHandled = true;
 
             const reactionTime = (Date.now() - exclamationTime) / 1000; // 秒
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
@@ -307,6 +296,41 @@
                 alert(`時間切れ！反応時間: ${reactionTime.toFixed(3)}秒\n負けです！`);
                 resetGame();
             }
+        }
+
+        // スタートボタンのクリックイベント
+        startButton.addEventListener('click', () => {
+            startButton.disabled = true;
+            slashButton.disabled = false;
+            statusDisplay.textContent = '待機中...';
+
+            // ランダムな遅延（2〜10秒）
+            const randomDelay = Math.random() * (10 - 2) + 2; // 秒
+            randomDelayTimeout = setTimeout(() => {
+                showExclamation();
+            }, randomDelay * 1000);
+        });
+
+        // "斬"ボタンのクリックイベント
+        slashButton.addEventListener('click', (e) => {
+            if (!isWaitingForSlash) {
+                // "！"が表示される前に"斬"をタップ
+                gameOver('やられてしまいました。負けです！');
+                return;
+            }
+            handleSlashEvent();
+        });
+
+        // "斬"ボタンのタッチイベント
+        slashButton.addEventListener('touchstart', (e) => {
+            if (!isWaitingForSlash) {
+                // "！"が表示される前に"斬"をタップ
+                gameOver('やられてしまいました。負けです！');
+                return;
+            }
+            handleSlashEvent();
+            // Prevents the subsequent click event from firing
+            e.preventDefault();
         });
 
         // "！"を表示する
