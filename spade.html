@@ -153,8 +153,8 @@
         <h1>刹那の見切り</h1>
         <div class="button-container">
             <button id="normalModeButton">通常モード</button>
-            <button id="oniModeButton" disabled>鬼モード</button>
-            <button id="urlButton" disabled>ゲームリンクへ</button>
+            <button id="oniModeButton" style="display: none;">鬼モード</button>
+            <button id="urlButton" style="display: none;">ゲームリンクへ</button>
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
     </div>
@@ -208,10 +208,10 @@
         // ローカルストレージから通常モードクリアのフラグを取得
         const normalModeCleared = localStorage.getItem('normalModeCleared') === 'true';
 
-        // 初期画面のボタン状態設定
+        // 初期画面のボタン表示制御
         if (normalModeCleared) {
-            oniModeButton.disabled = false;
-            urlButton.disabled = false;
+            oniModeButton.style.display = 'block';
+            urlButton.style.display = 'block';
         }
 
         // ゲームの初期化
@@ -245,7 +245,6 @@
                 return;
             }
 
-            currentLevel = Math.min(currentLevel, (isOniMode ? oniLevels.length : levels.length));
             levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
