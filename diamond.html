@@ -121,6 +121,28 @@
       color: #333;
     }
     
+    /* スコア5以上で表示されるボタンのスタイル */
+    #achievement {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      padding: 10px 20px;
+      background-color: #FFD700; /* ゴールドカラー */
+      color: #333;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      display: none; /* 初期状態では非表示 */
+      z-index: 2;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    #achievement:hover {
+      background-color: #FFC700;
+    }
+    
     /* レスポンシブデザイン */
     @media (max-width: 600px) {
       #introduction {
@@ -139,6 +161,13 @@
         width: 80px;
         height: 80px;
       }
+      
+      #achievement {
+        padding: 8px 16px;
+        font-size: 0.9em;
+        top: 20px;
+        left: 20px;
+      }
     }
   </style>
 </head>
@@ -149,6 +178,9 @@
     <div id="introduction">タップしてスティックを伸ばしましょう</div>
     <div id="perfect">DOUBLE SCORE</div>
     <button id="restart">RESTART</button>
+    
+    <!-- スコア5以上で表示されるボタン -->
+    <button id="achievement">♦のトランプをゲットしました</button>
     
     <!-- キャラクター選択画面 -->
     <div id="character-selection">
@@ -215,8 +247,8 @@
     const transitioningSpeed = 2;
     const fallingSpeed = 2;
     
-    const heroWidth = 75; // 30 * 2
-    const heroHeight = 90; // 50 * 1.5
+    const heroWidth = 90; // 30 * 2
+    const heroHeight = 100; // 50 * 1.5
     
     const canvas = document.getElementById("game");
     canvas.width = window.innerWidth; // Make the Canvas full screen
@@ -228,6 +260,9 @@
     const perfectElement = document.getElementById("perfect");
     const restartButton = document.getElementById("restart");
     const scoreElement = document.getElementById("score");
+    
+    // スコア5以上で表示されるボタンの要素
+    const achievementButton = document.getElementById("achievement");
     
     // キャラクター選択画面の要素
     const characterSelection = document.getElementById("character-selection");
@@ -264,6 +299,7 @@
       perfectElement.style.opacity = 0;
       restartButton.style.display = "none";
       scoreElement.innerText = score;
+      achievementButton.style.display = "none"; // Hide achievement button on reset
     
       // The first platform is always the same
       // x + w has to match paddingX
@@ -434,6 +470,12 @@
                 setTimeout(() => (perfectElement.style.opacity = 0), 1000);
               }
     
+              // スコアが5以上かつ未取得の場合、ボタンを表示
+              if (score >= 5 && !localStorage.getItem('gotDiamondCard')) {
+                achievementButton.style.display = "block";
+                localStorage.setItem('gotDiamondCard', 'true');
+              }
+    
               generatePlatform();
               generateTree();
               generateTree();
@@ -551,6 +593,12 @@
       resetGame();
       restartButton.style.display = "none";
       characterSelection.style.display = "block";
+    });
+    
+    achievementButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      achievementButton.style.display = "none"; // Hide the button when clicked
+      alert("♦のトランプをゲットしました！"); // Optional: Show an alert message
     });
     
     function drawPlatforms() {
