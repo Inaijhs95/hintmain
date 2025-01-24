@@ -1,37 +1,612 @@
-/* 「斬」ボタンのスタイル */
-#slashButton {
-    height: 33vh; /* 高さの約3分の1 */
-    background-image: url('katana.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>刹那の見切り</title>
+    <style>
+        /* CSSスタイル */
 
-/* 「斬」ボタンのホバー時 */
-#slashButton:hover:not(:disabled) {
-    background-color: #1E90FF; /* ホバー時の背景色を戻す */
-    background-image: url('katana_hover.png'); /* ホバー時の画像 */
-}
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
 
-/* 「斬」ボタンの無効時 */
-#slashButton:disabled {
-    background-image: url('katana_disabled.png'); /* 無効時の画像 */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #FFD700;
+            white-space: nowrap; /* 一行に表示 */
+        }
 
-/* 「斬」ボタンの無効時の背景画像 */
-#slashButton:disabled {
-    background-image: url('katana_disabled.png'); /* 無効時の画像 */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
+        #levelDisplay {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
 
-/* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル */
-.button-container button:not(#slashButton) {
-    font-size: 3em; /* フォントサイズをさらに大きく */
-    padding: 25px 50px; /* パディングをさらに大きく */
-    white-space: nowrap; /* 一行に表示 */
-}
+        #statusDisplay {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        #messageContainer {
+            width: 250px; /* サイズをさらに大きく */
+            height: 250px; /* サイズをさらに大きく */
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 固定サイズ */
+            flex-shrink: 0;
+        }
+
+        #message {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        button {
+            position: relative;
+            font-size: 0; /* テキストを非表示に */
+            padding: 0;
+            margin: 15px 0; /* マージンを増やす */
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            background-color: #1E90FF;
+            color: white;
+            transition: background-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+            white-space: nowrap; /* 一行に表示 */
+            overflow: hidden;
+        }
+
+        button:disabled {
+            background-color: #696969;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #00BFFF;
+        }
+
+        /* 「斬」ボタンのスタイル */
+        #slashButton {
+            height: 33vh; /* 高さの約3分の1 */
+            background-image: url('katana.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* 「斬」ボタンのホバー時 */
+        #slashButton:hover:not(:disabled) {
+            background-color: #1E90FF; /* ホバー時の背景色を戻す */
+            background-image: url('katana_hover.png'); /* ホバー時の画像 */
+        }
+
+        /* 「斬」ボタンの無効時 */
+        #slashButton:disabled {
+            background-image: url('katana_disabled.png'); /* 無効時の画像 */
+        }
+
+        /* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル */
+        .button-container button:not(#slashButton) {
+            font-size: 3em; /* フォントサイズをさらに大きく */
+            padding: 25px 50px; /* パディングをさらに大きく */
+            white-space: nowrap; /* 一行に表示 */
+        }
+
+        #gameLink {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #gameLink a {
+            color: #32CD32;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        #gameLink a:hover {
+            text-decoration: underline;
+        }
+
+        /* 初期画面のスタイル */
+        #initialScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+        }
+
+        /* 鬼モード選択時の注意表示 */
+        #oniWarning {
+            font-size: 1.2em;
+            color: #FF6347;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* 成功・失敗画像のスタイル */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease, visibility 1s ease;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .overlay img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+
+        .overlay p {
+            margin-top: 20px;
+            font-size: 2em;
+            color: #FFD700;
+        }
+
+        /* ルールオーバーレイのスタイル */
+        #rulesOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            z-index: 1100; /* 成功・失敗オーバーレイより前面 */
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #rulesOverlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #rulesOverlay p {
+            font-size: 1.5em;
+            color: #FFD700;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        #closeRulesButton {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #32CD32;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        #closeRulesButton:hover {
+            background-color: #3CB371;
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            #levelDisplay {
+                font-size: 1.5em;
+            }
+
+            #statusDisplay {
+                font-size: 1.1em;
+            }
+
+            #messageContainer {
+                width: 150px; /* スマホ向けにサイズ調整 */
+                height: 150px;
+            }
+
+            /* 「斬」ボタンのサイズ調整 */
+            #slashButton {
+                height: 30vh; /* スマホでも高さを調整 */
+            }
+
+            /* ルールオーバーレイのスタイル調整 */
+            #rulesOverlay p {
+                font-size: 1.2em;
+            }
+
+            #closeRulesButton {
+                font-size: 1em;
+                padding: 8px 16px;
+            }
+
+            /* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル調整 */
+            .button-container button:not(#slashButton) {
+                font-size: 2em; /* スマホでもさらに大きめ */
+                padding: 20px 40px;
+                width: 100%;
+            }
+
+            #gameLink a {
+                font-size: 1.2em;
+            }
+
+            .overlay p {
+                font-size: 1.5em;
+            }
+        }
+
+        /* 「斬」ボタンの無効時の背景画像 */
+        #slashButton:disabled {
+            background-image: url('katana_disabled.png'); /* 無効時の画像 */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 初期画面 -->
+    <div id="initialScreen">
+        <h1>刹那の見切り</h1>
+        <div class="button-container">
+            <button id="normalModeButton">はじめる</button>
+            <button id="oniModeButton" style="display: none;">鬼モード</button>
+            <button id="urlButton" style="display: none;">ゲームリンクへ</button>
+        </div>
+        <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="gameScreen" style="display: none;">
+        <h1>刹那の見切り</h1>
+        <div id="levelDisplay">レベル: 1</div>
+        <div id="statusDisplay">ゲーム開始準備中...</div>
+        <div id="messageContainer">
+            <img id="message" src="bikkuri.png" alt="びっくりマーク">
+        </div>
+        <div class="button-container">
+            <button id="startButton">挑む!!</button>
+            <button id="slashButton" disabled></button> <!-- テキストを削除 -->
+        </div>
+        <div id="gameLink">
+            <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
+        </div>
+    </div>
+
+    <!-- 成功オーバーレイ -->
+    <div id="successOverlay" class="overlay">
+        <img src="zan.png" alt="斬成功">
+        <p id="successMessage">成功!</p>
+    </div>
+
+    <!-- 失敗オーバーレイ -->
+    <div id="failOverlay" class="overlay">
+        <img src="miss.png" alt="斬失敗">
+        <p id="failMessage">失敗!</p>
+    </div>
+
+    <!-- ルールオーバーレイ -->
+    <div id="rulesOverlay" class="overlay">
+        <p>
+            ルール説明<br><br>
+            「挑む!!」をタップし、<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が出るまで待とう！<br>
+            <img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が表示されたらすぐに「斬」をタップしよう
+        </p>
+        <button id="closeRulesButton">OK</button>
+    </div>
+
+    <script>
+        // JavaScript機能
+
+        // レベルタイミング設定
+        const levels = [2.0, 1.5, 1.0, 0.8, 0.5]; // 通常モードのレベルタイム（秒）
+        const oniLevels = [0.4, 0.34, 0.32, 0.3, 0.28]; // 鬼モードのレベルタイミング（秒）
+        let currentLevel = 0;
+        let isOniMode = false;
+        let reactionTimeout;
+        let randomDelayTimeout;
+        let isWaitingForSlash = false;
+        let reactionHandled = false; // イベント重複防止フラグ
+
+        // 要素の取得
+        const initialScreen = document.getElementById('initialScreen');
+        const normalModeButton = document.getElementById('normalModeButton');
+        const oniModeButton = document.getElementById('oniModeButton');
+        const urlButton = document.getElementById('urlButton');
+        const oniWarning = document.getElementById('oniWarning');
+
+        const gameScreen = document.getElementById('gameScreen');
+        const startButton = document.getElementById('startButton');
+        const slashButton = document.getElementById('slashButton');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const message = document.getElementById('message');
+        const gameLink = document.getElementById('gameLink');
+
+        const successOverlay = document.getElementById('successOverlay');
+        const successMessage = document.getElementById('successMessage');
+        const failOverlay = document.getElementById('failOverlay');
+        const failMessage = document.getElementById('failMessage');
+
+        const rulesOverlay = document.getElementById('rulesOverlay');
+        const closeRulesButton = document.getElementById('closeRulesButton');
+
+        let exclamationTime = 0;
+
+        // ローカルストレージから通常モードクリアのフラグを取得
+        const normalModeCleared = localStorage.getItem('normalModeCleared') === 'true';
+        const rulesShown = localStorage.getItem('rulesShown') === 'true';
+
+        // 初期画面のボタン表示制御
+        if (normalModeCleared) {
+            oniModeButton.style.display = 'block';
+            urlButton.style.display = 'block';
+        }
+
+        // ゲームの初期化
+        function resetGame() {
+            currentLevel = 0;
+            levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
+            statusDisplay.textContent = 'ゲーム開始準備中...';
+            message.style.display = 'none';
+            startButton.disabled = false;
+            slashButton.disabled = true;
+            gameLink.style.display = 'none';
+            isWaitingForSlash = false;
+            reactionHandled = false;
+
+            // タイムアウトをクリア
+            if (reactionTimeout) {
+                clearTimeout(reactionTimeout);
+            }
+            if (randomDelayTimeout) {
+                clearTimeout(randomDelayTimeout);
+            }
+        }
+
+        // 次のレベルに進む
+        function nextLevel() {
+            currentLevel++;
+            reactionHandled = false; // レベル進行時にフラグをリセット
+
+            if (isOniMode && currentLevel >= oniLevels.length) {
+                // 鬼モードクリア
+                statusDisplay.textContent = '鬼モードをクリアしました！';
+                message.style.display = 'none';
+                gameLink.style.display = 'none';
+                slashButton.disabled = true;
+                startButton.disabled = true;
+                return;
+            } else if (!isOniMode && currentLevel >= levels.length) {
+                // 通常モードクリア、URLへリダイレクト
+                alert('CLEAR!!\n新たなモードが解放されました\n♣のトランプをゲットしましょう。');
+
+                // 通常モードクリアのフラグをローカルストレージに保存
+                localStorage.setItem('normalModeCleared', 'true');
+                window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
+                return;
+            }
+
+            levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
+            startButton.disabled = false;
+            slashButton.disabled = true;
+            statusDisplay.textContent = '次のレベル準備中...';
+
+            // 次のレベル開始前にメッセージを非表示にする
+            message.style.display = 'none';
+        }
+
+        // ゲームオーバー
+        function gameOver() {
+            // 失敗オーバーレイを表示
+            showFailOverlay();
+        }
+
+        // "斬"ボタンの反応処理
+        function handleSlashEvent() {
+            if (!isWaitingForSlash || reactionHandled) {
+                return;
+            }
+
+            reactionHandled = true;
+
+            const reactionTime = (Date.now() - exclamationTime) / 1000; // 秒
+            const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
+
+            if (reactionTime <= timeLimit) {
+                // 成功処理
+                showSuccessOverlay(reactionTime);
+            } else {
+                // 失敗処理
+                showFailOverlay();
+            }
+
+            clearTimeout(reactionTimeout);
+            isWaitingForSlash = false;
+        }
+
+        // 成功オーバーレイを表示
+        function showSuccessOverlay(reactionTime) {
+            successMessage.textContent = `成功! ${reactionTime.toFixed(3)}秒`;
+            successOverlay.classList.add('visible');
+
+            setTimeout(() => {
+                successOverlay.classList.remove('visible');
+                nextLevel();
+            }, 1000); // 1秒後にフェードアウト
+        }
+
+        // 失敗オーバーレイを表示
+        function showFailOverlay() {
+            failOverlay.classList.add('visible');
+
+            setTimeout(() => {
+                failOverlay.classList.remove('visible');
+                resetToInitialScreen();
+            }, 1000); // 1秒後にフェードアウト
+        }
+
+        // 初期画面に戻る
+        function resetToInitialScreen() {
+            gameScreen.style.display = 'none';
+            initialScreen.style.display = 'flex';
+            resetGame();
+        }
+
+        // ルールオーバーレイを表示
+        function showRulesOverlay() {
+            rulesOverlay.classList.add('visible');
+        }
+
+        // ルールオーバーレイを閉じる
+        function closeRulesOverlay() {
+            rulesOverlay.classList.remove('visible');
+            localStorage.setItem('rulesShown', 'true');
+            startGame();
+        }
+
+        // ゲーム開始のフロー
+        function startGame() {
+            initialScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            oniWarning.style.display = isOniMode ? 'block' : 'none';
+            resetGame();
+        }
+
+        // スタートボタンのクリックイベント
+        startButton.addEventListener('click', () => {
+            startButton.disabled = true;
+            slashButton.disabled = false;
+            statusDisplay.textContent = '待機中...';
+
+            // ランダムな遅延（2〜10秒）
+            const randomDelay = Math.random() * (10 - 2) + 2; // 秒
+            randomDelayTimeout = setTimeout(() => {
+                showExclamation();
+            }, randomDelay * 1000);
+        });
+
+        // "斬"ボタンのクリックイベント
+        slashButton.addEventListener('click', () => {
+            if (isWaitingForSlash) {
+                // "!!"が表示されている場合
+                handleSlashEvent();
+            } else {
+                // "!!"が表示される前または待機中に"斬"を押した場合は失敗判定
+                gameOver();
+            }
+        });
+
+        // "斬"ボタンのタッチイベント
+        slashButton.addEventListener('touchstart', (e) => {
+            if (isWaitingForSlash) {
+                // "!!"が表示されている場合
+                handleSlashEvent();
+            } else {
+                // "!!"が表示される前または待機中に"斬"を押した場合は失敗判定
+                gameOver();
+            }
+            // Prevents the subsequent click event from firing
+            e.preventDefault();
+        });
+
+        // "！"を表示する
+        function showExclamation() {
+            message.style.display = 'block';
+            exclamationTime = Date.now();
+            isWaitingForSlash = true;
+            statusDisplay.textContent = '「斬」をタップしてください。';
+
+            // 既定時間内に"斬"をタップしなければ負け
+            const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
+            reactionTimeout = setTimeout(() => {
+                if (isWaitingForSlash) {
+                    isWaitingForSlash = false;
+                    showFailOverlay();
+                }
+            }, timeLimit * 1000); // ミリ秒に修正
+        }
+
+        // 初期画面のボタンイベント
+        normalModeButton.addEventListener('click', () => {
+            isOniMode = false;
+            // ルールを表示する必要があるか確認
+            if (!rulesShown) {
+                showRulesOverlay();
+            } else {
+                startGame();
+            }
+        });
+
+        oniModeButton.addEventListener('click', () => {
+            isOniMode = true;
+            initialScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            oniWarning.style.display = 'block'; // 鬼モード選択時に警告表示
+            // ポップアップで警告メッセージを表示
+            alert('鬼モードを選択しました。鬼モードをクリアしても報酬はありません。');
+            resetGame();
+        });
+
+        urlButton.addEventListener('click', () => {
+            window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
+        });
+
+        // ルールオーバーレイのボタンイベント
+        closeRulesButton.addEventListener('click', () => {
+            closeRulesOverlay();
+        });
+
+        // ゲーム開始時の初期化
+        resetGame();
+    </script>
+</body>
+</html>
