@@ -38,10 +38,10 @@
         }
 
         #message {
-            font-size: 3em;
+            width: 100px;
+            height: 100px;
             margin: 20px 0;
             display: none;
-            color: #FF4500;
         }
 
         .button-container {
@@ -91,6 +91,23 @@
             text-decoration: underline;
         }
 
+        /* 初期画面のスタイル */
+        #initialScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* 鬼モード選択時の注意表示 */
+        #oniWarning {
+            font-size: 1em;
+            color: #FF6347;
+            margin-top: 10px;
+            display: none;
+        }
+
         /* レスポンシブデザイン */
         @media (max-width: 600px) {
             h1 {
@@ -106,7 +123,8 @@
             }
 
             #message {
-                font-size: 2.5em;
+                width: 80px;
+                height: 80px;
             }
 
             button {
@@ -122,22 +140,37 @@
     </style>
 </head>
 <body>
-    <h1>刹那の見切り</h1>
-    <div id="levelDisplay">レベル: 1</div>
-    <div id="statusDisplay">ゲーム開始準備中...</div>
-    <div id="message">！</div>
-    <div class="button-container">
-        <button id="startButton">スタート</button>
-        <button id="slashButton" disabled>斬</button>
+    <!-- 初期画面 -->
+    <div id="initialScreen">
+        <h1>刹那の見切り</h1>
+        <div class="button-container">
+            <button id="normalModeButton">通常モード</button>
+            <button id="oniModeButton">鬼モード</button>
+            <button id="urlButton">ゲームリンクへ</button>
+        </div>
+        <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
     </div>
-    <div id="gameLink">
-        <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
+
+    <!-- ゲーム画面 -->
+    <div id="gameScreen" style="display: none;">
+        <h1>刹那の見切り</h1>
+        <div id="levelDisplay">レベル: 1</div>
+        <div id="statusDisplay">ゲーム開始準備中...</div>
+        <img id="message" src="bikkuri.png" alt="びっくりマーク">
+        <div class="button-container">
+            <button id="startButton">スタート</button>
+            <button id="slashButton" disabled>斬</button>
+        </div>
+        <div id="gameLink">
+            <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
+        </div>
     </div>
 
     <script>
         // JavaScript機能
 
-        const levels = [1.0, 0.8, 0.6, 0.5, 0.4]; // 通常モードのレベルタイム（秒）
+        // レベルタイミング設定
+        const levels = [1.0, 0.9, 0.8, 0.7, 0.6]; // 通常モードのレベルタイム（秒）
         const oniLevels = [0.5, 0.4, 0.3, 0.25, 0.2]; // 鬼モードのレベルタイム（秒）
         let currentLevel = 0;
         let isOniMode = false;
@@ -145,12 +178,22 @@
         let randomDelayTimeout;
         let isWaitingForSlash = false;
 
+        // 要素の取得
+        const initialScreen = document.getElementById('initialScreen');
+        const normalModeButton = document.getElementById('normalModeButton');
+        const oniModeButton = document.getElementById('oniModeButton');
+        const urlButton = document.getElementById('urlButton');
+        const oniWarning = document.getElementById('oniWarning');
+
+        const gameScreen = document.getElementById('gameScreen');
         const startButton = document.getElementById('startButton');
         const slashButton = document.getElementById('slashButton');
         const levelDisplay = document.getElementById('levelDisplay');
         const statusDisplay = document.getElementById('statusDisplay');
         const message = document.getElementById('message');
         const gameLink = document.getElementById('gameLink');
+
+        let exclamationTime = 0;
 
         // ゲームの初期化
         function resetGame() {
@@ -175,18 +218,9 @@
                 startButton.disabled = true;
                 return;
             } else if (!isOniMode && currentLevel >= levels.length) {
-                // 通常モードクリア、鬼モード開始
-                statusDisplay.textContent = '通常モードをクリアしました！鬼モードに挑戦します。';
-                gameLink.style.display = 'none';
-                slashButton.disabled = true;
-                startButton.disabled = true;
-                setTimeout(() => {
-                    isOniMode = true;
-                    currentLevel = 0;
-                    levelDisplay.textContent = `鬼モード レベル: ${currentLevel + 1}`;
-                    statusDisplay.textContent = '鬼モード開始！';
-                    startButton.disabled = false;
-                }, 2000);
+                // 通常モードクリア、URLへリダイレクト
+                alert('通常モードをクリアしました！ゲームリンクへ移動します。');
+                window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
                 return;
             }
 
@@ -237,8 +271,6 @@
             }
         });
 
-        let exclamationTime = 0;
-
         // "！"を表示する
         function showExclamation() {
             message.style.display = 'block';
@@ -255,6 +287,26 @@
                 }
             }, timeLimit * 1000);
         }
+
+        // 初期画面のボタンイベント
+        normalModeButton.addEventListener('click', () => {
+            isOniMode = false;
+            initialScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            resetGame();
+        });
+
+        oniModeButton.addEventListener('click', () => {
+            isOniMode = true;
+            initialScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            oniWarning.style.display = 'block';
+            resetGame();
+        });
+
+        urlButton.addEventListener('click', () => {
+            window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
+        });
 
         // ゲーム開始時の初期化
         resetGame();
