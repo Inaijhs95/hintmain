@@ -83,10 +83,10 @@
       transform: translate(-50%, -50%);
       z-index: 3;
       text-align: center;
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.95);
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
     #character-selection h2 {
@@ -105,11 +105,12 @@
       transform: scale(1.1);
     }
     
-    .character-option img {
+    .character-option canvas {
       width: 100px;
       height: 100px;
       border: 2px solid #ccc;
       border-radius: 10px;
+      background-color: #fff;
     }
     
     .character-option p {
@@ -117,8 +118,6 @@
       font-weight: 600;
       color: #333;
     }
-    
-    /* Removed YouTube link and related styles */
     
     /* レスポンシブデザイン */
     @media (max-width: 600px) {
@@ -134,7 +133,7 @@
         right: 20px;
       }
       
-      .character-option img {
+      .character-option canvas {
         width: 80px;
         height: 80px;
       }
@@ -153,11 +152,11 @@
     <div id="character-selection">
       <h2>キャラクターを選択してください</h2>
       <div class="character-option" data-character="gorilla">
-        <img src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjEwMCIgd2lkdGg9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIvPgo8L3N2Zz4=" alt="Gorilla">
+        <canvas id="gorilla-preview" width="100" height="100"></canvas>
         <p>ゴリラ</p>
       </div>
       <div class="character-option" data-character="dragon-panda">
-        <img src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjEwMCIgd2lkdGg9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIvPgo8L3N2Zz4=" alt="Dragon Panda">
+        <canvas id="dragon-panda-preview" width="100" height="100"></canvas>
         <p>ドラゴンパンダ</p>
       </div>
     </div>
@@ -214,8 +213,8 @@
     const transitioningSpeed = 2;
     const fallingSpeed = 2;
     
-    const heroWidth = 17; // 24
-    const heroHeight = 30; // 40
+    const heroWidth = 30; // Increased for better resolution
+    const heroHeight = 50; // Increased for better resolution
     
     const canvas = document.getElementById("game");
     canvas.width = window.innerWidth; // Make the Canvas full screen
@@ -231,6 +230,10 @@
     // キャラクター選択画面の要素
     const characterSelection = document.getElementById("character-selection");
     const characterOptions = document.querySelectorAll(".character-option");
+    
+    // プレビューCanvas
+    const gorillaPreview = document.getElementById("gorilla-preview").getContext("2d");
+    const dragonPandaPreview = document.getElementById("dragon-panda-preview").getContext("2d");
     
     // 現在選択されているキャラクター
     let selectedCharacter = null;
@@ -537,6 +540,7 @@
       event.preventDefault();
       resetGame();
       restartButton.style.display = "none";
+      characterSelection.style.display = "block";
     });
     
     function drawPlatforms() {
@@ -565,7 +569,6 @@
     
     function drawHero() {
       ctx.save();
-      ctx.fillStyle = "black";
       ctx.translate(
         heroX - heroWidth / 2,
         heroY + canvasHeight - platformHeight - heroHeight / 2
@@ -588,38 +591,47 @@
         -heroWidth / 2,
         -heroHeight / 2,
         heroWidth,
-        heroHeight - 4,
-        5
+        heroHeight - 10,
+        10
       );
+    
+      // Arms
+      ctx.fillStyle = "black";
+      // Left arm
+      ctx.fillRect(-heroWidth / 2 - 15, -heroHeight / 2 + 10, 15, 10);
+      // Right arm
+      ctx.fillRect(heroWidth / 2, -heroHeight / 2 + 10, 15, 10);
     
       // Legs with red pants
       ctx.fillStyle = "red";
       ctx.beginPath();
-      ctx.arc(legDistance, 11.5, 3, 0, Math.PI * 2, false);
+      ctx.arc(10, heroHeight / 2 - 5, 5, 0, Math.PI * 2, false);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(-legDistance, 11.5, 3, 0, Math.PI * 2, false);
+      ctx.arc(-10, heroHeight / 2 - 5, 5, 0, Math.PI * 2, false);
       ctx.fill();
     
       // Eyes
       ctx.fillStyle = "white";
       ctx.beginPath();
-      ctx.arc(5, -7, 3, 0, Math.PI * 2, false);
+      ctx.arc(7, -heroHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-7, -heroHeight / 2 + 5, 3, 0, Math.PI * 2, false);
       ctx.fill();
     
-      // Band
-      ctx.fillStyle = "red";
-      ctx.fillRect(-heroWidth / 2 - 1, -12, heroWidth + 2, 4.5);
+      // Nose
+      ctx.fillStyle = "black";
       ctx.beginPath();
-      ctx.moveTo(-9, -14.5);
-      ctx.lineTo(-17, -18.5);
-      ctx.lineTo(-14, -8.5);
+      ctx.arc(0, -heroHeight / 2 + 10, 2, 0, Math.PI * 2, false);
       ctx.fill();
+    
+      // Mouth
       ctx.beginPath();
-      ctx.moveTo(-10, -10.5);
-      ctx.lineTo(-15, -3.5);
-      ctx.lineTo(-5, -7);
-      ctx.fill();
+      ctx.arc(0, -heroHeight / 2 + 15, 5, 0, Math.PI, false);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.stroke();
     }
     
     function drawDragonPanda() {
@@ -629,64 +641,67 @@
         -heroWidth / 2,
         -heroHeight / 2,
         heroWidth,
-        heroHeight - 4,
-        5
+        heroHeight - 10,
+        10
       );
     
       // Black patches (eyes and ears)
       ctx.fillStyle = "black";
       // Eyes patches
       ctx.beginPath();
-      ctx.arc(5, -7, 5, 0, Math.PI * 2, false);
+      ctx.arc(10, -heroHeight / 2 + 10, 10, 0, Math.PI * 2, false);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(-5, -7, 5, 0, Math.PI * 2, false);
+      ctx.arc(-10, -heroHeight / 2 + 10, 10, 0, Math.PI * 2, false);
       ctx.fill();
       // Ears
       ctx.beginPath();
-      ctx.arc(10, -heroHeight / 2 + 5, 5, 0, Math.PI * 2, false);
+      ctx.arc(15, -heroHeight / 2 + 10, 5, 0, Math.PI * 2, false);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(-10, -heroHeight / 2 + 5, 5, 0, Math.PI * 2, false);
+      ctx.arc(-15, -heroHeight / 2 + 10, 5, 0, Math.PI * 2, false);
       ctx.fill();
     
       // Eyes (white)
       ctx.fillStyle = "white";
       ctx.beginPath();
-      ctx.arc(5, -7, 2, 0, Math.PI * 2, false);
+      ctx.arc(10, -heroHeight / 2 + 10, 3, 0, Math.PI * 2, false);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(-5, -7, 2, 0, Math.PI * 2, false);
+      ctx.arc(-10, -heroHeight / 2 + 10, 3, 0, Math.PI * 2, false);
       ctx.fill();
     
       // Dragon Wings
       ctx.fillStyle = "green";
+      // Left wing
       ctx.beginPath();
-      ctx.moveTo(-heroWidth / 2, -heroHeight / 2 + 10);
-      ctx.lineTo(-heroWidth / 2 - 20, -heroHeight / 2 - 10);
-      ctx.lineTo(-heroWidth / 2 + 5, -heroHeight / 2 - 5);
+      ctx.moveTo(-heroWidth / 2, -heroHeight / 2 + 15);
+      ctx.lineTo(-heroWidth / 2 - 25, -heroHeight / 2 - 15);
+      ctx.lineTo(-heroWidth / 2 + 5, -heroHeight / 2 - 10);
       ctx.closePath();
       ctx.fill();
       
+      // Right wing
       ctx.beginPath();
-      ctx.moveTo(heroWidth / 2, -heroHeight / 2 + 10);
-      ctx.lineTo(heroWidth / 2 + 20, -heroHeight / 2 - 10);
-      ctx.lineTo(heroWidth / 2 - 5, -heroHeight / 2 - 5);
+      ctx.moveTo(heroWidth / 2, -heroHeight / 2 + 15);
+      ctx.lineTo(heroWidth / 2 + 25, -heroHeight / 2 - 15);
+      ctx.lineTo(heroWidth / 2 - 5, -heroHeight / 2 - 10);
       ctx.closePath();
       ctx.fill();
     }
     
     function drawRoundedRect(x, y, width, height, radius) {
       ctx.beginPath();
-      ctx.moveTo(x, y + radius);
-      ctx.lineTo(x, y + height - radius);
-      ctx.arcTo(x, y + height, x + radius, y + height, radius);
-      ctx.lineTo(x + width - radius, y + height);
-      ctx.arcTo(x + width, y + height, x + width, y + height - radius, radius);
-      ctx.lineTo(x + width, y + radius);
-      ctx.arcTo(x + width, y, x + width - radius, y, radius);
-      ctx.lineTo(x + radius, y);
-      ctx.arcTo(x, y, x, y + radius, radius);
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
       ctx.fill();
     }
     
@@ -700,7 +715,745 @@
     
         // Draw stick
         ctx.beginPath();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 5; // Thicker stick
+        ctx.strokeStyle = "brown";
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -stick.length);
+        ctx.stroke();
+    
+        // Restore transformations
+        ctx.restore();
+      });
+    }
+    
+    function drawBackground() {
+      // Draw sky
+      const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
+      gradient.addColorStop(0, "#BBD691");
+      gradient.addColorStop(1, "#FEF1E1");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    
+      // Draw hills
+      drawHill(hill1BaseHeight, hill1Amplitude, hill1Stretch, "#95C629");
+      drawHill(hill2BaseHeight, hill2Amplitude, hill2Stretch, "#659F1C");
+    
+      // Draw trees
+      trees.forEach((tree) => drawTree(tree.x, tree.color));
+    }
+    
+    // A hill is a shape under a stretched out sinus wave
+    function drawHill(baseHeight, amplitude, stretch, color) {
+      ctx.beginPath();
+      ctx.moveTo(0, window.innerHeight);
+      ctx.lineTo(0, getHillY(0, baseHeight, amplitude, stretch));
+      for (let i = 0; i < window.innerWidth; i++) {
+        ctx.lineTo(i, getHillY(i, baseHeight, amplitude, stretch));
+      }
+      ctx.lineTo(window.innerWidth, window.innerHeight);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+    
+    function drawTree(x, color) {
+      ctx.save();
+      ctx.translate(
+        (-sceneOffset * backgroundSpeedMultiplier + x) * hill1Stretch,
+        getTreeY(x, hill1BaseHeight, hill1Amplitude)
+      );
+    
+      const treeTrunkHeight = 10;
+      const treeTrunkWidth = 4;
+      const treeCrownHeight = 25;
+      const treeCrownWidth = 20;
+    
+      // Draw trunk
+      ctx.fillStyle = "#7D833C";
+      ctx.fillRect(
+        -treeTrunkWidth / 2,
+        -treeTrunkHeight,
+        treeTrunkWidth,
+        treeTrunkHeight
+      );
+    
+      // Draw crown
+      ctx.beginPath();
+      ctx.moveTo(-treeCrownWidth / 2, -treeTrunkHeight);
+      ctx.lineTo(0, -(treeTrunkHeight + treeCrownHeight));
+      ctx.lineTo(treeCrownWidth / 2, -treeTrunkHeight);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    
+      ctx.restore();
+    }
+    
+    function getHillY(windowX, baseHeight, amplitude, stretch) {
+      const sineBaseY = window.innerHeight - baseHeight;
+      return (
+        Math.sinus((sceneOffset * backgroundSpeedMultiplier + windowX) * stretch) *
+          amplitude +
+        sineBaseY
+      );
+    }
+    
+    function getTreeY(x, baseHeight, amplitude) {
+      const sineBaseY = window.innerHeight - baseHeight;
+      return Math.sinus(x) * amplitude + sineBaseY;
+    }
+    
+    // キャラクター選択画面のプレビュー描画
+    function drawCharacterPreviews() {
+      // ゴリラのプレビュー
+      gorillaPreview.clearRect(0, 0, 100, 100);
+      gorillaPreview.save();
+      gorillaPreview.translate(50, 50);
+      drawGorillaPreview(gorillaPreview);
+      gorillaPreview.restore();
+    
+      // ドラゴンパンダのプレビュー
+      dragonPandaPreview.clearRect(0, 0, 100, 100);
+      dragonPandaPreview.save();
+      dragonPandaPreview.translate(50, 50);
+      drawDragonPandaPreview(dragonPandaPreview);
+      dragonPandaPreview.restore();
+    }
+    
+    function drawGorillaPreview(ctx) {
+      const previewWidth = 30;
+      const previewHeight = 50;
+    
+      // Body
+      ctx.fillStyle = "black";
+      drawRoundedRectOnCtx(ctx, -previewWidth / 2, -previewHeight / 2, previewWidth, previewHeight - 10, 10);
+    
+      // Arms
+      ctx.fillStyle = "black";
+      // Left arm
+      ctx.fillRect(-previewWidth / 2 - 15, -previewHeight / 2 + 10, 15, 10);
+      // Right arm
+      ctx.fillRect(previewWidth / 2, -previewHeight / 2 + 10, 15, 10);
+    
+      // Legs with red pants
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(10, previewHeight / 2 - 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, previewHeight / 2 - 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(7, -previewHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-7, -previewHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Nose
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(0, -previewHeight / 2 + 10, 2, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Mouth
+      ctx.beginPath();
+      ctx.arc(0, -previewHeight / 2 + 15, 5, 0, Math.PI, false);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    
+    function drawDragonPandaPreview(ctx) {
+      const previewWidth = 30;
+      const previewHeight = 50;
+    
+      // Body (Panda)
+      ctx.fillStyle = "white";
+      drawRoundedRectOnCtx(ctx, -previewWidth / 2, -previewHeight / 2, previewWidth, previewHeight - 10, 10);
+    
+      // Black patches (eyes and ears)
+      ctx.fillStyle = "black";
+      // Eyes patches
+      ctx.beginPath();
+      ctx.arc(10, -previewHeight / 2 + 10, 10, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -previewHeight / 2 + 10, 10, 0, Math.PI * 2, false);
+      ctx.fill();
+      // Ears
+      ctx.beginPath();
+      ctx.arc(15, -previewHeight / 2 + 10, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-15, -previewHeight / 2 + 10, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes (white)
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(10, -previewHeight / 2 + 10, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -previewHeight / 2 + 10, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Dragon Wings
+      ctx.fillStyle = "green";
+      // Left wing
+      ctx.beginPath();
+      ctx.moveTo(-previewWidth / 2, -previewHeight / 2 + 15);
+      ctx.lineTo(-previewWidth / 2 - 25, -previewHeight / 2 - 15);
+      ctx.lineTo(-previewWidth / 2 + 5, -previewHeight / 2 - 10);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Right wing
+      ctx.beginPath();
+      ctx.moveTo(previewWidth / 2, -previewHeight / 2 + 15);
+      ctx.lineTo(previewWidth / 2 + 25, -previewHeight / 2 - 15);
+      ctx.lineTo(previewWidth / 2 - 5, -previewHeight / 2 - 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    function drawRoundedRectOnCtx(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    // Initialize character previews
+    drawCharacterPreviews();
+    
+    function drawCharacterPreviews() {
+      // ゴリラのプレビュー
+      gorillaPreview.clearRect(0, 0, 100, 100);
+      gorillaPreview.save();
+      gorillaPreview.translate(50, 50);
+      drawGorillaPreview(gorillaPreview);
+      gorillaPreview.restore();
+    
+      // ドラゴンパンダのプレビュー
+      dragonPandaPreview.clearRect(0, 0, 100, 100);
+      dragonPandaPreview.save();
+      dragonPandaPreview.translate(50, 50);
+      drawDragonPandaPreview(dragonPandaPreview);
+      dragonPandaPreview.restore();
+    }
+    
+    function drawGorillaPreview(ctx) {
+      const previewWidth = 30;
+      const previewHeight = 50;
+    
+      // Body
+      ctx.fillStyle = "black";
+      drawRoundedRectOnCtx(ctx, -previewWidth / 2, -previewHeight / 2, previewWidth, previewHeight - 10, 10);
+    
+      // Arms
+      ctx.fillStyle = "black";
+      // Left arm
+      ctx.fillRect(-previewWidth / 2 - 15, -previewHeight / 2 + 10, 15, 10);
+      // Right arm
+      ctx.fillRect(previewWidth / 2, -previewHeight / 2 + 10, 15, 10);
+    
+      // Legs with red pants
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(10, previewHeight / 2 - 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, previewHeight / 2 - 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(7, -previewHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-7, -previewHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Nose
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(0, -previewHeight / 2 + 10, 2, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Mouth
+      ctx.beginPath();
+      ctx.arc(0, -previewHeight / 2 + 15, 5, 0, Math.PI, false);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    
+    function drawDragonPandaPreview(ctx) {
+      const previewWidth = 30;
+      const previewHeight = 50;
+    
+      // Body (Panda)
+      ctx.fillStyle = "white";
+      drawRoundedRectOnCtx(ctx, -previewWidth / 2, -previewHeight / 2, previewWidth, previewHeight - 10, 10);
+    
+      // Black patches (eyes and ears)
+      ctx.fillStyle = "black";
+      // Eyes patches
+      ctx.beginPath();
+      ctx.arc(10, -previewHeight / 2 + 10, 10, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -previewHeight / 2 + 10, 10, 0, Math.PI * 2, false);
+      ctx.fill();
+      // Ears
+      ctx.beginPath();
+      ctx.arc(15, -previewHeight / 2 + 10, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-15, -previewHeight / 2 + 10, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes (white)
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(10, -previewHeight / 2 + 10, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -previewHeight / 2 + 10, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Dragon Wings
+      ctx.fillStyle = "green";
+      // Left wing
+      ctx.beginPath();
+      ctx.moveTo(-previewWidth / 2, -previewHeight / 2 + 15);
+      ctx.lineTo(-previewWidth / 2 - 25, -previewHeight / 2 - 15);
+      ctx.lineTo(-previewWidth / 2 + 5, -previewHeight / 2 - 10);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Right wing
+      ctx.beginPath();
+      ctx.moveTo(previewWidth / 2, -previewHeight / 2 + 15);
+      ctx.lineTo(previewWidth / 2 + 25, -previewHeight / 2 - 15);
+      ctx.lineTo(previewWidth / 2 - 5, -previewHeight / 2 - 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    // キャラクター選択後の操作
+    function handleCharacterSelection() {
+      if (selectedCharacter) {
+        characterSelection.style.display = "none";
+        introductionElement.style.opacity = 1;
+      }
+    }
+    
+    // キャラクター選択時の処理
+    characterOptions.forEach(option => {
+      option.addEventListener("click", function () {
+        const character = this.getAttribute("data-character");
+        selectedCharacter = character;
+        handleCharacterSelection();
+      });
+      
+      // タッチ操作でも選択できるように
+      option.addEventListener("touchstart", function (event) {
+        event.preventDefault(); // Prevent default touch behavior
+        const character = this.getAttribute("data-character");
+        selectedCharacter = character;
+        handleCharacterSelection();
+      }, { passive: false });
+    });
+    
+    // If space was pressed restart the game
+    window.addEventListener("keydown", function (event) {
+      if (event.key === " ") {
+        event.preventDefault();
+        resetGame();
+        characterSelection.style.display = "block";
+        return;
+      }
+    });
+    
+    // Mouse events for desktop
+    window.addEventListener("mousedown", function (event) {
+      if (phase === "waiting" && selectedCharacter) {
+        lastTimestamp = undefined;
+        introductionElement.style.opacity = 0;
+        phase = "stretching";
+        window.requestAnimationFrame(animate);
+      }
+    });
+    
+    window.addEventListener("mouseup", function (event) {
+      if (phase === "stretching") {
+        phase = "turning";
+      }
+    });
+    
+    // Touch events for mobile
+    window.addEventListener("touchstart", function (event) {
+      if (phase === "waiting" && selectedCharacter) {
+        event.preventDefault(); // Prevent default touch behavior
+        lastTimestamp = undefined;
+        introductionElement.style.opacity = 0;
+        phase = "stretching";
+        window.requestAnimationFrame(animate);
+      }
+    }, { passive: false });
+    
+    window.addEventListener("touchend", function (event) {
+      if (phase === "stretching") {
+        phase = "turning";
+      }
+    });
+    
+    window.addEventListener("resize", function (event) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      draw();
+    });
+    
+    window.requestAnimationFrame(animate);
+    
+    // The main game loop
+    function animate(timestamp) {
+      if (!lastTimestamp) {
+        lastTimestamp = timestamp;
+        window.requestAnimationFrame(animate);
+        return;
+      }
+    
+      switch (phase) {
+        case "waiting":
+          return; // Stop the loop
+        case "stretching": {
+          sticks.last().length += (timestamp - lastTimestamp) / stretchingSpeed;
+          break;
+        }
+        case "turning": {
+          sticks.last().rotation += (timestamp - lastTimestamp) / turningSpeed;
+    
+          if (sticks.last().rotation > 90) {
+            sticks.last().rotation = 90;
+    
+            const [nextPlatform, perfectHit] = thePlatformTheStickHits();
+            if (nextPlatform) {
+              // Increase score
+              score += perfectHit ? 2 : 1;
+              scoreElement.innerText = score;
+    
+              if (perfectHit) {
+                perfectElement.style.opacity = 1;
+                setTimeout(() => (perfectElement.style.opacity = 0), 1000);
+              }
+    
+              generatePlatform();
+              generateTree();
+              generateTree();
+            }
+    
+            phase = "walking";
+          }
+          break;
+        }
+        case "walking": {
+          heroX += (timestamp - lastTimestamp) / walkingSpeed;
+    
+          const [nextPlatform] = thePlatformTheStickHits();
+          if (nextPlatform) {
+            // If hero will reach another platform then limit its position at its edge
+            const maxHeroX = nextPlatform.x + nextPlatform.w - heroDistanceFromEdge;
+            if (heroX > maxHeroX) {
+              heroX = maxHeroX;
+              phase = "transitioning";
+            }
+          } else {
+            // If hero won't reach another platform then limit its position at the end of the stick
+            const maxHeroX = sticks.last().x + sticks.last().length + heroWidth;
+            if (heroX > maxHeroX) {
+              heroX = maxHeroX;
+              phase = "falling";
+            }
+          }
+          break;
+        }
+        case "transitioning": {
+          sceneOffset += (timestamp - lastTimestamp) / transitioningSpeed;
+    
+          const [nextPlatform] = thePlatformTheStickHits();
+          if (sceneOffset > nextPlatform.x + nextPlatform.w - paddingX) {
+            // Add the next step
+            sticks.push({
+              x: nextPlatform.x + nextPlatform.w,
+              length: 0,
+              rotation: 0
+            });
+            phase = "waiting";
+          }
+          break;
+        }
+        case "falling": {
+          if (sticks.last().rotation < 180)
+            sticks.last().rotation += (timestamp - lastTimestamp) / turningSpeed;
+    
+          heroY += (timestamp - lastTimestamp) / fallingSpeed;
+          const maxHeroY =
+            platformHeight + 100 + (window.innerHeight - canvasHeight) / 2;
+          if (heroY > maxHeroY) {
+            restartButton.style.display = "block";
+            return;
+          }
+          break;
+        }
+        default:
+          throw Error("Wrong phase");
+      }
+    
+      draw();
+      window.requestAnimationFrame(animate);
+    
+      lastTimestamp = timestamp;
+    }
+    
+    // Returns the platform the stick hit (if it didn't hit any stick then return undefined)
+    function thePlatformTheStickHits() {
+      if (sticks.last().rotation !== 90)
+        throw Error(`Stick is ${sticks.last().rotation}°`);
+      const stickFarX = sticks.last().x + sticks.last().length;
+    
+      const platformTheStickHits = platforms.find(
+        (platform) => platform.x < stickFarX && stickFarX < platform.x + platform.w
+      );
+    
+      // If the stick hits the perfect area
+      if (
+        platformTheStickHits &&
+        platformTheStickHits.x + platformTheStickHits.w / 2 - perfectAreaSize / 2 <
+          stickFarX &&
+        stickFarX <
+          platformTheStickHits.x + platformTheStickHits.w / 2 + perfectAreaSize / 2
+      )
+        return [platformTheStickHits, true];
+    
+      return [platformTheStickHits, false];
+    }
+    
+    function draw() {
+      ctx.save();
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    
+      drawBackground();
+    
+      // Center main canvas area to the middle of the screen
+      ctx.translate(
+        (window.innerWidth - canvasWidth) / 2 - sceneOffset,
+        (window.innerHeight - canvasHeight) / 2
+      );
+    
+      // Draw scene
+      drawPlatforms();
+      drawHero();
+      drawSticks();
+    
+      // Restore transformation
+      ctx.restore();
+    }
+    
+    restartButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      resetGame();
+      restartButton.style.display = "none";
+      characterSelection.style.display = "block";
+    });
+    
+    function drawPlatforms() {
+      platforms.forEach(({ x, w }) => {
+        // Draw platform
+        ctx.fillStyle = "black";
+        ctx.fillRect(
+          x,
+          canvasHeight - platformHeight,
+          w,
+          platformHeight + (window.innerHeight - canvasHeight) / 2
+        );
+    
+        // Draw perfect area only if hero did not yet reach the platform
+        if (sticks.last().x < x) {
+          ctx.fillStyle = "red";
+          ctx.fillRect(
+            x + w / 2 - perfectAreaSize / 2,
+            canvasHeight - platformHeight,
+            perfectAreaSize,
+            perfectAreaSize
+          );
+        }
+      });
+    }
+    
+    function drawHero() {
+      ctx.save();
+      ctx.translate(
+        heroX - heroWidth / 2,
+        heroY + canvasHeight - platformHeight - heroHeight / 2
+      );
+    
+      // Draw the selected character
+      if (selectedCharacter === "gorilla") {
+        drawGorilla();
+      } else if (selectedCharacter === "dragon-panda") {
+        drawDragonPanda();
+      }
+    
+      ctx.restore();
+    }
+    
+    function drawGorilla() {
+      // Body
+      ctx.fillStyle = "black";
+      drawRoundedRect(
+        -heroWidth / 2,
+        -heroHeight / 2,
+        heroWidth,
+        heroHeight - 10,
+        10
+      );
+    
+      // Arms
+      ctx.fillStyle = "black";
+      // Left arm
+      ctx.fillRect(-heroWidth / 2 - 15, -heroHeight / 2 + 10, 15, 10);
+      // Right arm
+      ctx.fillRect(heroWidth / 2, -heroHeight / 2 + 10, 15, 10);
+    
+      // Legs with red pants
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(10, heroHeight / 2 - 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, heroHeight / 2 - 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(7, -heroHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-7, -heroHeight / 2 + 5, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Nose
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(0, -heroHeight / 2 + 10, 2, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Mouth
+      ctx.beginPath();
+      ctx.arc(0, -heroHeight / 2 + 15, 5, 0, Math.PI, false);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    
+    function drawDragonPanda() {
+      // Body (Panda)
+      ctx.fillStyle = "white";
+      drawRoundedRect(
+        -heroWidth / 2,
+        -heroHeight / 2,
+        heroWidth,
+        heroHeight - 10,
+        10
+      );
+    
+      // Black patches (eyes and ears)
+      ctx.fillStyle = "black";
+      // Eyes patches
+      ctx.beginPath();
+      ctx.arc(10, -heroHeight / 2 + 10, 10, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -heroHeight / 2 + 10, 10, 0, Math.PI * 2, false);
+      ctx.fill();
+      // Ears
+      ctx.beginPath();
+      ctx.arc(15, -heroHeight / 2 + 10, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-15, -heroHeight / 2 + 10, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes (white)
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(10, -heroHeight / 2 + 10, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -heroHeight / 2 + 10, 3, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Dragon Wings
+      ctx.fillStyle = "green";
+      // Left wing
+      ctx.beginPath();
+      ctx.moveTo(-heroWidth / 2, -heroHeight / 2 + 15);
+      ctx.lineTo(-heroWidth / 2 - 25, -heroHeight / 2 - 15);
+      ctx.lineTo(-heroWidth / 2 + 5, -heroHeight / 2 - 10);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Right wing
+      ctx.beginPath();
+      ctx.moveTo(heroWidth / 2, -heroHeight / 2 + 15);
+      ctx.lineTo(heroWidth / 2 + 25, -heroHeight / 2 - 15);
+      ctx.lineTo(heroWidth / 2 - 5, -heroHeight / 2 - 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    function drawRoundedRect(x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    function drawSticks() {
+      sticks.forEach((stick) => {
+        ctx.save();
+    
+        // Move the anchor point to the start of the stick and rotate
+        ctx.translate(stick.x, canvasHeight - platformHeight);
+        ctx.rotate((Math.PI / 180) * stick.rotation);
+    
+        // Draw stick
+        ctx.beginPath();
+        ctx.lineWidth = 5; // Thicker stick
         ctx.strokeStyle = "brown";
         ctx.moveTo(0, 0);
         ctx.lineTo(0, -stick.length);
