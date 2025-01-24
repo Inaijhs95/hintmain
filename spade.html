@@ -101,7 +101,7 @@
         /* 「斬」ボタンのスタイル */
         #slashButton {
             width: 90vw; /* 画面横幅の約4分の3に拡大 */
-            height: 90vw; /* 画面横幅の約4分の3、丸型にするため同じ値 */
+            height: 90vw; /* 画面横幅の約4分の3、角が丸い正方形にするため同じ値 */
             max-width: 400px; /* 最大幅を設定 */
             max-height: 400px; /* 最大高さを設定 */
             background-image: url('kama.png'); /* kama.pngを設定 */
@@ -109,11 +109,12 @@
             background-repeat: no-repeat;
             background-position: center;
             border: 3px solid #1E90FF; /* ボーダー色を青色に変更し太さを減少 */
-            border-radius: 50%; /* 丸型にする */
+            border-radius: 20px; /* 丸みを帯びた角に変更 */
             background-color: transparent; /* 塗りつぶしなし */
             box-shadow: 0 0 20px #1E90FF; /* ボーダーと同じ色に変更 */
             font-size: 0; /* テキストを非表示 */
             margin: 20px 0;
+            transition: border-radius 0.3s, box-shadow 0.3s;
         }
 
         /* 「斬」ボタンのホバー時 */
@@ -311,12 +312,13 @@
             /* 「斬」ボタンのサイズ調整 */
             #slashButton {
                 width: 90vw; /* 画面横幅の約4分の3 */
-                height: 90vw; /* 画面横幅の約4分の3、丸型にするため同じ値 */
+                height: 90vw; /* 画面横幅の約4分の3、角が丸い正方形にするため同じ値 */
                 max-width: 250px; /* 最大幅を設定 */
                 max-height: 250px; /* 最大高さを設定 */
                 border: 3px solid #1E90FF; /* ボーダー色を青色に変更 */
                 box-shadow: 0 0 15px #1E90FF; /* ボーダーと同じ色に変更 */
                 background-size: contain; /* 背景画像を完全に表示 */
+                border-radius: 15px; /* 少し丸みを小さく */
             }
 
             /* ルールオーバーレイのスタイル調整 */
@@ -489,6 +491,10 @@
             if (randomDelayTimeout) {
                 clearTimeout(randomDelayTimeout);
             }
+
+            // 「構える!!」ボタンのスタイルをリセット
+            startButton.style.backgroundColor = 'rgba(30, 144, 255, 0.8)';
+            startButton.style.cursor = 'pointer';
         }
 
         // 次のレベルに進む
@@ -519,6 +525,10 @@
             startButton.disabled = false;
             slashButton.disabled = true;
             statusDisplay.textContent = '準備ができたら"構える!!"をタップ';
+
+            // 「構える!!」ボタンのスタイルをリセット
+            startButton.style.backgroundColor = 'rgba(30, 144, 255, 0.8)';
+            startButton.style.cursor = 'pointer';
 
             // 次のレベル開始前にメッセージを非表示にする
             message.style.display = 'none';
@@ -614,6 +624,10 @@
             slashButton.disabled = false;
             statusDisplay.textContent = '待機中...';
 
+            // 「構える!!」ボタンをグレーに変更
+            startButton.style.backgroundColor = '#696969';
+            startButton.style.cursor = 'not-allowed';
+
             // ランダムな遅延（2〜10秒）
             const randomDelay = Math.random() * (10 - 2) + 2; // 秒
             randomDelayTimeout = setTimeout(() => {
@@ -650,7 +664,7 @@
             message.style.display = 'block';
             exclamationTime = Date.now();
             isWaitingForSlash = true;
-            statusDisplay.textContent = '';
+            statusDisplay.textContent = '「斬」をタップしてください。';
 
             // 既定時間内に"斬"をタップしなければ負け
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
