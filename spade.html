@@ -153,7 +153,7 @@
 <body>
     <!-- 初期画面 -->
     <div id="initialScreen">
-        <h1>刹那の見</h1>
+        <h1>刹那の見切り</h1>
         <div class="button-container">
             <button id="normalModeButton">はじめる</button>
             <button id="oniModeButton" style="display: none;">鬼モード</button>
@@ -357,6 +357,7 @@
             isOniMode = false;
             initialScreen.style.display = 'none';
             gameScreen.style.display = 'block';
+            oniWarning.style.display = 'none'; // 通常モードでは警告非表示
             resetGame();
         });
 
@@ -364,7 +365,7 @@
             isOniMode = true;
             initialScreen.style.display = 'none';
             gameScreen.style.display = 'block';
-            oniWarning.style.display = 'block';
+            oniWarning.style.display = 'block'; // 鬼モード選択時に警告表示
             resetGame();
         });
 
