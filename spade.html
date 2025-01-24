@@ -11,7 +11,10 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #222;
+            background-image: url('tanbo.png'); /* 背景画像の設定 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -26,18 +29,23 @@
         h1 {
             font-size: 2.5em;
             margin-bottom: 20px;
-            color: #FFD700;
+            color: #FFD700; /* ゴールド色に変更 */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
             white-space: nowrap; /* 一行に表示 */
         }
 
         #levelDisplay {
             font-size: 1.8em;
             margin-bottom: 10px;
+            color: #FFD700; /* ゴールド色に変更 */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
         #statusDisplay {
             font-size: 1.3em;
             margin-bottom: 20px;
+            color: #FFD700; /* ゴールド色に変更 */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
         #messageContainer {
@@ -67,19 +75,20 @@
 
         button {
             position: relative;
-            font-size: 0; /* テキストを非表示に */
-            padding: 0;
+            font-size: 1em; /* テキストを表示 */
+            padding: 15px 30px;
             margin: 15px 0; /* マージンを増やす */
             cursor: pointer;
             border: none;
             border-radius: 10px;
-            background-color: #1E90FF;
-            color: white;
-            transition: background-color 0.3s;
+            background-color: rgba(30, 144, 255, 0.8); /* 半透明のボタン色 */
+            color: #fff;
+            transition: background-color 0.3s, transform 0.2s;
             width: 100%;
             box-sizing: border-box;
             white-space: nowrap; /* 一行に表示 */
             overflow: hidden;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
         }
 
         button:disabled {
@@ -88,39 +97,47 @@
         }
 
         button:hover:not(:disabled) {
-            background-color: #00BFFF;
+            background-color: rgba(0, 191, 255, 0.8);
+            transform: scale(1.05);
         }
 
         /* 「斬」ボタンのスタイル */
         #slashButton {
-            height: 33vh; /* 高さの約3分の1 */
-            background-image: url('kama.png'); /* katana.pngをkama.pngに変更 */
+            width: 66vw; /* 画面横幅の約3分の2 */
+            height: 66vw; /* 画面横幅の約3分の2、丸型にするため同じ値 */
+            max-width: 300px; /* 最大幅を設定 */
+            max-height: 300px; /* 最大高さを設定 */
+            background-image: url('kama.png'); /* kama.pngを設定 */
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+            border: 5px solid #FFD700; /* 輝く金色のボーダー */
+            border-radius: 50%; /* 丸型にする */
+            background-color: transparent; /* 塗りつぶしなし */
+            box-shadow: 0 0 20px #FFD700; /* 輝きを追加 */
+            font-size: 0; /* テキストを非表示 */
+            margin: 20px 0;
         }
 
         /* 「斬」ボタンのホバー時 */
         #slashButton:hover:not(:disabled) {
-            background-color: #1E90FF; /* ホバー時の背景色を戻す */
             background-image: url('kama_hover.png'); /* ホバー時の画像 */
-            /* 必要に応じてkatana_hover.pngをkama_hover.pngに変更 */
+            box-shadow: 0 0 25px #FFD700; /* 輝きを強調 */
         }
 
         /* 「斬」ボタンの無効時 */
         #slashButton:disabled {
             background-image: url('kama_disabled.png'); /* 無効時の画像 */
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            /* 必要に応じてkatana_disabled.pngをkama_disabled.pngに変更 */
+            box-shadow: none; /* 輝きを削除 */
         }
 
-        /* 他のボタン（「はじめる」「鬼モード」）のスタイル */
+        /* 他のボタン（「田んぼに行く」「鬼モード」）のスタイル */
         .button-container button:not(#slashButton) {
-            font-size: 3em; /* フォントサイズをさらに大きく */
-            padding: 25px 50px; /* パディングをさらに大きく */
+            font-size: 1.2em; /* フォントサイズを調整 */
+            padding: 15px 30px; /* パディングを調整 */
             white-space: nowrap; /* 一行に表示 */
+            background-color: rgba(30, 144, 255, 0.8); /* 半透明のボタン色 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
         }
 
         /* 初期画面のスタイル */
@@ -139,6 +156,7 @@
             color: #FF6347;
             margin-top: 10px;
             display: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
         }
 
         /* 成功・失敗画像のスタイル */
@@ -173,6 +191,7 @@
             margin-top: 20px;
             font-size: 2em;
             color: #FFD700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
         }
 
         /* ルールオーバーレイのスタイル */
@@ -205,6 +224,7 @@
             color: #FFD700;
             margin-bottom: 30px;
             line-height: 1.5;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
         }
 
         #closeRulesButton {
@@ -216,6 +236,7 @@
             background-color: #32CD32;
             color: white;
             transition: background-color 0.3s;
+            text-shadow: none;
         }
 
         #closeRulesButton:hover {
@@ -252,6 +273,7 @@
             color: #FFD700;
             margin-bottom: 30px;
             line-height: 1.5;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
         }
 
         #returnHomeButton {
@@ -263,6 +285,7 @@
             background-color: #32CD32;
             color: white;
             transition: background-color 0.3s;
+            text-shadow: none;
         }
 
         #returnHomeButton:hover {
@@ -290,7 +313,12 @@
 
             /* 「斬」ボタンのサイズ調整 */
             #slashButton {
-                height: 30vh; /* スマホでも高さを調整 */
+                width: 66vw; /* 画面横幅の約3分の2 */
+                height: 66vw; /* 画面横幅の約3分の2、丸型にするため同じ値 */
+                max-width: 200px; /* 最大幅を設定 */
+                max-height: 200px; /* 最大高さを設定 */
+                border: 4px solid #FFD700; /* 輝く金色のボーダーを調整 */
+                box-shadow: 0 0 15px #FFD700; /* 輝きを調整 */
             }
 
             /* ルールオーバーレイのスタイル調整 */
@@ -303,17 +331,15 @@
                 padding: 8px 16px;
             }
 
-            /* 他のボタン（「はじめる」「鬼モード」）のスタイル調整 */
+            /* 他のボタン（「田んぼに行く」「鬼モード」）のスタイル調整 */
             .button-container button:not(#slashButton) {
                 font-size: 2em; /* スマホでもさらに大きめ */
                 padding: 20px 40px;
                 width: 100%;
             }
 
-            #gameLink a {
-                font-size: 1.2em;
-            }
-
+            /* #gameLink a が存在しないため削除 */
+            /* .overlay p */
             .overlay p {
                 font-size: 1.5em;
             }
@@ -487,7 +513,7 @@
             levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
-            statusDisplay.textContent = '準備ができたら"構える"をタップ';
+            statusDisplay.textContent = '準備ができたら"構える!!"をタップ';
 
             // 次のレベル開始前にメッセージを非表示にする
             message.style.display = 'none';
@@ -619,7 +645,7 @@
             message.style.display = 'block';
             exclamationTime = Date.now();
             isWaitingForSlash = true;
-            statusDisplay.textContent = '';
+            statusDisplay.textContent = '「斬」をタップしてください。';
 
             // 既定時間内に"斬"をタップしなければ負け
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
