@@ -66,8 +66,9 @@
         }
 
         button {
-            font-size: 3em; /* フォントサイズをさらに大きく */
-            padding: 25px 50px; /* パディングをさらに大きく */
+            position: relative;
+            font-size: 0; /* テキストを非表示に */
+            padding: 0;
             margin: 15px 0; /* マージンを増やす */
             cursor: pointer;
             border: none;
@@ -78,6 +79,7 @@
             width: 100%;
             box-sizing: border-box;
             white-space: nowrap; /* 一行に表示 */
+            overflow: hidden;
         }
 
         button:disabled {
@@ -87,6 +89,33 @@
 
         button:hover:not(:disabled) {
             background-color: #00BFFF;
+        }
+
+        /* 「斬」ボタンのスタイル */
+        #slashButton {
+            height: 33vh; /* 高さの約3分の1 */
+            background-image: url('katana.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* 「斬」ボタンのホバー時 */
+        #slashButton:hover:not(:disabled) {
+            background-color: #1E90FF; /* ホバー時の背景色を戻す */
+            background-image: url('katana_hover.png'); /* ホバー時の画像 */
+        }
+
+        /* 「斬」ボタンの無効時 */
+        #slashButton:disabled {
+            background-image: url('katana_disabled.png'); /* 無効時の画像 */
+        }
+
+        /* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル */
+        .button-container button:not(#slashButton) {
+            font-size: 3em; /* フォントサイズをさらに大きく */
+            padding: 25px 50px; /* パディングをさらに大きく */
+            white-space: nowrap; /* 一行に表示 */
         }
 
         #gameLink {
@@ -223,21 +252,7 @@
                 height: 150px;
             }
 
-            button {
-                font-size: 2em; /* スマホでもさらに大きめ */
-                padding: 20px 40px;
-                width: 100%;
-            }
-
-            #gameLink a {
-                font-size: 1.2em;
-            }
-
-            .overlay p {
-                font-size: 1.5em;
-            }
-
-            /* 斬ボタンのサイズ調整 */
+            /* 「斬」ボタンのサイズ調整 */
             #slashButton {
                 height: 30vh; /* スマホでも高さを調整 */
             }
@@ -251,13 +266,30 @@
                 font-size: 1em;
                 padding: 8px 16px;
             }
+
+            /* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル調整 */
+            .button-container button:not(#slashButton) {
+                font-size: 2em; /* スマホでもさらに大きめ */
+                padding: 20px 40px;
+                width: 100%;
+            }
+
+            #gameLink a {
+                font-size: 1.2em;
+            }
+
+            .overlay p {
+                font-size: 1.5em;
+            }
         }
 
-        /* 斬ボタンのサイズ調整（デスクトップ） */
-        #slashButton {
-            height: 33vh; /* 高さの約3分の1 */
+        /* 「斬」ボタンの無効時の背景画像 */
+        #slashButton:disabled {
+            background-image: url('katana_disabled.png'); /* 無効時の画像 */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
-
     </style>
 </head>
 <body>
@@ -282,7 +314,7 @@
         </div>
         <div class="button-container">
             <button id="startButton">挑む!!</button>
-            <button id="slashButton" disabled>斬</button>
+            <button id="slashButton" disabled></button> <!-- テキストを削除 -->
         </div>
         <div id="gameLink">
             <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
