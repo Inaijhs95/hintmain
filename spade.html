@@ -336,7 +336,7 @@
         <h1>刹那の稲刈り</h1>
         <div class="button-container">
             <button id="normalModeButton">田んぼに行く</button>
-            <button id="oniModeButton" style="display: none;">ゲキムズモード</button>
+            <button id="oniModeButton" style="display: none;">鬼モード</button>
             <!-- URLボタンを完全に削除 -->
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
@@ -390,7 +390,7 @@
 
         // レベルタイミング設定
         const levels = [2.0, 1.5, 1.0, 0.8, 0.5]; // 通常モードのレベルタイム（秒）
-        const oniLevels = [10.4, 10.34, 10.32, 10.3, 10.28]; // 鬼モードのレベルタイミング（秒）
+        const oniLevels = [0.4, 0.34, 0.32, 0.3, 0.28]; // 鬼モードのレベルタイミング（秒）
         let currentLevel = 0;
         let isOniMode = false;
         let reactionTimeout;
@@ -619,7 +619,7 @@
             message.style.display = 'block';
             exclamationTime = Date.now();
             isWaitingForSlash = true;
-            statusDisplay.textContent = '「斬」をタップしてください。';
+            statusDisplay.textContent = '';
 
             // 既定時間内に"斬"をタップしなければ負け
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
