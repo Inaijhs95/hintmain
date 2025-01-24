@@ -121,22 +121,6 @@
             white-space: nowrap; /* 一行に表示 */
         }
 
-        #gameLink {
-            display: none;
-            margin-top: 20px;
-        }
-
-        #gameLink a {
-            color: #32CD32;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.5em;
-        }
-
-        #gameLink a:hover {
-            text-decoration: underline;
-        }
-
         /* 初期画面のスタイル */
         #initialScreen {
             display: flex;
@@ -285,14 +269,6 @@
                 font-size: 1.5em;
             }
         }
-
-        /* 「斬」ボタンの無効時の背景画像 */
-        #slashButton:disabled {
-            background-image: url('katana_disabled.png'); /* 無効時の画像 */
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
     </style>
 </head>
 <body>
@@ -302,7 +278,7 @@
         <div class="button-container">
             <button id="normalModeButton">はじめる</button>
             <button id="oniModeButton" style="display: none;">鬼モード</button>
-            <!-- URLボタンを削除 -->
+            <!-- URLボタンを完全に削除 -->
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
     </div>
@@ -319,9 +295,7 @@
             <button id="startButton">挑む!!</button>
             <button id="slashButton" disabled></button> <!-- テキストを削除 -->
         </div>
-        <div id="gameLink">
-            <p><a href="https://inaijhs95.github.io/4lamp/?link=2" target="_blank">鬼モードに挑戦する</a></p>
-        </div>
+        <!-- ゲーム画面からもgameLinkを削除 -->
     </div>
 
     <!-- 成功オーバーレイ -->
@@ -351,7 +325,7 @@
 
         // レベルタイミング設定
         const levels = [2.0, 1.5, 1.0, 0.8, 0.5]; // 通常モードのレベルタイム（秒）
-        const oniLevels = [10.4, 10.34, 10.32, 10.3, 10.28]; // 鬼モードのレベルタイミング（秒）
+        const oniLevels = [0.4, 0.34, 0.32, 0.3, 0.28]; // 鬼モードのレベルタイミング（秒）
         let currentLevel = 0;
         let isOniMode = false;
         let reactionTimeout;
@@ -363,7 +337,7 @@
         const initialScreen = document.getElementById('initialScreen');
         const normalModeButton = document.getElementById('normalModeButton');
         const oniModeButton = document.getElementById('oniModeButton');
-        // const urlButton = document.getElementById('urlButton'); // 削除
+        // const urlButton = document.getElementById('urlButton'); // 完全に削除
         const oniWarning = document.getElementById('oniWarning');
 
         const gameScreen = document.getElementById('gameScreen');
@@ -372,7 +346,7 @@
         const levelDisplay = document.getElementById('levelDisplay');
         const statusDisplay = document.getElementById('statusDisplay');
         const message = document.getElementById('message');
-        const gameLink = document.getElementById('gameLink');
+        // const gameLink = document.getElementById('gameLink'); // 完全に削除
 
         const successOverlay = document.getElementById('successOverlay');
         const successMessage = document.getElementById('successMessage');
@@ -391,7 +365,7 @@
         // 初期画面のボタン表示制御
         if (normalModeCleared) {
             oniModeButton.style.display = 'block';
-            // urlButton.style.display = 'block'; // 削除
+            // urlButton.style.display = 'block'; // 完全に削除
         }
 
         // ゲームの初期化
@@ -402,7 +376,7 @@
             message.style.display = 'none';
             startButton.disabled = false;
             slashButton.disabled = true;
-            gameLink.style.display = 'none';
+            // gameLink.style.display = 'none'; // 完全に削除
             isWaitingForSlash = false;
             reactionHandled = false;
 
@@ -424,7 +398,7 @@
                 // 鬼モードクリア
                 statusDisplay.textContent = '鬼モードをクリアしました！';
                 message.style.display = 'none';
-                gameLink.style.display = 'none';
+                // gameLink.style.display = 'none'; // 完全に削除
                 slashButton.disabled = true;
                 startButton.disabled = true;
                 return;
@@ -599,7 +573,7 @@
             resetGame();
         });
 
-        // URLボタンのイベントハンドラを削除
+        // URLボタンのイベントハンドラを完全に削除
 
         // ルールオーバーレイのボタンイベント
         closeRulesButton.addEventListener('click', () => {
