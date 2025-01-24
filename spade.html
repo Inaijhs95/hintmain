@@ -161,14 +161,14 @@
 
     <!-- ゲーム画面 -->
     <div id="gameScreen" style="display: none;">
-        <h1>刹那の見切り</h1>
+        <h1>刹那の見斬り</h1>
         <div id="levelDisplay">レベル: 1</div>
         <div id="statusDisplay">ゲーム開始準備中...</div>
         <div id="messageContainer">
             <img id="message" src="bikkuri.png" alt="びっくりマーク">
         </div>
         <div class="button-container">
-            <button id="startButton">スタート</button>
+            <button id="startButton">挑む!!</button>
             <button id="slashButton" disabled>斬</button>
         </div>
         <div id="gameLink">
@@ -238,7 +238,7 @@
                 return;
             } else if (!isOniMode && currentLevel >= levels.length) {
                 // 通常モードクリア、URLへリダイレクト
-                alert('通常モードをクリアしました！ゲームリンクへ移動します。');
+                alert('クリアしました！♣をゲットしましょう。');
                 // 通常モードクリアのフラグをローカルストレージに保存
                 localStorage.setItem('normalModeCleared', 'true');
                 window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
@@ -274,7 +274,7 @@
         slashButton.addEventListener('click', () => {
             if (!isWaitingForSlash) {
                 // "！"が表示される前に"斬"をタップ
-                gameOver('「！」が表示される前に「斬」をタップしました。負けです！');
+                gameOver('やられてしまいました。負けです！');
                 return;
             }
 
@@ -297,16 +297,16 @@
             message.style.display = 'block';
             exclamationTime = Date.now();
             isWaitingForSlash = true;
-            statusDisplay.textContent = '「！」が表示されました！「斬」をタップしてください。';
+            statusDisplay.textContent = '「斬」をタップしてください。';
 
             // 既定時間内に"斬"をタップしなければ負け
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
             reactionTimeout = setTimeout(() => {
                 if (isWaitingForSlash) {
                     isWaitingForSlash = false;
-                    gameOver('時間切れです。負けです！');
+                    gameOver('斬られてしまいました！');
                 }
-            }, timeLimit * 1000);
+            }, timeLimit * 3000);
         }
 
         // 初期画面のボタンイベント
