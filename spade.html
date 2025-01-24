@@ -346,7 +346,7 @@
     <div id="gameScreen" style="display: none;">
         <h1>刹那の稲刈り</h1>
         <div id="levelDisplay">レベル: 1</div>
-        <div id="statusDisplay">準備ができたら"刈る!!"をタップ</div>
+        <div id="statusDisplay">準備ができたら"構える!!"をタップ</div>
         <div id="messageContainer">
             <img id="message" src="bikkuri.png" alt="びっくりマーク">
         </div>
@@ -373,7 +373,7 @@
     <div id="rulesOverlay" class="overlay">
         <p>
             ルール説明<br><br>
-            「刈る!!」をタップし、<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が出るまで待とう！<br>
+            「構える!!」をタップし、<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が出るまで待とう！<br>
             <img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が表示されたらすぐに<img src="kama.png" alt="かたな" style="width: 20px; height: 40px;">をタップしよう
         </p>
         <button id="closeRulesButton">OK</button>
@@ -440,7 +440,7 @@
         function resetGame() {
             currentLevel = 0;
             levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
-            statusDisplay.textContent = '準備ができたら"刈る!!"をタップ';
+            statusDisplay.textContent = '準備ができたら"構える!!"をタップ';
             message.style.display = 'none';
             startButton.disabled = false;
             slashButton.disabled = true;
@@ -487,7 +487,7 @@
             levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
-            statusDisplay.textContent = '準備ができたら"刈る!!"をタップ';
+            statusDisplay.textContent = '準備ができたら"構える"をタップ';
 
             // 次のレベル開始前にメッセージを非表示にする
             message.style.display = 'none';
