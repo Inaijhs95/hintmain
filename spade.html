@@ -105,7 +105,7 @@
             max-width: 400px; /* 最大幅を設定 */
             max-height: 400px; /* 最大高さを設定 */
             background-image: url('kama.png'); /* kama.pngを設定 */
-            background-size: 90%; /* 背景画像を90%に調整 */
+            background-size: contain; /* 背景画像を完全に表示 */
             background-repeat: no-repeat;
             background-position: center;
             border: 3px solid #1E90FF; /* ボーダー色を青色に変更し太さを減少 */
@@ -316,7 +316,7 @@
                 max-height: 250px; /* 最大高さを設定 */
                 border: 3px solid #1E90FF; /* ボーダー色を青色に変更 */
                 box-shadow: 0 0 15px #1E90FF; /* ボーダーと同じ色に変更 */
-                background-size: 90%; /* 背景画像を90%に調整 */
+                background-size: contain; /* 背景画像を完全に表示 */
             }
 
             /* ルールオーバーレイのスタイル調整 */
@@ -371,14 +371,21 @@
         <h1>刹那の稲刈り</h1>
         <div id="levelDisplay">稲魂レベル: 1</div>
         <div id="statusDisplay">準備ができたら"構える!!"をタップ</div>
+        
+        <!-- 「構える!!」ボタンを追加 -->
+        <div class="button-container">
+            <button id="startButton">構える!!</button>
+        </div>
+        
+        <!-- bikkuri.png を表示 -->
         <div id="messageContainer">
             <img id="message" src="bikkuri.png" alt="びっくりマーク">
         </div>
+        
+        <!-- kama.png を表示する「斬」ボタン -->
         <div class="button-container">
-            <button id="startButton">構える!!</button>
             <button id="slashButton" disabled></button> <!-- テキストを削除 -->
         </div>
-        <!-- ゲーム画面からもgameLinkを削除 -->
     </div>
 
     <!-- 成功オーバーレイ -->
