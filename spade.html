@@ -285,14 +285,14 @@
 
     <!-- ゲーム画面 -->
     <div id="gameScreen" style="display: none;">
-        <h1>刹那の稲刈り</h1>
+        <h1>刹那の見切り</h1>
         <div id="levelDisplay">レベル: 1</div>
-        <div id="statusDisplay">準備ができたら"刈る!!"をタップ</div>
+        <div id="statusDisplay">準備ができたら"挑む!!"をタップ</div>
         <div id="messageContainer">
             <img id="message" src="bikkuri.png" alt="びっくりマーク">
         </div>
         <div class="button-container">
-            <button id="startButton">刈る!!</button>
+            <button id="startButton">挑む!!</button>
             <button id="slashButton" disabled></button> <!-- テキストを削除 -->
         </div>
         <!-- ゲーム画面からもgameLinkを削除 -->
@@ -314,7 +314,7 @@
     <div id="rulesOverlay" class="overlay">
         <p>
             ルール説明<br><br>
-            「刈る!!」をタップし、<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が出るまで待とう！<br>
+            「挑む!!」をタップし、<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が出るまで待とう！<br>
             <img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が表示されたらすぐに<img src="katana.png" alt="かたな" style="width: 20px; height: 40px;">をタップしよう
         </p>
         <button id="closeRulesButton">OK</button>
@@ -325,7 +325,7 @@
 
         // レベルタイミング設定
         const levels = [2.0, 1.5, 1.0, 0.8, 0.5]; // 通常モードのレベルタイム（秒）
-        const oniLevels = [10.4, 10.34, 10.32, 10.3, 10.28]; // 鬼モードのレベルタイミング（秒）
+        const oniLevels = [0.4, 0.34, 0.32, 0.3, 0.28]; // 鬼モードのレベルタイミング（秒）
         let currentLevel = 0;
         let isOniMode = false;
         let reactionTimeout;
@@ -372,7 +372,7 @@
         function resetGame() {
             currentLevel = 0;
             levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
-            statusDisplay.textContent = '準備ができたら"刈る!!"をタップ';
+            statusDisplay.textContent = '準備ができたら"挑む!!"をタップ';
             message.style.display = 'none';
             startButton.disabled = false;
             slashButton.disabled = true;
@@ -415,7 +415,7 @@
             levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
-            statusDisplay.textContent = '準備ができたら"刈る!!"をタップ';
+            statusDisplay.textContent = '次のレベル準備中...';
 
             // 次のレベル開始前にメッセージを非表示にする
             message.style.display = 'none';
