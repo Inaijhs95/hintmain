@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>刹那の見切り</title>
+    <title>刹那の稲刈り</title>
     <style>
         /* CSSスタイル */
 
@@ -109,9 +109,12 @@
         /* 「斬」ボタンの無効時 */
         #slashButton:disabled {
             background-image: url('katana_disabled.png'); /* 無効時の画像 */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
-        /* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル */
+        /* 他のボタン（「はじめる」「鬼モード」）のスタイル */
         .button-container button:not(#slashButton) {
             font-size: 3em; /* フォントサイズをさらに大きく */
             padding: 25px 50px; /* パディングをさらに大きく */
@@ -267,7 +270,7 @@
                 padding: 8px 16px;
             }
 
-            /* 他のボタン（「はじめる」「鬼モード」「ゲームリンクへ」）のスタイル調整 */
+            /* 他のボタン（「はじめる」「鬼モード」）のスタイル調整 */
             .button-container button:not(#slashButton) {
                 font-size: 2em; /* スマホでもさらに大きめ */
                 padding: 20px 40px;
@@ -299,7 +302,7 @@
         <div class="button-container">
             <button id="normalModeButton">はじめる</button>
             <button id="oniModeButton" style="display: none;">鬼モード</button>
-            <button id="urlButton" style="display: none;"></button>
+            <!-- URLボタンを削除 -->
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
     </div>
@@ -360,7 +363,7 @@
         const initialScreen = document.getElementById('initialScreen');
         const normalModeButton = document.getElementById('normalModeButton');
         const oniModeButton = document.getElementById('oniModeButton');
-        const urlButton = document.getElementById('urlButton');
+        // const urlButton = document.getElementById('urlButton'); // 削除
         const oniWarning = document.getElementById('oniWarning');
 
         const gameScreen = document.getElementById('gameScreen');
@@ -388,7 +391,7 @@
         // 初期画面のボタン表示制御
         if (normalModeCleared) {
             oniModeButton.style.display = 'block';
-            urlButton.style.display = 'block';
+            // urlButton.style.display = 'block'; // 削除
         }
 
         // ゲームの初期化
@@ -596,9 +599,7 @@
             resetGame();
         });
 
-        urlButton.addEventListener('click', () => {
-            window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
-        });
+        // URLボタンのイベントハンドラを削除
 
         // ルールオーバーレイのボタンイベント
         closeRulesButton.addEventListener('click', () => {
