@@ -650,7 +650,7 @@
             message.style.display = 'block';
             exclamationTime = Date.now();
             isWaitingForSlash = true;
-            statusDisplay.textContent = '「斬」をタップしてください。';
+            statusDisplay.textContent = '';
 
             // 既定時間内に"斬"をタップしなければ負け
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
