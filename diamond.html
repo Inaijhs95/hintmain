@@ -2,122 +2,202 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>シンプルな選択型ゲーム</title>
+    <title>ほのぼの謎解きゲーム</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+            background-color: #FFF8E1;
             margin: 0;
             padding: 20px;
         }
         #game-container {
-            max-width: 600px;
+            max-width: 700px;
             margin: auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #FFF;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .option {
-            margin: 10px 0;
+        #story {
+            margin-bottom: 20px;
         }
         .option button {
-            padding: 10px 20px;
-            margin-right: 10px;
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #FFECB3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .option button:hover {
+            background-color: #FFE082;
         }
         #status {
             margin-top: 20px;
+            font-size: 14px;
+            color: #555;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1>冒険ゲーム</h1>
+    <h1>ほのぼの謎解きゲーム</h1>
     <div id="story">
-        <p>あなたは勇敢な冒険者です。前方に二つの道があります。どちらを選びますか？</p>
+        <p>あなたは小さな村の探偵です。最近、村で不思議な事件が相次いでいます。最初の手がかりを探すために、どこから調査を始めますか？</p>
     </div>
     <div id="choices">
         <div class="option">
-            <button onclick="choosePath('mobility')">機動力アップの道</button>
-            <button onclick="choosePath('attack')">攻撃力アップの道</button>
+            <button onclick="chooseOption(1)">村の図書館を訪れる</button>
+            <button onclick="chooseOption(2)">村の広場を調べる</button>
         </div>
     </div>
     <div id="status">
-        <p>機動力: <span id="mobility">10</span></p>
-        <p>攻撃力: <span id="attack">10</span></p>
+        <p>調査ポイント: <span id="points">0</span></p>
     </div>
 </div>
 
 <script>
-    let mobility = 10;
-    let attack = 10;
+    // ゲームの状態を管理するオブジェクト
+    const gameState = {
+        points: 0,
+        currentQuestion: 0,
+        history: []
+    };
 
-    function choosePath(choice) {
-        if (choice === 'mobility') {
-            mobility += 5;
-            document.getElementById('story').innerHTML = '<p>あなたは素早く移動できるようになりました。次の選択をどうしますか？</p>';
-            document.getElementById('choices').innerHTML = `
-                <div class="option">
-                    <button onclick="choosePath('buff')">バフを選ぶ</button>
-                    <button onclick="choosePath('debuff')">デバフを選ぶ</button>
-                </div>
-            `;
-        } else if (choice === 'attack') {
-            attack += 5;
-            document.getElementById('story').innerHTML = '<p>あなたの攻撃力が増しました。次の選択をどうしますか？</p>';
-            document.getElementById('choices').innerHTML = `
-                <div class="option">
-                    <button onclick="choosePath('buff')">バフを選ぶ</button>
-                    <button onclick="choosePath('debuff')">デバフを選ぶ</button>
-                </div>
-            `;
-        } else if (choice === 'buff') {
-            mobility += 3;
-            attack += 3;
-            document.getElementById('story').innerHTML = '<p>全体的なステータスが上昇しました。ボスが現れます！</p>';
-            document.getElementById('choices').innerHTML = `
-                <div class="option">
-                    <button onclick="fightBoss()">ボスと戦う</button>
-                </div>
-            `;
-        } else if (choice === 'debuff') {
-            mobility -= 2;
-            attack -= 2;
-            document.getElementById('story').innerHTML = '<p>ステータスが低下しましたが、ボスが現れます！</p>';
-            document.getElementById('choices').innerHTML = `
-                <div class="option">
-                    <button onclick="fightBoss()">ボスと戦う</button>
-                </div>
-            `;
+    // 質問と選択肢のデータ
+    const questions = [
+        {
+            id: 1,
+            text: "村の図書館には古い書物がたくさんあります。どのコーナーを調べますか？",
+            options: [
+                { text: "歴史書コーナー", nextId: 3, points: 5 },
+                { text: "民話コーナー", nextId: 4, points: 3 }
+            ]
+        },
+        {
+            id: 2,
+            text: "村の広場には人々が集まるカフェがあります。どの場所を調べますか？",
+            options: [
+                { text: "カフェの裏庭", nextId: 5, points: 4 },
+                { text: "カフェの厨房", nextId: 6, points: 2 }
+            ]
+        },
+        // 以降、質問を追加...
+        {
+            id: 3,
+            text: "歴史書コーナーで古い地図を見つけました。次に何をしますか？",
+            options: [
+                { text: "地図の謎を解く", nextId: 7, points: 5 },
+                { text: "別の書物を調べる", nextId: 8, points: 2 }
+            ]
+        },
+        {
+            id: 4,
+            text: "民話コーナーで不思議な物語を発見しました。どうしますか？",
+            options: [
+                { text: "物語の真意を探る", nextId: 9, points: 4 },
+                { text: "他の民話を読む", nextId: 10, points: 1 }
+            ]
+        },
+        {
+            id: 5,
+            text: "カフェの裏庭で足跡を見つけました。どうしますか？",
+            options: [
+                { text: "足跡を追跡する", nextId: 11, points: 5 },
+                { text: "足跡の周辺を調べる", nextId: 12, points: 3 }
+            ]
+        },
+        {
+            id: 6,
+            text: "厨房で古いレシピ本を見つけました。次に何をしますか？",
+            options: [
+                { text: "レシピを調べる", nextId: 13, points: 2 },
+                { text: "厨房を更に探索する", nextId: 14, points: 3 }
+            ]
+        },
+        // 追加の質問...
+        // 最終的なクライマックスへ
+        {
+            id: 7,
+            text: "地図の謎を解き、隠された場所を発見しました。そこには…",
+            options: [
+                { text: "古い宝箱が埋まっている", nextId: 15, points: 5 },
+                { text: "秘密の入り口がある", nextId: 16, points: 4 }
+            ]
+        },
+        {
+            id: 15,
+            text: "宝箱を開けると、中には…",
+            options: [
+                { text: "貴重な宝物が入っている", nextId: 17, points: 5 },
+                { text: "重要な手がかりが入っている", nextId: 18, points: 5 }
+            ]
+        },
+        {
+            id: 17,
+            text: "宝物を見つけました。村の未来に役立つでしょう。ゲームクリア！",
+            options: []
+        },
+        // 他のエンディングも追加可能
+    ];
+
+    // 選択肢を処理する関数
+    function chooseOption(optionIndex) {
+        const currentQ = getCurrentQuestion();
+        const selectedOption = currentQ.options[optionIndex];
+        gameState.points += selectedOption.points;
+        gameState.history.push(selectedOption.nextId);
+        loadQuestion(selectedOption.nextId);
+    }
+
+    // 質問をロードする関数
+    function loadQuestion(id) {
+        const question = questions.find(q => q.id === id);
+        if (!question) {
+            // エンディングやゲーム終了
+            document.getElementById('story').innerHTML = '<p>おめでとうございます！謎を解きました。</p>';
+            document.getElementById('choices').innerHTML = '';
+            return;
         }
-        updateStatus();
-    }
 
-    function updateStatus() {
-        document.getElementById('mobility').textContent = mobility;
-        document.getElementById('attack').textContent = attack;
-    }
+        document.getElementById('story').innerHTML = `<p>${question.text}</p>`;
 
-    function fightBoss() {
-        let bossHealth = 20;
-        let playerDamage = attack;
-        let bossDamage = 15;
-
-        bossHealth -= playerDamage;
-        let playerHealth = 20 - bossDamage;
-
-        if (bossHealth <= 0 && playerHealth > 0) {
-            document.getElementById('story').innerHTML = '<p>ボスを倒しました！あなたの勝利です！</p>';
-            document.getElementById('choices').innerHTML = '';
-        } else if (playerHealth <= 0) {
-            document.getElementById('story').innerHTML = '<p>ボスに敗北しました。ゲームオーバー。</p>';
-            document.getElementById('choices').innerHTML = '';
+        if (question.options.length > 0) {
+            let optionsHTML = '<div class="option">';
+            question.options.forEach((opt, index) => {
+                optionsHTML += `<button onclick="chooseOption(${index})">${opt.text}</button>`;
+            });
+            optionsHTML += '</div>';
+            document.getElementById('choices').innerHTML = optionsHTML;
         } else {
-            document.getElementById('story').innerHTML = '<p>ボスとの戦いが続きます...</p>';
+            document.getElementById('choices').innerHTML = '<div class="option"><button onclick="endGame()">ゲームを終了する</button></div>';
         }
 
         updateStatus();
+    }
+
+    // 現在の質問を取得する関数
+    function getCurrentQuestion() {
+        if (gameState.history.length === 0) {
+            return questions[0];
+        }
+        const lastId = gameState.history[gameState.history.length - 1];
+        return questions.find(q => q.id === lastId) || questions[0];
+    }
+
+    // ステータスを更新する関数
+    function updateStatus() {
+        document.getElementById('points').textContent = gameState.points;
+    }
+
+    // ゲームを終了する関数
+    function endGame() {
+        document.getElementById('story').innerHTML = `<p>ゲーム終了！あなたの調査ポイントは${gameState.points}点です。ありがとうございました！</p>`;
+        document.getElementById('choices').innerHTML = '';
     }
 </script>
 
