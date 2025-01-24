@@ -185,6 +185,21 @@
             #gameLink a {
                 font-size: 1.2em;
             }
+
+            .overlay p {
+                font-size: 1.5em;
+            }
+        }
+
+        /* 斬ボタンのサイズ調整 */
+        #slashButton {
+            height: 33vh; /* 高さの約3分の1 */
+        }
+
+        @media (max-width: 600px) {
+            #slashButton {
+                height: 30vh; /* スマホでも高さを調整 */
+            }
         }
     </style>
 </head>
@@ -327,8 +342,8 @@
 
         // ゲームオーバー
         function gameOver(messageText) {
-            alert(messageText);
-            resetGame();
+            // Alertを削除し、代わりにフェイルオーバーレイを表示
+            showFailOverlay();
         }
 
         // "斬"ボタンの反応処理
@@ -398,8 +413,7 @@
         // "斬"ボタンのクリックイベント
         slashButton.addEventListener('click', () => {
             if (!isWaitingForSlash) {
-                // "！"が表示される前に"斬"をタップ
-                gameOver('やられてしまいました。負けです！');
+                // "挑む!!"を押す前または待機中に"斬"を押しても無反応にする
                 return;
             }
             handleSlashEvent();
@@ -408,8 +422,7 @@
         // "斬"ボタンのタッチイベント
         slashButton.addEventListener('touchstart', (e) => {
             if (!isWaitingForSlash) {
-                // "！"が表示される前に"斬"をタップ
-                gameOver('やられてしまいました。負けです！');
+                // "挑む!!"を押す前または待機中に"斬"を押しても無反応にする
                 return;
             }
             handleSlashEvent();
