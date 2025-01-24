@@ -37,10 +37,18 @@
             margin-bottom: 20px;
         }
 
-        #message {
+        #messageContainer {
             width: 100px;
             height: 100px;
             margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #message {
+            width: 100%;
+            height: 100%;
             display: none;
         }
 
@@ -122,7 +130,7 @@
                 font-size: 1.1em;
             }
 
-            #message {
+            #messageContainer {
                 width: 80px;
                 height: 80px;
             }
@@ -145,8 +153,8 @@
         <h1>刹那の見切り</h1>
         <div class="button-container">
             <button id="normalModeButton">通常モード</button>
-            <button id="oniModeButton">鬼モード</button>
-            <button id="urlButton">ゲームリンクへ</button>
+            <button id="oniModeButton" disabled>鬼モード</button>
+            <button id="urlButton" disabled>ゲームリンクへ</button>
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
     </div>
@@ -156,7 +164,9 @@
         <h1>刹那の見切り</h1>
         <div id="levelDisplay">レベル: 1</div>
         <div id="statusDisplay">ゲーム開始準備中...</div>
-        <img id="message" src="bikkuri.png" alt="びっくりマーク">
+        <div id="messageContainer">
+            <img id="message" src="bikkuri.png" alt="びっくりマーク">
+        </div>
         <div class="button-container">
             <button id="startButton">スタート</button>
             <button id="slashButton" disabled>斬</button>
@@ -195,16 +205,25 @@
 
         let exclamationTime = 0;
 
+        // ローカルストレージから通常モードクリアのフラグを取得
+        const normalModeCleared = localStorage.getItem('normalModeCleared') === 'true';
+
+        // 初期画面のボタン状態設定
+        if (normalModeCleared) {
+            oniModeButton.disabled = false;
+            urlButton.disabled = false;
+        }
+
         // ゲームの初期化
         function resetGame() {
             currentLevel = 0;
-            isOniMode = false;
             levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
             statusDisplay.textContent = 'ゲーム開始準備中...';
             message.style.display = 'none';
             startButton.disabled = false;
             slashButton.disabled = true;
             gameLink.style.display = 'none';
+            isWaitingForSlash = false;
         }
 
         // 次のレベルに進む
@@ -220,10 +239,13 @@
             } else if (!isOniMode && currentLevel >= levels.length) {
                 // 通常モードクリア、URLへリダイレクト
                 alert('通常モードをクリアしました！ゲームリンクへ移動します。');
+                // 通常モードクリアのフラグをローカルストレージに保存
+                localStorage.setItem('normalModeCleared', 'true');
                 window.location.href = 'https://inaijhs95.github.io/4lamp/?link=2';
                 return;
             }
 
+            currentLevel = Math.min(currentLevel, (isOniMode ? oniLevels.length : levels.length));
             levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
