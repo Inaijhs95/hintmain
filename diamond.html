@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -9,6 +8,7 @@
     body {
       height: 100%;
       margin: 0;
+      background-color: #FEF1E1; /* ゲームの背景色 */
     }
     
     body {
@@ -31,18 +31,20 @@
       right: 30px;
       font-size: 2em;
       font-weight: 900;
-      z-index: 1;
+      z-index: 2;
+      color: #333;
     }
     
     #introduction {
-      width: 200px;
+      width: 250px;
       height: 150px;
       position: absolute;
       font-weight: 600;
-      font-size: 0.8em;
+      font-size: 1em;
       text-align: center;
       transition: opacity 2s;
-      z-index: 1;
+      z-index: 2;
+      color: #333;
     }
     
     #restart {
@@ -57,7 +59,7 @@
       font-size: 1.2em;
       display: none;
       cursor: pointer;
-      z-index: 1;
+      z-index: 2;
     }
     
     #perfect {
@@ -69,13 +71,73 @@
       transform: translateX(-50%);
       font-size: 1.5em;
       color: gold;
-      z-index: 1;
+      z-index: 2;
+      text-shadow: 1px 1px 2px #000;
+    }
+    
+    /* キャラクター選択画面のスタイル */
+    #character-selection {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    #character-selection h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .character-option {
+      display: inline-block;
+      margin: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .character-option:hover {
+      transform: scale(1.1);
+    }
+    
+    .character-option img {
+      width: 100px;
+      height: 100px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+    
+    .character-option p {
+      margin-top: 10px;
+      font-weight: 600;
+      color: #333;
     }
     
     /* Removed YouTube link and related styles */
     
-    @media (min-height: 425px) {
-      /* Removed YouTube-specific styles */
+    /* レスポンシブデザイン */
+    @media (max-width: 600px) {
+      #introduction {
+        width: 180px;
+        height: 120px;
+        font-size: 0.9em;
+      }
+      
+      #score {
+        font-size: 1.5em;
+        top: 20px;
+        right: 20px;
+      }
+      
+      .character-option img {
+        width: 80px;
+        height: 80px;
+      }
     }
   </style>
 </head>
@@ -86,8 +148,21 @@
     <div id="introduction">タップしてスティックを伸ばしましょう</div>
     <div id="perfect">DOUBLE SCORE</div>
     <button id="restart">RESTART</button>
+    
+    <!-- キャラクター選択画面 -->
+    <div id="character-selection">
+      <h2>キャラクターを選択してください</h2>
+      <div class="character-option" data-character="gorilla">
+        <img src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjEwMCIgd2lkdGg9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIvPgo8L3N2Zz4=" alt="Gorilla">
+        <p>ゴリラ</p>
+      </div>
+      <div class="character-option" data-character="dragon-panda">
+        <img src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjEwMCIgd2lkdGg9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIvPgo8L3N2Zz4=" alt="Dragon Panda">
+        <p>ドラゴンパンダ</p>
+      </div>
+    </div>
   </div>
-  
+
   <script>
     // Extend the base functionality of JavaScript
     Array.prototype.last = function () {
@@ -152,6 +227,13 @@
     const perfectElement = document.getElementById("perfect");
     const restartButton = document.getElementById("restart");
     const scoreElement = document.getElementById("score");
+    
+    // キャラクター選択画面の要素
+    const characterSelection = document.getElementById("character-selection");
+    const characterOptions = document.querySelectorAll(".character-option");
+    
+    // 現在選択されているキャラクター
+    let selectedCharacter = null;
     
     // Initialize layout
     resetGame();
@@ -238,6 +320,25 @@
     
     resetGame();
     
+    // キャラクター選択時の処理
+    characterOptions.forEach(option => {
+      option.addEventListener("click", function () {
+        const character = this.getAttribute("data-character");
+        selectedCharacter = character;
+        characterSelection.style.display = "none";
+        introductionElement.style.opacity = 1;
+      });
+      
+      // タッチ操作でも選択できるように
+      option.addEventListener("touchstart", function (event) {
+        event.preventDefault(); // Prevent default touch behavior
+        const character = this.getAttribute("data-character");
+        selectedCharacter = character;
+        characterSelection.style.display = "none";
+        introductionElement.style.opacity = 1;
+      }, { passive: false });
+    });
+    
     // If space was pressed restart the game
     window.addEventListener("keydown", function (event) {
       if (event.key === " ") {
@@ -249,7 +350,7 @@
     
     // Mouse events for desktop
     window.addEventListener("mousedown", function (event) {
-      if (phase === "waiting") {
+      if (phase === "waiting" && selectedCharacter) {
         lastTimestamp = undefined;
         introductionElement.style.opacity = 0;
         phase = "stretching";
@@ -265,7 +366,7 @@
     
     // Touch events for mobile
     window.addEventListener("touchstart", function (event) {
-      if (phase === "waiting") {
+      if (phase === "waiting" && selectedCharacter) {
         event.preventDefault(); // Prevent default touch behavior
         lastTimestamp = undefined;
         introductionElement.style.opacity = 0;
@@ -470,7 +571,19 @@
         heroY + canvasHeight - platformHeight - heroHeight / 2
       );
     
+      // Draw the selected character
+      if (selectedCharacter === "gorilla") {
+        drawGorilla();
+      } else if (selectedCharacter === "dragon-panda") {
+        drawDragonPanda();
+      }
+    
+      ctx.restore();
+    }
+    
+    function drawGorilla() {
       // Body
+      ctx.fillStyle = "black";
       drawRoundedRect(
         -heroWidth / 2,
         -heroHeight / 2,
@@ -479,8 +592,8 @@
         5
       );
     
-      // Legs
-      const legDistance = 5;
+      // Legs with red pants
+      ctx.fillStyle = "red";
       ctx.beginPath();
       ctx.arc(legDistance, 11.5, 3, 0, Math.PI * 2, false);
       ctx.fill();
@@ -488,9 +601,9 @@
       ctx.arc(-legDistance, 11.5, 3, 0, Math.PI * 2, false);
       ctx.fill();
     
-      // Eye
-      ctx.beginPath();
+      // Eyes
       ctx.fillStyle = "white";
+      ctx.beginPath();
       ctx.arc(5, -7, 3, 0, Math.PI * 2, false);
       ctx.fill();
     
@@ -507,8 +620,60 @@
       ctx.lineTo(-15, -3.5);
       ctx.lineTo(-5, -7);
       ctx.fill();
+    }
     
-      ctx.restore();
+    function drawDragonPanda() {
+      // Body (Panda)
+      ctx.fillStyle = "white";
+      drawRoundedRect(
+        -heroWidth / 2,
+        -heroHeight / 2,
+        heroWidth,
+        heroHeight - 4,
+        5
+      );
+    
+      // Black patches (eyes and ears)
+      ctx.fillStyle = "black";
+      // Eyes patches
+      ctx.beginPath();
+      ctx.arc(5, -7, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-5, -7, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      // Ears
+      ctx.beginPath();
+      ctx.arc(10, -heroHeight / 2 + 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-10, -heroHeight / 2 + 5, 5, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Eyes (white)
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(5, -7, 2, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-5, -7, 2, 0, Math.PI * 2, false);
+      ctx.fill();
+    
+      // Dragon Wings
+      ctx.fillStyle = "green";
+      ctx.beginPath();
+      ctx.moveTo(-heroWidth / 2, -heroHeight / 2 + 10);
+      ctx.lineTo(-heroWidth / 2 - 20, -heroHeight / 2 - 10);
+      ctx.lineTo(-heroWidth / 2 + 5, -heroHeight / 2 - 5);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.moveTo(heroWidth / 2, -heroHeight / 2 + 10);
+      ctx.lineTo(heroWidth / 2 + 20, -heroHeight / 2 - 10);
+      ctx.lineTo(heroWidth / 2 - 5, -heroHeight / 2 - 5);
+      ctx.closePath();
+      ctx.fill();
     }
     
     function drawRoundedRect(x, y, width, height, radius) {
@@ -536,6 +701,7 @@
         // Draw stick
         ctx.beginPath();
         ctx.lineWidth = 2;
+        ctx.strokeStyle = "brown";
         ctx.moveTo(0, 0);
         ctx.lineTo(0, -stick.length);
         ctx.stroke();
@@ -582,10 +748,10 @@
         getTreeY(x, hill1BaseHeight, hill1Amplitude)
       );
     
-      const treeTrunkHeight = 5;
-      const treeTrunkWidth = 2;
+      const treeTrunkHeight = 10;
+      const treeTrunkWidth = 4;
       const treeCrownHeight = 25;
-      const treeCrownWidth = 10;
+      const treeCrownWidth = 20;
     
       // Draw trunk
       ctx.fillStyle = "#7D833C";
