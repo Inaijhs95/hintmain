@@ -11,7 +11,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #020300; /* 背景を黒色に変更 */
+            background-color: #222; /* 背景を黒色に変更 */
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -128,7 +128,7 @@
             box-shadow: none; /* 輝きを削除 */
         }
 
-        /* 他のボタン（「田んぼに行く」「鬼モード」）のスタイル */
+        /* 他のボタン（「田んぼに行く」「鬼モード」「♣のトランプをゲットする」）のスタイル */
         .button-container button:not(#slashButton) {
             font-size: 1.2em; /* フォントサイズを調整 */
             padding: 15px 30px; /* パディングを調整 */
@@ -329,7 +329,7 @@
                 padding: 8px 16px;
             }
 
-            /* 他のボタン（「田んぼに行く」「鬼モード」）のスタイル調整 */
+            /* 他のボタン（「田んぼに行く」「鬼モード」「♣のトランプをゲットする」）のスタイル調整 */
             .button-container button:not(#slashButton) {
                 font-size: 2em; /* スマホでもさらに大きめ */
                 padding: 20px 40px;
@@ -360,6 +360,7 @@
         <div class="button-container">
             <button id="normalModeButton">田んぼに行く</button>
             <button id="oniModeButton" style="display: none;">鬼モード</button>
+            <button id="getTrumpButton" style="display: none;">♣のトランプをゲットする</button>
             <!-- URLボタンを完全に削除 -->
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
@@ -425,7 +426,7 @@
         const initialScreen = document.getElementById('initialScreen');
         const normalModeButton = document.getElementById('normalModeButton');
         const oniModeButton = document.getElementById('oniModeButton');
-        // const urlButton = document.getElementById('urlButton'); // 完全に削除
+        const getTrumpButton = document.getElementById('getTrumpButton');
         const oniWarning = document.getElementById('oniWarning');
 
         const gameScreen = document.getElementById('gameScreen');
@@ -434,7 +435,6 @@
         const levelDisplay = document.getElementById('levelDisplay');
         const statusDisplay = document.getElementById('statusDisplay');
         const message = document.getElementById('message');
-        // const gameLink = document.getElementById('gameLink'); // 完全に削除
 
         const successOverlay = document.getElementById('successOverlay');
         const successMessage = document.getElementById('successMessage');
@@ -456,8 +456,13 @@
         // 初期画面のボタン表示制御
         if (normalModeCleared) {
             oniModeButton.style.display = 'block';
-            // urlButton.style.display = 'block'; // 完全に削除
+            getTrumpButton.style.display = 'block';
         }
+
+        // 「♣のトランプをゲットする」ボタンのイベント設定
+        getTrumpButton.addEventListener('click', () => {
+            window.location.href = 'https://line.me/'; // ここに実際のLINE URLを入力してください
+        });
 
         // ゲームの初期化
         function resetGame() {
@@ -467,7 +472,6 @@
             message.style.display = 'none';
             startButton.disabled = false;
             slashButton.disabled = true;
-            // gameLink.style.display = 'none'; // 完全に削除
             isWaitingForSlash = false;
             reactionHandled = false;
 
@@ -489,14 +493,11 @@
                 // 鬼モードクリア
                 statusDisplay.textContent = '鬼モードをクリアしました！';
                 message.style.display = 'none';
-                // gameLink.style.display = 'none'; // 完全に削除
                 slashButton.disabled = true;
                 startButton.disabled = true;
                 return;
             } else if (!isOniMode && currentLevel >= levels.length) {
                 // 通常モードクリア、クリアオーバーレイを表示
-                alert('CLEAR!!\n新たなモードが解放されました\n♣のトランプをゲットしましょう。');
-
                 // 通常モードクリアのフラグをローカルストレージに保存
                 localStorage.setItem('normalModeCleared', 'true');
 
@@ -589,7 +590,7 @@
         // クリアオーバーレイからホームに戻る
         function returnToHome() {
             clearOverlay.classList.remove('visible');
-            resetToInitialScreen();
+            window.location.reload(); // ページをリロードしてホーム画面を再読み込み
         }
 
         // ゲーム開始のフロー
