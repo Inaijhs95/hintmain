@@ -338,7 +338,7 @@
         <p>
             ルール説明<br><br>
             「挑む!!」をタップし、<img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が出るまで待とう！<br>
-            <img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が表示されたらすぐに<img src="katana.png" alt="かたな" style="width: 20px; height: 20px;">をタップしよう
+            <img src="bikkuri.png" alt="びっくりマーク" style="width: 20px; height: 20px;">が表示されたらすぐに<img src="katana.png" alt="かたな" style="width: 20px; height: 40px;">をタップしよう
         </p>
         <button id="closeRulesButton">OK</button>
     </div>
@@ -395,7 +395,7 @@
         function resetGame() {
             currentLevel = 0;
             levelDisplay.textContent = `レベル: ${currentLevel + 1}`;
-            statusDisplay.textContent = 'ゲーム開始準備中...';
+            statusDisplay.textContent = '準備ができたら"挑む!!"をタップ';
             message.style.display = 'none';
             startButton.disabled = false;
             slashButton.disabled = true;
@@ -438,7 +438,7 @@
             levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
             startButton.disabled = false;
             slashButton.disabled = true;
-            statusDisplay.textContent = '次のレベル準備中...';
+            statusDisplay.textContent = '準備ができたら"挑む!!"をタップ.';
 
             // 次のレベル開始前にメッセージを非表示にする
             message.style.display = 'none';
@@ -563,7 +563,7 @@
             message.style.display = 'block';
             exclamationTime = Date.now();
             isWaitingForSlash = true;
-            statusDisplay.textContent = '「斬」をタップしてください。';
+            statusDisplay.textContent = '';
 
             // 既定時間内に"斬"をタップしなければ負け
             const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
