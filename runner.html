@@ -15,9 +15,9 @@
             background-color: #f0f0f0;
         }
         #chatContainer {
-            width: 90%;
+            width: 100%;
             max-width: 400px;
-            height: 90vh;
+            height: 100vh;
             background-color: #fff;
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -30,6 +30,7 @@
             flex: 1;
             padding: 10px;
             overflow-y: auto; 
+            background-color: #fafafa;
         }
         .message {
             margin: 5px 0;
@@ -52,6 +53,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            background-color: #fff;
         }
         button {
             margin: 5px;
@@ -63,6 +65,7 @@
             cursor: pointer;
             flex: 1 1 40%;
             max-width: 45%;
+            font-size: 16px;
         }
         button:hover {
             background-color: #0b5ed7;
@@ -73,6 +76,8 @@
             margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
         }
         a {
             color: #0d6efd;
@@ -80,6 +85,14 @@
         }
         a:hover {
             text-decoration: underline;
+        }
+        /* スクロールバーのスタイルをカスタマイズ（オプション） */
+        #chatbox::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chatbox::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -103,6 +116,7 @@
             msg.className = 'message ' + sender;
             msg.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
             chatbox.appendChild(msg);
+            // 自動スクロール
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
@@ -131,11 +145,12 @@
             };
             inputArea.appendChild(input);
             inputArea.appendChild(btn);
-            input.focus();
+            // 入力フィールドに自動フォーカスしない
+            // input.focus();
         }
 
         function handleResponse(response) {
-            // Prevent double display by removing button area before adding user message
+            // ボタンや入力エリアをクリアしてからメッセージを追加
             inputArea.innerHTML = '';
             addMessage('user', response);
             switch(state.step) {
@@ -232,19 +247,16 @@
 
         function botEndRandom() {
             addMessage('bot', 'それではこちらをお受け取りください');
-            const link = document.createElement('a');
-            link.href = 'https://line.me/R/oaMessage/%40778unfqy';
-            link.textContent = 'リンクを開く';
-            link.target = '_blank';
-            inputArea.innerHTML = '';
-            inputArea.appendChild(link);
+            // 自動的にリンクを開く
+            setTimeout(() => {
+                window.location.href = 'https://line.me/R/oaMessage/%40778unfqy';
+            }, 2000);
         }
 
         function botError() {
             addMessage('bot', 'もう一度やり直してください');
             setTimeout(() => {
-                window.open('https://line.me/R/oaMessage/%40778unfqy', '_blank');
-                // ブラウザを閉じることはセキュリティ上制限されているため、代わりにユーザーに指示します。
+                window.location.href = 'https://line.me/R/oaMessage/%40778unfqy';
             }, 2000);
         }
 
