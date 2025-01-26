@@ -1,1 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ビートランナー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* リセットスタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #222;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ゲームエリア */
+        #game-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            touch-action: manipulation; /* タッチ操作のスムーズ化 */
+        }
+
+        /* ビート表示 */
+        #beat-indicator {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #555;
+            opacity: 0;
+            transition: opacity 0.1s;
+            z-index: 2;
+        }
+
+        /* キャラクター */
+        #player {
+            position: absolute;
+            bottom: 50px;
+            left: 100px;
+            width: 50px;
+            height: 50px;
+            background-color: #0f0;
+            border-radius: 10px;
+            transition: bottom 0.2s, height 0.2s;
+            z-index: 1;
+        }
+
+        /* 障害物 */
+        .obstacle {
+            position: absolute;
+            bottom: 50px;
+            right: -50px;
+            width: 50px;
+            height: 50px;
+            background-color: #f00;
+            border-radius: 10px;
+            animation: moveObstacle linear forwards;
+        }
+
+        /* 障害物の移動アニメーション */
+        @keyframes moveObstacle {
+            from { right: -50px; }
+            to { right: 100%; }
+        }
+
+        /* スコア表示 */
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            z-index: 2;
+        }
+
+        /* メッセージ表示 */
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.85);
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 3;
+        }
+
+        #message.show {
+            display: block;
+        }
+
+        /* ボタン */
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #555;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background-color: #777;
+        }
+
+        /* スタート画面 */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 4;
+        }
+
+        #start-screen h1 {
+            margin-bottom: 30px;
+            font-size: 48px;
+            color: #fff;
+        }
+
+        /* スワイプエフェクト */
+        .swipe {
+            animation: swipeEffect 0.3s ease-out;
+        }
+
+        @keyframes swipeEffect {
+            from { transform: scaleY(1); }
+            to { transform: scaleY(0.5); }
+        }
+
+        /* ジャンプエフェクト */
+        .jump {
+            animation: jumpEffect 0.3s ease-out;
+        }
+
+        @keyframes jumpEffect {
+            from { bottom: 50px; }
+            to { bottom: 150px; }
+        }
+
+        /* レスポンシブ調整 */
+        @media (max-width: 600px) {
+            #player, .obstacle {
+                width: 40px;
+                height: 40px;
+            }
+
+            #player {
+                left: 60px;
+            }
+
+            #beat-indicator {
+                width: 40px;
+                height: 40px;
+            }
+
+            #score {
+                font-size: 20px;
+            }
+
+            #message {
+                padding: 20px 30px;
+            }
+
+            .button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            /* タップエリアの視覚化 */
+            #game-area::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 50%;
+                /* Optional: visual aid for tapping areas */
+                /* background: rgba(255, 255, 255, 0.05); */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ゲームエリア -->
+    <div id="game-area">
+        <!-- ビートインジケーター -->
+        <div id="beat-indicator"></div>
+
+        <!-- スコア表示 -->
+        <div id="score">スコア: 0</div>
+
+        <!-- プレイヤーキャラクター -->
+        <div id="player"></div>
+
+        <!-- メッセージ表示 -->
+        <div id="message">
+            <h2 id="message-text">ゲームオーバー！</h2>
+            <button class="button" id="restart-button">再スタート</button>
+            <br>
+            <a href="https://inaijhs95.github.io/4lamp/?link=4" class="button" id="get-heart-button" style="display: none;">♥のトランプをゲットする</a>
+        </div>
+
+        <!-- スタート画面 -->
+        <div id="start-screen">
+            <h1>ビートランナー</h1>
+            <button class="button" id="start-button">スタート</button>
+        </div>
+    </div>
+
+    <script>
+        // ゲーム設定
+        const BEAT_INTERVAL_INITIAL = 1000; // 初期ビート間隔（ミリ秒）
+        const BEAT_DECREASE = 10; // ビート間隔の減少量（ミリ秒）
+        const MIN_BEAT_INTERVAL = 500; // 最小ビート間隔（ミリ秒）
+        const OBSTACLE_SPEED = 5; // 障害物の移動速度（ピクセル/フレーム）
+        const ACTION_WINDOW = 300; // アクション許容ウィンドウ（ミリ秒）
+        const SCORE_THRESHOLD = 100; // ボタン表示のスコア閾値
+
+        // DOM要素
+        const beatIndicator = document.getElementById('beat-indicator');
+        const player = document.getElementById('player');
+        const scoreElement = document.getElementById('score');
+        const message = document.getElementById('message');
+        const messageText = document.getElementById('message-text');
+        const restartButton = document.getElementById('restart-button');
+        const startScreen = document.getElementById('start-screen');
+        const startButton = document.getElementById('start-button');
+        const getHeartButton = document.getElementById('get-heart-button');
+
+        // ゲーム変数
+        let score = 0;
+        let beatInterval = BEAT_INTERVAL_INITIAL;
+        let beatTimer = null;
+        let obstacleTimer = null;
+        let obstacles = [];
+        let isGameOver = false;
+        let lastBeatTime = 0;
+        let actionPending = false;
+
+        // プレイヤーの状態
+        let isJumping = false;
+        let isSliding = false;
+
+        // 初期化
+        function initGame() {
+            score = 0;
+            beatInterval = BEAT_INTERVAL_INITIAL;
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
+            isGameOver = false;
+            lastBeatTime = 0;
+            actionPending = false;
+            scoreElement.textContent = `スコア: ${score}`;
+            player.style.bottom = '50px';
+            player.style.height = '50px';
+            message.classList.remove('show');
+            getHeartButton.style.display = 'none';
+        }
+
+        // ゲーム開始
+        function startGame() {
+            initGame();
+            startScreen.style.display = 'none';
+            startBeats();
+            spawnObstacle();
+            requestAnimationFrame(updateGame);
+        }
+
+        // ビートを開始
+        function startBeats() {
+            lastBeatTime = Date.now();
+            beatTimer = setInterval(() => {
+                triggerBeat();
+            }, beatInterval);
+        }
+
+        // ビートをトリガー
+        function triggerBeat() {
+            // ビートインジケーターを点滅
+            beatIndicator.style.opacity = '1';
+            setTimeout(() => {
+                beatIndicator.style.opacity = '0';
+            }, 100);
+
+            // ビートに合わせてスコアを増やす
+            score += 1;
+            scoreElement.textContent = `スコア: ${score}`;
+
+            // スコア閾値に達したらボタンを表示
+            if (score >= SCORE_THRESHOLD && !checkHeartObtained()) {
+                setHeartObtained();
+                showHeartButton();
+            }
+
+            // ビート間隔を短くして難易度を上げる
+            if (beatInterval > MIN_BEAT_INTERVAL) {
+                beatInterval -= BEAT_DECREASE;
+                clearInterval(beatTimer);
+                beatTimer = setInterval(() => {
+                    triggerBeat();
+                }, beatInterval);
+            }
+        }
+
+        // 障害物を生成
+        function spawnObstacle() {
+            if (isGameOver) return;
+
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            obstacle.style.width = '50px';
+            obstacle.style.height = '50px';
+            obstacle.style.right = '-50px';
+            document.getElementById('game-area').appendChild(obstacle);
+            obstacles.push(obstacle);
+
+            // 次の障害物生成までの時間をビート間隔に合わせる
+            obstacleTimer = setTimeout(() => {
+                spawnObstacle();
+            }, beatInterval);
+        }
+
+        // ゲームの更新ループ
+        function updateGame() {
+            if (isGameOver) return;
+
+            // 障害物の移動
+            obstacles.forEach((obstacle, index) => {
+                let currentRight = parseInt(obstacle.style.right);
+                obstacle.style.right = `${currentRight + OBSTACLE_SPEED}px`;
+
+                // 障害物が画面左端に到達したら削除
+                if (currentRight > window.innerWidth) {
+                    obstacle.remove();
+                    obstacles.splice(index, 1);
+                    score += 5; // 障害物を避けたらボーナス
+                    scoreElement.textContent = `スコア: ${score}`;
+                }
+
+                // 障害物との衝突判定
+                const playerRect = player.getBoundingClientRect();
+                const obstacleRect = obstacle.getBoundingClientRect();
+
+                if (isColliding(playerRect, obstacleRect)) {
+                    endGame();
+                }
+            });
+
+            requestAnimationFrame(updateGame);
+        }
+
+        // 衝突判定
+        function isColliding(rect1, rect2) {
+            return !(
+                rect1.top > rect2.bottom ||
+                rect1.bottom < rect2.top ||
+                rect1.left > rect2.right ||
+                rect1.right < rect2.left
+            );
+        }
+
+        // ゲームオーバー
+        function endGame() {
+            isGameOver = true;
+            clearInterval(beatTimer);
+            clearTimeout(obstacleTimer);
+            obstacles.forEach(obstacle => obstacle.remove());
+            obstacles = [];
+            messageText.textContent = `ゲームオーバー！スコア: ${score}`;
+            message.classList.add('show');
+        }
+
+        // アクション処理
+        function handleAction(action) {
+            if (isGameOver) return;
+
+            const currentTime = Date.now();
+            const timeSinceLastBeat = currentTime - lastBeatTime;
+
+            if (timeSinceLastBeat > beatInterval - ACTION_WINDOW && timeSinceLastBeat < beatInterval + ACTION_WINDOW) {
+                // アクションがビートに正確に合っている
+                if (action === 'jump' && !isJumping) {
+                    performJump();
+                    score += 2;
+                    scoreElement.textContent = `スコア: ${score}`;
+                } else if (action === 'slide' && !isSliding) {
+                    performSlide();
+                    score += 2;
+                    scoreElement.textContent = `スコア: ${score}`;
+                }
+            }
+        }
+
+        // ジャンプアクション
+        function performJump() {
+            isJumping = true;
+            player.classList.add('jump');
+            player.style.bottom = '150px'; // ジャンプ高さ
+
+            setTimeout(() => {
+                player.style.bottom = '50px';
+                player.classList.remove('jump');
+                isJumping = false;
+            }, 300);
+        }
+
+        // スライドアクション
+        function performSlide() {
+            isSliding = true;
+            player.classList.add('swipe');
+            player.style.height = '30px'; // スライド高さ
+
+            setTimeout(() => {
+                player.style.height = '50px';
+                player.classList.remove('swipe');
+                isSliding = false;
+            }, 300);
+        }
+
+        // キーボード入力の処理（デスクトップ用）
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                handleAction('jump');
+            } else if (e.code === 'ArrowDown') {
+                handleAction('slide');
+            }
+        });
+
+        // タッチ操作の処理（スマホ用）
+        document.getElementById('game-area').addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            const gameArea = document.getElementById('game-area');
+            const rect = gameArea.getBoundingClientRect();
+            const touchY = touch.clientY - rect.top;
+
+            if (touchY < rect.height / 2) {
+                handleAction('jump');
+            } else {
+                handleAction('slide');
+            }
+        });
+
+        // リスタートボタンの処理
+        restartButton.addEventListener('click', () => {
+            message.classList.remove('show');
+            initGame();
+            startBeats();
+            spawnObstacle();
+            requestAnimationFrame(updateGame);
+        });
+
+        // スタートボタンの処理
+        startButton.addEventListener('click', () => {
+            startGame();
+        });
+
+        // ローカルストレージでボタンの表示を管理
+        function setHeartObtained() {
+            localStorage.setItem('heartObtained', 'true');
+            showHeartButton();
+        }
+
+        function checkHeartObtained() {
+            return localStorage.getItem('heartObtained') === 'true';
+        }
+
+        function showHeartButton() {
+            getHeartButton.style.display = 'inline-block';
+        }
+
+        // メイン初期化
+        window.onload = () => {
+            // ゲームを初期化
+            initGame();
+
+            // スコア閾値に達していればボタンを表示
+            if (checkHeartObtained()) {
+                showHeartButton();
+            }
+        };
+    </script>
+</body>
+</html>
