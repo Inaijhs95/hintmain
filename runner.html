@@ -3,18 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <title>チャットボット</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; }
-        #chatbox { width: 400px; height: 500px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
-        .user { color: blue; }
-        .bot { color: green; }
-        #inputArea { margin-top: 10px; }
-        button { margin: 5px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #chatContainer {
+            width: 90%;
+            max-width: 400px;
+            height: 90vh;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #chatbox { 
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto; 
+        }
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user { 
+            background-color: #d1e7dd; 
+            align-self: flex-end;
+        }
+        .bot { 
+            background-color: #f8d7da; 
+            align-self: flex-start;
+        }
+        #inputArea { 
+            padding: 10px; 
+            border-top: 1px solid #ccc;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0d6efd;
+            color: #fff;
+            cursor: pointer;
+            flex: 1 1 40%;
+            max-width: 45%;
+        }
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        input[type="text"] {
+            flex: 1 1 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <div id="chatbox"></div>
-    <div id="inputArea"></div>
+    <div id="chatContainer">
+        <div id="chatbox"></div>
+        <div id="inputArea"></div>
+    </div>
 
     <script>
         const chatbox = document.getElementById('chatbox');
@@ -27,7 +100,7 @@
 
         function addMessage(sender, text) {
             const msg = document.createElement('div');
-            msg.className = sender;
+            msg.className = 'message ' + sender;
             msg.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
             chatbox.appendChild(msg);
             chatbox.scrollTop = chatbox.scrollHeight;
@@ -53,15 +126,17 @@
             btn.onclick = () => {
                 const value = input.value.trim();
                 if (value) {
-                    addMessage('user', value);
-                    callback(value);
+                    handleResponse(value);
                 }
             };
             inputArea.appendChild(input);
             inputArea.appendChild(btn);
+            input.focus();
         }
 
         function handleResponse(response) {
+            // Prevent double display by removing button area before adding user message
+            inputArea.innerHTML = '';
             addMessage('user', response);
             switch(state.step) {
                 case 'start':
@@ -167,12 +242,10 @@
 
         function botError() {
             addMessage('bot', 'もう一度やり直してください');
-            const link = document.createElement('a');
-            link.href = 'https://line.me/R/oaMessage/%40778unfqy';
-            link.textContent = 'リンクを開く';
-            link.target = '_blank';
-            inputArea.innerHTML = '';
-            inputArea.appendChild(link);
+            setTimeout(() => {
+                window.open('https://line.me/R/oaMessage/%40778unfqy', '_blank');
+                // ブラウザを閉じることはセキュリティ上制限されているため、代わりにユーザーに指示します。
+            }, 2000);
         }
 
         // 初期質問
