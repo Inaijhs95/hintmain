@@ -21,6 +21,7 @@
             background-color: #222;
             font-family: Arial, sans-serif;
             color: #fff;
+            position: relative;
         }
 
         /* パズルコンテナ */
@@ -57,14 +58,15 @@
         /* メッセージ */
         #message {
             position: absolute;
-            top: 20px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0,0,0,0.8);
-            padding: 10px 20px;
-            border-radius: 10px;
-            display: none;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.85);
+            padding: 25px 30px;
+            border-radius: 15px;
+            text-align: center;
             z-index: 1000;
+            display: none;
         }
 
         #message.show {
@@ -87,9 +89,65 @@
         #restart-button:hover {
             background-color: #777;
         }
+
+        /* トップに表示するボタンのスタイル */
+        #get-trump-button {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #555;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: none; /* デフォルトは非表示 */
+            transition: background-color 0.3s;
+            z-index: 1001;
+        }
+
+        #get-trump-button:hover {
+            background-color: #777;
+        }
+
+        /* レスポンシブ調整 */
+        @media (max-width: 600px) {
+            #puzzle-container {
+                grid-template-columns: repeat(3, 80px);
+                grid-template-rows: repeat(3, 80px);
+                gap: 2px;
+            }
+
+            .puzzle-piece {
+                width: 80px;
+                height: 80px;
+                background-size: 240px 240px; /* 画像が240x240の場合 */
+            }
+
+            #get-trump-button {
+                padding: 8px 16px;
+                font-size: 14px;
+                top: 10px;
+            }
+
+            #message {
+                padding: 20px 25px;
+            }
+
+            #restart-button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- トップに表示するボタン -->
+    <a href="https://inaijhs95.github.io/4lamp/?link=3" id="get-trump-button">♦のトランプをゲットする</a>
+
     <!-- パズルコンテナ -->
     <div id="puzzle-container"></div>
 
@@ -106,6 +164,7 @@
         const MESSAGE = document.getElementById('message');
         const MESSAGE_TEXT = document.getElementById('message-text');
         const RESTART_BUTTON = document.getElementById('restart-button');
+        const GET_TRUMP_BUTTON = document.getElementById('get-trump-button');
 
         // ピースの順序（0から8）
         let pieces = [];
@@ -218,6 +277,7 @@
                 // チェック
                 if (isSolved()) {
                     showMessage('パズルクリア！');
+                    setCleared(); // クリアフラグを設定
                 }
             }
         }
@@ -234,8 +294,29 @@
             initPuzzle();
         });
 
-        // 初期化
-        initPuzzle();
+        // クリアフラグをローカルストレージに設定
+        function setCleared() {
+            localStorage.setItem('puzzleCleared', 'true');
+            showGetTrumpButton();
+        }
+
+        // ローカルストレージからクリアフラグを取得
+        function checkCleared() {
+            return localStorage.getItem('puzzleCleared') === 'true';
+        }
+
+        // 「♦のトランプをゲットする」ボタンを表示
+        function showGetTrumpButton() {
+            GET_TRUMP_BUTTON.style.display = 'block';
+        }
+
+        // 初期化時にクリアフラグをチェックしてボタンを表示
+        window.onload = () => {
+            initPuzzle();
+            if (checkCleared()) {
+                showGetTrumpButton();
+            }
+        };
     </script>
 </body>
 </html>
