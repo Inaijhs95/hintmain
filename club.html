@@ -345,7 +345,6 @@
         let timeLimit = INITIAL_TIME;
         let timerInterval = null;
         let darknessInterval = null;
-        let warningInterval = null; // 追加: 警告用インターバル
 
         // DOM要素
         const gameArea = document.getElementById('game-area');
@@ -359,7 +358,7 @@
         const getLink = document.getElementById('get-link');
         const retryButton = document.getElementById('retry-button');
         const darknessOverlay = document.getElementById('darkness-overlay');
-        const topBar = document.getElementById('top-bar'); // 追加: トップバーの参照
+        const topBar = document.getElementById('top-bar'); // トップバーの参照
 
         // 初期化
         window.onload = startGame;
@@ -377,7 +376,7 @@
 
         // レベル開始
         function startLevel() {
-            if (score >= TOTAL_LEVELS) { // 修正: TOTAL_LEVELSを使用
+            if (score >= TOTAL_LEVELS) { // TOTAL_LEVELSを使用
                 showFinalMessage(true);
                 return;
             }
@@ -538,10 +537,7 @@
                 if (levels[currentLevelIndex - 1].darkness) {
                     clearInterval(darknessInterval);
                 }
-                if (warningInterval) {
-                    clearInterval(warningInterval);
-                    warningInterval = null;
-                }
+                topBar.classList.remove('warning'); // 警告クラスを削除
                 cancelAnimationFrame(event.target.animationFrame);
                 score++;
                 startLevel();
@@ -557,16 +553,12 @@
                 timeLimit -= 0.1;
                 if (timeLimit <= 0) {
                     clearInterval(timerInterval);
-                    if (warningInterval) {
-                        clearInterval(warningInterval);
-                        warningInterval = null;
-                    }
                     gameOver();
                 } else {
                     timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
-                    
+
                     // 5秒未満になったら警告開始
-                    if (timeLimit <= 5.0 && !warningInterval) {
+                    if (timeLimit <= 5.0 && !topBar.classList.contains('warning')) {
                         startWarning();
                     }
                 }
@@ -575,9 +567,7 @@
 
         // 警告の開始
         function startWarning() {
-            warningInterval = setInterval(() => {
-                topBar.classList.toggle('warning');
-            }, 500);
+            topBar.classList.add('warning'); // 警告クラスを追加して点滅開始
         }
 
         // ゲームオーバー時の処理
@@ -588,10 +578,7 @@
             if (levels[currentLevelIndex - 1].darkness) {
                 clearInterval(darknessInterval);
             }
-            if (warningInterval) {
-                clearInterval(warningInterval);
-                warningInterval = null;
-            }
+            topBar.classList.remove('warning'); // 警告クラスを削除
             messageDiv.style.display = 'block';
             finalMessage.textContent = 'GAME OVER!!';
             getLink.style.display = 'none';
