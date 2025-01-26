@@ -47,15 +47,13 @@
             background-color: #f8d7da; 
             align-self: flex-start;
         }
-        #inputArea { 
-            padding: 10px; 
-            border-top: 1px solid #ccc;
+        .options, .inputField {
+            margin: 10px 0;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            background-color: #fff;
         }
-        button {
+        .options button, .inputField button {
             margin: 5px;
             padding: 10px 15px;
             border: none;
@@ -67,10 +65,10 @@
             max-width: 45%;
             font-size: 16px;
         }
-        button:hover {
+        .options button:hover, .inputField button:hover {
             background-color: #0b5ed7;
         }
-        input[type="text"] {
+        .inputField input[type="text"] {
             flex: 1 1 100%;
             padding: 10px;
             margin: 5px 0;
@@ -99,12 +97,10 @@
 <body>
     <div id="chatContainer">
         <div id="chatbox"></div>
-        <div id="inputArea"></div>
     </div>
 
     <script>
         const chatbox = document.getElementById('chatbox');
-        const inputArea = document.getElementById('inputArea');
 
         const state = {
             step: 'start',
@@ -121,20 +117,32 @@
         }
 
         function showOptions(options) {
-            inputArea.innerHTML = '';
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options';
             options.forEach(option => {
                 const btn = document.createElement('button');
                 btn.textContent = option;
                 btn.onclick = () => handleResponse(option);
-                inputArea.appendChild(btn);
+                optionsContainer.appendChild(btn);
             });
+            chatbox.appendChild(optionsContainer);
+            // 自動スクロール
+            chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         function showInput(prompt, callback) {
-            inputArea.innerHTML = '';
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'inputField';
+            
             const input = document.createElement('input');
             input.type = 'text';
             input.placeholder = prompt;
+            input.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    btn.click();
+                }
+            };
+
             const btn = document.createElement('button');
             btn.textContent = '送信';
             btn.onclick = () => {
@@ -143,15 +151,17 @@
                     handleResponse(value);
                 }
             };
-            inputArea.appendChild(input);
-            inputArea.appendChild(btn);
-            // 入力フィールドに自動フォーカスしない
-            // input.focus();
+
+            inputContainer.appendChild(input);
+            inputContainer.appendChild(btn);
+            chatbox.appendChild(inputContainer);
+            // 自動スクロール
+            chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         function handleResponse(response) {
-            // ボタンや入力エリアをクリアしてからメッセージを追加
-            inputArea.innerHTML = '';
+            // メッセージとオプション/入力フィールドをクリア
+            removeLastOptionsOrInput();
             addMessage('user', response);
             switch(state.step) {
                 case 'start':
@@ -225,6 +235,13 @@
             }
         }
 
+        function removeLastOptionsOrInput() {
+            const lastChild = chatbox.lastElementChild;
+            if (lastChild && (lastChild.classList.contains('options') || lastChild.classList.contains('inputField'))) {
+                chatbox.removeChild(lastChild);
+            }
+        }
+
         function botQuestion(text, options) {
             addMessage('bot', text);
             if (options.length > 0) {
@@ -241,8 +258,12 @@
             btn.onclick = () => {
                 window.open('https://inaijhs95.github.io/4lamp/?link=4', '_blank');
             };
-            inputArea.innerHTML = '';
-            inputArea.appendChild(btn);
+            const successContainer = document.createElement('div');
+            successContainer.className = 'options';
+            successContainer.appendChild(btn);
+            chatbox.appendChild(successContainer);
+            // 自動スクロール
+            chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         function botEndRandom() {
