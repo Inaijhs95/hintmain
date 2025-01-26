@@ -2,558 +2,181 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ネコの探検</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チャットボット</title>
     <style>
-        /* リセットスタイル */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #222;
-            font-family: Arial, sans-serif;
-            color: #fff;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* ゲームエリア */
-        #game-area {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #4CAF50; /* ジャングルをイメージした色 */
-        }
-
-        /* 背景 */
-        #background {
-            position: absolute;
-            width: 200%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            animation: scrollBackground 20s linear infinite;
-        }
-
-        @keyframes scrollBackground {
-            from { transform: translateX(0); }
-            to { transform: translateX(-100%); }
-        }
-
-        /* プレイヤーキャラクター */
-        #player {
-            position: absolute;
-            bottom: 50px;
-            left: 50px;
-            width: 50px;
-            height: 50px;
-            background-size: cover;
-            z-index: 2;
-            transition: bottom 0.3s, transform 0.3s;
-        }
-
-        /* 障害物のスタイル */
-        .obstacle {
-            position: absolute;
-            bottom: 50px;
-            width: 40px;
-            height: 40px;
-            background-size: cover;
-            z-index: 1;
-        }
-
-        /* アイテムのスタイル */
-        .item {
-            position: absolute;
-            bottom: 100px;
-            width: 30px;
-            height: 30px;
-            background-size: cover;
-            z-index: 1;
-        }
-
-        /* スコア表示 */
-        #score {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            z-index: 3;
-        }
-
-        /* ゲームオーバー画面 */
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0,0,0,0.8);
-            padding: 20px 40px;
-            border-radius: 10px;
-            color: #fff;
-            display: none;
-            text-align: center;
-            z-index: 4;
-        }
-
-        #game-over.show {
-            display: block;
-        }
-
-        /* スタート画面 */
-        #start-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 5;
-        }
-
-        #start-screen h1 {
-            margin-bottom: 30px;
-            font-size: 48px;
-            color: #fff;
-        }
-
-        /* ボタンスタイル */
-        .button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #FF5722;
-            border: none;
-            border-radius: 5px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.3s;
-        }
-
-        .button:hover {
-            background-color: #E64A19;
-        }
-
-        /* パワーアップの点滅エフェクト */
-        .powerup-active {
-            animation: blink 0.5s infinite;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        /* アイテム取得エフェクト */
-        .item-effect {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-size: cover;
-            z-index: 3;
-            animation: fadeOut 0.5s forwards;
-        }
-
-        @keyframes fadeOut {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0; transform: scale(1.5); }
-        }
-
-        /* レスポンシブ調整 */
-        @media (max-width: 600px) {
-            #player {
-                width: 40px;
-                height: 40px;
-                left: 30px;
-            }
-
-            .obstacle {
-                width: 30px;
-                height: 30px;
-            }
-
-            .item {
-                width: 25px;
-                height: 25px;
-            }
-
-            #score {
-                font-size: 20px;
-            }
-
-            #start-screen h1 {
-                font-size: 36px;
-            }
-
-            .button {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
-        }
+        body { font-family: Arial, sans-serif; }
+        #chatbox { width: 400px; height: 500px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+        .user { color: blue; }
+        .bot { color: green; }
+        #inputArea { margin-top: 10px; }
+        button { margin: 5px; }
     </style>
 </head>
 <body>
-    <!-- ゲームエリア -->
-    <div id="game-area">
-        <!-- 背景 -->
-        <img src="images/background.png" alt="Background" id="background">
-
-        <!-- キャラクター -->
-        <img src="images/dragonpanda.png" alt="Player" id="player">
-
-        <!-- 障害物コンテナ -->
-        <div id="obstacles-container"></div>
-
-        <!-- アイテムコンテナ -->
-        <div id="items-container"></div>
-
-        <!-- スコア表示 -->
-        <div id="score">スコア: 0</div>
-
-        <!-- ゲームオーバー画面 -->
-        <div id="game-over">
-            <h2>ゲームオーバー！</h2>
-            <p>スコア: <span id="final-score">0</span></p>
-            <button class="button" id="restart-button">再スタート</button>
-            <br>
-            <a href="https://inaijhs95.github.io/4lamp/?link=4" class="button">♥のトランプをゲットする</a>
-        </div>
-
-        <!-- スタート画面 -->
-        <div id="start-screen">
-            <h1>ネコの探検</h1>
-            <button class="button" id="start-button">スタート</button>
-        </div>
-    </div>
+    <div id="chatbox"></div>
+    <div id="inputArea"></div>
 
     <script>
-        // ゲーム設定
-        const GAME_SPEED = 5; // ゲームのスピード（ピクセル/フレーム）
-        const OBSTACLE_INTERVAL = 2000; // 障害物の出現間隔（ミリ秒）
-        const ITEM_INTERVAL = 3000; // アイテムの出現間隔（ミリ秒）
-        const JUMP_VELOCITY = 15; // ジャンプの初速度
-        const GRAVITY = 0.6; // 重力の影響
-        const MAX_MISSES = 3; // 最大ミス数
+        const chatbox = document.getElementById('chatbox');
+        const inputArea = document.getElementById('inputArea');
 
-        // DOM要素の取得
-        const gameArea = document.getElementById('game-area');
-        const player = document.getElementById('player');
-        const obstaclesContainer = document.getElementById('obstacles-container');
-        const itemsContainer = document.getElementById('items-container');
-        const scoreElement = document.getElementById('score');
-        const gameOverScreen = document.getElementById('game-over');
-        const finalScore = document.getElementById('final-score');
-        const restartButton = document.getElementById('restart-button');
-        const startScreen = document.getElementById('start-screen');
-        const startButton = document.getElementById('start-button');
+        const state = {
+            step: 'start',
+            responses: {}
+        };
 
-        // ゲーム変数
-        let score = 0;
-        let gameLoopId;
-        let obstacleIntervalId;
-        let itemIntervalId;
-        let obstacles = [];
-        let items = [];
-        let isGameOver = false;
-        let isJumping = false;
-        let jumpVelocity = 0;
-        let misses = 0;
-        let powerupActive = false;
-        let powerupTimer;
-
-        // 初期化関数
-        function initGame() {
-            score = 0;
-            misses = 0;
-            isGameOver = false;
-            isJumping = false;
-            jumpVelocity = 0;
-            powerupActive = false;
-            scoreElement.textContent = `スコア: ${score}`;
-            player.style.bottom = '50px';
-            player.classList.remove('powerup-active');
-            gameOverScreen.style.display = 'none';
-            // 障害物とアイテムをクリア
-            obstacles.forEach(obstacle => obstacle.remove());
-            obstacles = [];
-            items.forEach(item => item.remove());
-            items = [];
-            // パワーアップタイマーのクリア
-            clearTimeout(powerupTimer);
+        function addMessage(sender, text) {
+            const msg = document.createElement('div');
+            msg.className = sender;
+            msg.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
+            chatbox.appendChild(msg);
+            chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        // ゲーム開始関数
-        function startGame() {
-            initGame();
-            startScreen.style.display = 'none';
-            // 障害物とアイテムの生成を開始
-            obstacleIntervalId = setInterval(generateObstacle, OBSTACLE_INTERVAL);
-            itemIntervalId = setInterval(generateItem, ITEM_INTERVAL);
-            // ゲームループの開始
-            gameLoopId = requestAnimationFrame(gameLoop);
+        function showOptions(options) {
+            inputArea.innerHTML = '';
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.textContent = option;
+                btn.onclick = () => handleResponse(option);
+                inputArea.appendChild(btn);
+            });
         }
 
-        // ゲームループ関数
-        function gameLoop() {
-            if (isGameOver) return;
-
-            moveObstacles();
-            moveItems();
-            applyGravity();
-            checkCollisions();
-            updateScore();
-
-            gameLoopId = requestAnimationFrame(gameLoop);
+        function showInput(prompt, callback) {
+            inputArea.innerHTML = '';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = prompt;
+            const btn = document.createElement('button');
+            btn.textContent = '送信';
+            btn.onclick = () => {
+                const value = input.value.trim();
+                if (value) {
+                    addMessage('user', value);
+                    callback(value);
+                }
+            };
+            inputArea.appendChild(input);
+            inputArea.appendChild(btn);
         }
 
-        // 障害物生成関数
-        function generateObstacle() {
-            const obstacle = document.createElement('img');
-            obstacle.classList.add('obstacle');
-            const obstacleTypes = ['rock.png', 'tree.png', 'spike.png', 'puddle.png'];
-            const randomType = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
-            obstacle.src = `images/${randomType}`;
-            obstacle.style.left = `${window.innerWidth}px`;
-            obstaclesContainer.appendChild(obstacle);
-            obstacles.push(obstacle);
-        }
-
-        // アイテム生成関数
-        function generateItem() {
-            const item = document.createElement('img');
-            item.classList.add('item');
-            const itemTypes = ['coin.png', 'kinoko.png', 'powerup.png'];
-            const randomType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
-            item.src = `images/${randomType}`;
-            // ランダムな高さに配置
-            const minBottom = 100;
-            const maxBottom = 200;
-            const randomBottom = Math.floor(Math.random() * (maxBottom - minBottom + 1)) + minBottom;
-            item.style.bottom = `${randomBottom}px`;
-            item.style.left = `${window.innerWidth}px`;
-            itemsContainer.appendChild(item);
-            items.push(item);
-        }
-
-        // 障害物の移動関数
-        function moveObstacles() {
-            obstacles.forEach((obstacle, index) => {
-                let currentLeft = parseInt(obstacle.style.left);
-                obstacle.style.left = `${currentLeft - GAME_SPEED}px`;
-
-                // 画面外に出たら削除
-                if (currentLeft < -50) {
-                    obstacle.remove();
-                    obstacles.splice(index, 1);
-                    if (['spike.png', 'puddle.png'].includes(getFileName(obstacle.src))) {
-                        misses += 1;
-                        updateMisses();
+        function handleResponse(response) {
+            addMessage('user', response);
+            switch(state.step) {
+                case 'start':
+                    if (response === 'ある物を探している') {
+                        state.step = 'got_club';
+                        botQuestion('♣のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                    } else if (response === 'たまたま開いた') {
+                        state.step = 'end_random';
+                        botEndRandom();
+                    } else {
+                        state.step = 'error';
+                        botError();
                     }
-                }
-            });
-        }
-
-        // アイテムの移動関数
-        function moveItems() {
-            items.forEach((item, index) => {
-                let currentLeft = parseInt(item.style.left);
-                item.style.left = `${currentLeft - GAME_SPEED}px`;
-
-                // 画面外に出たら削除
-                if (currentLeft < -30) {
-                    item.remove();
-                    items.splice(index, 1);
-                }
-            });
-        }
-
-        // 重力の適用関数
-        function applyGravity() {
-            if (isJumping) {
-                jumpVelocity -= GRAVITY;
-                let newBottom = parseInt(player.style.bottom) + jumpVelocity;
-                if (newBottom <= 50) {
-                    newBottom = 50;
-                    isJumping = false;
-                    jumpVelocity = 0;
-                }
-                player.style.bottom = `${newBottom}px`;
-            }
-        }
-
-        // ジャンプ関数
-        function jump() {
-            if (isJumping || isGameOver) return;
-            isJumping = true;
-            jumpVelocity = JUMP_VELOCITY;
-        }
-
-        // 衝突判定関数
-        function checkCollisions() {
-            obstacles.forEach(obstacle => {
-                if (isColliding(player, obstacle)) {
-                    const obstacleType = getFileName(obstacle.src);
-                    if (['spike.png', 'puddle.png'].includes(obstacleType)) {
-                        if (!powerupActive) {
-                            endGame();
-                        }
+                    break;
+                case 'got_club':
+                    if (response === 'はい') {
+                        state.step = 'ask_tengu';
+                        botQuestion('登場したキャラの中で一番鼻の長いキャラクターを漢字二字で答えてください', []);
+                    } else {
+                        state.step = 'error';
+                        botError();
                     }
-                    // 安全な障害物（rock.png, tree.png）は無視
-                }
-            });
-
-            items.forEach((item, index) => {
-                if (isColliding(player, item)) {
-                    const itemType = getFileName(item.src);
-                    if (itemType === 'coin.png') {
-                        score += 10;
-                        showItemEffect(item, 'coin.png');
-                    } else if (itemType === 'kinoko.png') {
-                        score += 20;
-                        showItemEffect(item, 'kinoko.png');
-                        enlargePlayer();
-                    } else if (itemType === 'powerup.png') {
-                        score += 30;
-                        showItemEffect(item, 'powerup.png');
-                        activatePowerup();
+                    break;
+                case 'ask_tengu':
+                    if (response === '天狗') {
+                        state.step = 'got_club_again';
+                        botQuestion('♣のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                    } else {
+                        state.step = 'error';
+                        botError();
                     }
-                    // アイテムを削除
-                    item.remove();
-                    items.splice(index, 1);
-                }
-            });
-        }
-
-        // 衝突判定ヘルパー関数
-        function isColliding(element1, element2) {
-            const rect1 = element1.getBoundingClientRect();
-            const rect2 = element2.getBoundingClientRect();
-            return !(
-                rect1.top > rect2.bottom ||
-                rect1.bottom < rect2.top ||
-                rect1.left > rect2.right ||
-                rect1.right < rect2.left
-            );
-        }
-
-        // ゲームオーバー関数
-        function endGame() {
-            isGameOver = true;
-            cancelAnimationFrame(gameLoopId);
-            clearInterval(obstacleIntervalId);
-            clearInterval(itemIntervalId);
-            gameOverScreen.style.display = 'block';
-            finalScore.textContent = score;
-
-            const highScore = updateHighScore();
-            const highScoreElement = document.createElement('p');
-            highScoreElement.textContent = `最高スコア: ${highScore}`;
-            gameOverScreen.appendChild(highScoreElement);
-        }
-
-        // スコア更新関数
-        function updateScore() {
-            scoreElement.textContent = `スコア: ${score}`;
-        }
-
-        // ミス数更新関数
-        function updateMisses() {
-            if (misses >= MAX_MISSES) {
-                endGame();
+                    break;
+                case 'got_club_again':
+                    if (response === 'はい') {
+                        state.step = 'ask_oni';
+                        botQuestion('追加モードの名前を漢字一字で答えてください', []);
+                    } else {
+                        state.step = 'error';
+                        botError();
+                    }
+                    break;
+                case 'ask_oni':
+                    if (response === '鬼') {
+                        state.step = 'got_diamond';
+                        botQuestion('♦のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                    } else {
+                        state.step = 'error';
+                        botError();
+                    }
+                    break;
+                case 'got_diamond':
+                    if (response === 'はい') {
+                        state.step = 'ask_final';
+                        botQuestion('○○○でしたね？', []);
+                    } else {
+                        state.step = 'error';
+                        botError();
+                    }
+                    break;
+                case 'ask_final':
+                    if (response === 'そうだね') {
+                        state.step = 'end_success';
+                        botEndSuccess();
+                    } else {
+                        state.step = 'error';
+                        botError();
+                    }
+                    break;
+                default:
+                    botError();
             }
-            // 必要に応じてミス数の表示を追加可能
         }
 
-        // 最高スコアの管理
-        function updateHighScore() {
-            const highScore = parseInt(localStorage.getItem('highScore')) || 0;
-            if (score > highScore) {
-                localStorage.setItem('highScore', score);
-                return score;
+        function botQuestion(text, options) {
+            addMessage('bot', text);
+            if (options.length > 0) {
+                showOptions(options);
+            } else {
+                showInput('', handleResponse);
             }
-            return highScore;
         }
 
-        // ファイル名を取得するヘルパー関数
-        function getFileName(url) {
-            return url.substring(url.lastIndexOf('/') + 1).split('?')[0];
+        function botEndSuccess() {
+            addMessage('bot', 'それでは最後のトランプをお受け取り下さい。');
+            const btn = document.createElement('button');
+            btn.textContent = '♥のトランプをゲットする';
+            btn.onclick = () => {
+                window.open('https://inaijhs95.github.io/4lamp/?link=4', '_blank');
+            };
+            inputArea.innerHTML = '';
+            inputArea.appendChild(btn);
         }
 
-        // プレイヤーを大きくする関数
-        function enlargePlayer() {
-            player.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                player.style.transform = 'scale(1)';
-            }, 2000); // 2秒間大きくなる
+        function botEndRandom() {
+            addMessage('bot', 'それではこちらをお受け取りください');
+            const link = document.createElement('a');
+            link.href = 'https://line.me/R/oaMessage/%40778unfqy';
+            link.textContent = 'リンクを開く';
+            link.target = '_blank';
+            inputArea.innerHTML = '';
+            inputArea.appendChild(link);
         }
 
-        // パワーアップを有効にする関数
-        function activatePowerup() {
-            powerupActive = true;
-            player.classList.add('powerup-active');
-            // パワーアップタイマーを設定
-            powerupTimer = setTimeout(() => {
-                powerupActive = false;
-                player.classList.remove('powerup-active');
-            }, 5000); // 5秒間無敵
+        function botError() {
+            addMessage('bot', 'もう一度やり直してください');
+            const link = document.createElement('a');
+            link.href = 'https://line.me/R/oaMessage/%40778unfqy';
+            link.textContent = 'リンクを開く';
+            link.target = '_blank';
+            inputArea.innerHTML = '';
+            inputArea.appendChild(link);
         }
 
-        // アイテム取得エフェクトを表示する関数
-        function showItemEffect(item, itemType) {
-            const effect = document.createElement('img');
-            effect.classList.add('item-effect');
-            if (itemType === 'coin.png') {
-                effect.src = 'images/item_effect.png'; // 既存のエフェクトを使用
-            } else if (itemType === 'kinoko.png') {
-                effect.src = 'images/item_effect.png'; // 適宜変更可能
-            } else if (itemType === 'powerup.png') {
-                effect.src = 'images/item_effect.png'; // 適宜変更可能
-            }
-            // アイテムの位置にエフェクトを配置
-            const itemRect = item.getBoundingClientRect();
-            const gameAreaRect = gameArea.getBoundingClientRect();
-            effect.style.left = `${itemRect.left - gameAreaRect.left}px`;
-            effect.style.top = `${itemRect.top - gameAreaRect.top}px`;
-            itemsContainer.appendChild(effect);
-            setTimeout(() => {
-                effect.remove();
-            }, 500); // 0.5秒後にエフェクトを削除
-        }
-
-        // タップ操作の設定
-        gameArea.addEventListener('touchstart', (e) => {
-            jump();
-        });
-
-        // キーボード操作の設定（デスクトップ用）
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                jump();
-            }
-        });
-
-        // スタートボタンのイベントリスナー
-        startButton.addEventListener('click', () => {
-            startGame();
-        });
-
-        // リスタートボタンのイベントリスナー
-        restartButton.addEventListener('click', () => {
-            startGame();
-        });
+        // 初期質問
+        botQuestion('あなたはどんな目的でここに訪れましたか', ['ある物を探している', 'たまたま開いた']);
     </script>
 </body>
 </html>
