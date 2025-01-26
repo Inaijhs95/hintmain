@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>スライディングパズル</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* リセットスタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            font-family: Arial, sans-serif;
+            color: #fff;
+        }
+
+        /* パズルコンテナ */
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 2px;
+            background-color: #444;
+            padding: 2px;
+        }
+
+        /* パズルピース */
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            background-image: url('Puzzle.png');
+            background-size: 300px 300px; /* 画像が300x300の場合 */
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        /* 正解時のスタイル */
+        .puzzle-piece.correct {
+            border: 2px solid #0f0;
+        }
+
+        /* 空白ピース */
+        .empty {
+            background: none;
+            cursor: default;
+        }
+
+        /* メッセージ */
+        #message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+        }
+
+        #message.show {
+            display: block;
+        }
+
+        /* リスタートボタン */
+        #restart-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #555;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #restart-button:hover {
+            background-color: #777;
+        }
+    </style>
+</head>
+<body>
+    <!-- パズルコンテナ -->
+    <div id="puzzle-container"></div>
+
+    <!-- メッセージ表示 -->
+    <div id="message">
+        <span id="message-text">パズルクリア！</span><br>
+        <button id="restart-button">再スタート</button>
+    </div>
+
+    <script>
+        // パズルの設定
+        const GRID_SIZE = 3;
+        const PUZZLE_CONTAINER = document.getElementById('puzzle-container');
+        const MESSAGE = document.getElementById('message');
+        const MESSAGE_TEXT = document.getElementById('message-text');
+        const RESTART_BUTTON = document.getElementById('restart-button');
+
+        // ピースの順序（0から8）
+        let pieces = [];
+        let emptyPosition = { row: 0, col: 2 }; // 右上を空白
+
+        // 初期化
+        function initPuzzle() {
+            // ピース配列を初期化（空白を含む）
+            pieces = [];
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                pieces.push(i);
+            }
+
+            // 空白ピースを設定（右上）
+            pieces[0 * GRID_SIZE + 2] = null; // 0行2列目を空白
+
+            // シャッフル
+            shufflePuzzle();
+
+            // 描画
+            renderPuzzle();
+        }
+
+        // パズルをシャッフル（解ける状態にする）
+        function shufflePuzzle() {
+            // パズルをランダムに並べ替えるが、偶奇をチェックして解ける状態にする
+            do {
+                for (let i = pieces.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+                }
+            } while (!isSolvable() || isSolved());
+        }
+
+        // シャッフルが解けるかどうかを判定
+        function isSolvable() {
+            let inversion = 0;
+            const flatPieces = pieces.filter(piece => piece !== null);
+            for (let i = 0; i < flatPieces.length - 1; i++) {
+                for (let j = i + 1; j < flatPieces.length; j++) {
+                    if (flatPieces[i] > flatPieces[j]) inversion++;
+                }
+            }
+            // 空白の行位置（0-based, from top）
+            const emptyRow = Math.floor(pieces.indexOf(null) / GRID_SIZE);
+            // パズルが3x3の場合、奇数の場合はinversionが偶数で解ける
+            return (inversion % 2 === 0);
+        }
+
+        // パズルが解かれているかチェック
+        function isSolved() {
+            for (let i = 0; i < pieces.length; i++) {
+                if (pieces[i] !== null && pieces[i] !== i) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // パズルを描画
+        function renderPuzzle() {
+            PUZZLE_CONTAINER.innerHTML = '';
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const index = row * GRID_SIZE + col;
+                    const pieceNumber = pieces[index];
+                    const pieceDiv = document.createElement('div');
+                    pieceDiv.style.gridRowStart = row + 1;
+                    pieceDiv.style.gridColumnStart = col + 1;
+
+                    if (pieceNumber !== null) {
+                        pieceDiv.classList.add('puzzle-piece');
+                        // 背景位置の設定
+                        const imgRow = Math.floor(pieceNumber / GRID_SIZE);
+                        const imgCol = pieceNumber % GRID_SIZE;
+                        pieceDiv.style.backgroundPosition = `-${imgCol * 100}px -${imgRow * 100}px`;
+                        pieceDiv.dataset.index = index;
+                        pieceDiv.addEventListener('click', onPieceClick);
+                    } else {
+                        pieceDiv.classList.add('empty');
+                    }
+
+                    PUZZLE_CONTAINER.appendChild(pieceDiv);
+                }
+            }
+        }
+
+        // ピースをクリックした時の処理
+        function onPieceClick(event) {
+            const clickedIndex = parseInt(event.target.dataset.index);
+            const clickedRow = Math.floor(clickedIndex / GRID_SIZE);
+            const clickedCol = clickedIndex % GRID_SIZE;
+
+            // 空白ピースの位置を探す
+            const emptyIndex = pieces.indexOf(null);
+            const emptyRowPos = Math.floor(emptyIndex / GRID_SIZE);
+            const emptyColPos = emptyIndex % GRID_SIZE;
+
+            // クリックされたピースが空白に隣接しているか確認
+            const isAdjacent = (Math.abs(clickedRow - emptyRowPos) + Math.abs(clickedCol - emptyColPos)) === 1;
+
+            if (isAdjacent) {
+                // ピースを空白と入れ替える
+                pieces[emptyIndex] = pieces[clickedIndex];
+                pieces[clickedIndex] = null;
+
+                // 再描画
+                renderPuzzle();
+
+                // チェック
+                if (isSolved()) {
+                    showMessage('パズルクリア！');
+                }
+            }
+        }
+
+        // メッセージを表示
+        function showMessage(text) {
+            MESSAGE_TEXT.textContent = text;
+            MESSAGE.classList.add('show');
+        }
+
+        // リスタートボタンの処理
+        RESTART_BUTTON.addEventListener('click', () => {
+            MESSAGE.classList.remove('show');
+            initPuzzle();
+        });
+
+        // 初期化
+        initPuzzle();
+    </script>
+</body>
+</html>
