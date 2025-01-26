@@ -39,6 +39,19 @@
             background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
             height: 120px; /* 高さを固定 */
+            transition: background-color 0.5s;
+        }
+
+        /* 点滅アニメーション */
+        @keyframes flashRed {
+            0% { background-color: rgba(255, 0, 0, 0.8); }
+            50% { background-color: rgba(0, 0, 0, 0.8); }
+            100% { background-color: rgba(255, 0, 0, 0.8); }
+        }
+
+        /* タイマーが5秒未満の時に適用されるクラス */
+        .warning {
+            animation: flashRed 1s infinite;
         }
 
         /* HUDのスタイル */
@@ -58,7 +71,7 @@
             width: 120px;
             height: 100px; /* 高さをトップバーに収まるように調整 */
             background-color: #444; /* ダークグレーに変更 */
-            border-radius: 10px;
+            border-radius: 0px; /* 四角枠に変更 */
             padding: 10px;
             text-align: center;
             color: #fff; /* テキスト色を白に変更 */
@@ -67,7 +80,7 @@
         #wanted-poster img {
             width: 60px; /* 20%小さく */
             height: 60px; /* 20%小さく */
-            border-radius: 50%;
+            border-radius: 0px; /* 四角枠に変更 */
         }
 
         #wanted-poster p {
@@ -205,7 +218,7 @@
                 width: 120px;
                 height: 100px; /* 高さをトップバーに収まるように調整 */
                 background-color: rgba(0, 0, 0, 0.7); /* 半透明の暗い背景色に変更 */
-                border-radius: 10px;
+                border-radius: 0px; /* 四角枠に変更 */
                 padding: 10px;
                 text-align: center;
                 color: #fff; /* テキスト色を白に変更 */
@@ -332,6 +345,7 @@
         let timeLimit = INITIAL_TIME;
         let timerInterval = null;
         let darknessInterval = null;
+        let warningInterval = null; // 追加: 警告用インターバル
 
         // DOM要素
         const gameArea = document.getElementById('game-area');
@@ -345,6 +359,7 @@
         const getLink = document.getElementById('get-link');
         const retryButton = document.getElementById('retry-button');
         const darknessOverlay = document.getElementById('darkness-overlay');
+        const topBar = document.getElementById('top-bar'); // 追加: トップバーの参照
 
         // 初期化
         window.onload = startGame;
@@ -356,12 +371,13 @@
             timeLimit = INITIAL_TIME;
             scoreDisplay.textContent = `クリア数: ${score}`;
             messageDiv.style.display = 'none';
+            topBar.classList.remove('warning'); // 警告クラスを削除
             startLevel();
         }
 
         // レベル開始
         function startLevel() {
-            if (score >= 4) {
+            if (score >= TOTAL_LEVELS) { // 修正: TOTAL_LEVELSを使用
                 showFinalMessage(true);
                 return;
             }
@@ -410,9 +426,17 @@
             const targetCount = 1;
             const distractorCount = totalCharacters - targetCount;
 
+            const placedCharacters = []; // 配置済みのキャラクター情報を保持
+
             // ターゲットを配置
-            const targetPosition = getRandomPosition(areaWidth, areaHeight, levelConfig.size);
-            createCharacter(targetCharacter, targetPosition.x, targetPosition.y, true, levelConfig);
+            let targetPosition;
+            let attempts = 0;
+            do {
+                targetPosition = getRandomPosition(areaWidth, areaHeight, levelConfig.size);
+                attempts++;
+                if (attempts > 1000) break; // 無限ループ防止
+            } while (isOverlapping(targetPosition, levelConfig.size, placedCharacters, 0.5));
+            createCharacter(targetCharacter, targetPosition.x, targetPosition.y, true, levelConfig, placedCharacters);
 
             // ディストラクターを配置（panda.pngを含む）
             for (let i = 0; i < distractorCount; i++) {
@@ -420,13 +444,19 @@
                 do {
                     character = ALL_CHARACTERS[Math.floor(Math.random() * ALL_CHARACTERS.length)];
                 } while (character === targetCharacter);
-                const pos = getRandomPosition(areaWidth, areaHeight, levelConfig.size);
-                createCharacter(character, pos.x, pos.y, false, levelConfig);
+                let pos;
+                attempts = 0;
+                do {
+                    pos = getRandomPosition(areaWidth, areaHeight, levelConfig.size);
+                    attempts++;
+                    if (attempts > 1000) break;
+                } while (isOverlapping(pos, levelConfig.size, placedCharacters, 1.0)); // ディストラクター同士の重なりは制限なし
+                createCharacter(character, pos.x, pos.y, false, levelConfig, placedCharacters);
             }
         }
 
         // キャラクターの作成
-        function createCharacter(character, x, y, isTarget, levelConfig) {
+        function createCharacter(character, x, y, isTarget, levelConfig, placedCharacters) {
             const img = document.createElement('img');
             img.src = character;
             img.classList.add('character');
@@ -435,6 +465,11 @@
             img.dataset.type = isTarget ? 'target' : 'distractor';
             img.style.width = `${levelConfig.size}px`;
             img.style.height = `${levelConfig.size}px`;
+
+            // Z-indexの設定: ターゲットを最前面に
+            if (isTarget) {
+                img.style.zIndex = 100; // 他のキャラクターより高く
+            }
 
             // 動的移動の設定
             if (levelConfig.dynamic) {
@@ -453,6 +488,13 @@
             img.addEventListener('touchstart', onCharacterClick);
 
             gameArea.appendChild(img);
+
+            // 配置済みのキャラクターリストに追加
+            placedCharacters.push({
+                x: x,
+                y: y,
+                size: levelConfig.size
+            });
         }
 
         // キャラクターの移動
@@ -496,6 +538,10 @@
                 if (levels[currentLevelIndex - 1].darkness) {
                     clearInterval(darknessInterval);
                 }
+                if (warningInterval) {
+                    clearInterval(warningInterval);
+                    warningInterval = null;
+                }
                 cancelAnimationFrame(event.target.animationFrame);
                 score++;
                 startLevel();
@@ -511,11 +557,27 @@
                 timeLimit -= 0.1;
                 if (timeLimit <= 0) {
                     clearInterval(timerInterval);
+                    if (warningInterval) {
+                        clearInterval(warningInterval);
+                        warningInterval = null;
+                    }
                     gameOver();
                 } else {
                     timerDisplay.textContent = `残り時間: ${timeLimit.toFixed(1)}秒`;
+                    
+                    // 5秒未満になったら警告開始
+                    if (timeLimit <= 5.0 && !warningInterval) {
+                        startWarning();
+                    }
                 }
             }, 100);
+        }
+
+        // 警告の開始
+        function startWarning() {
+            warningInterval = setInterval(() => {
+                topBar.classList.toggle('warning');
+            }, 500);
         }
 
         // ゲームオーバー時の処理
@@ -525,6 +587,10 @@
             clearInterval(timerInterval);
             if (levels[currentLevelIndex - 1].darkness) {
                 clearInterval(darknessInterval);
+            }
+            if (warningInterval) {
+                clearInterval(warningInterval);
+                warningInterval = null;
             }
             messageDiv.style.display = 'block';
             finalMessage.textContent = 'GAME OVER!!';
@@ -573,6 +639,50 @@
             const x = Math.random() * (width - size); // 画像の幅を考慮
             const y = Math.random() * (height - size); // 画像の高さを考慮
             return { x, y };
+        }
+
+        // 重なり判定（最大許容重なり割合）
+        function isOverlapping(newPos, newSize, placedCharacters, maxOverlapRatio) {
+            for (let char of placedCharacters) {
+                const overlapArea = calculateOverlapArea(newPos, newSize, {x: char.x, y: char.y}, char.size);
+                const maxOverlap = (Math.min(newSize, char.size)) ** 2 * Math.PI / 4; // 最大重なり面積の概算
+                if (overlapArea / maxOverlap > maxOverlapRatio) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 重なり面積の計算（円形と仮定）
+        function calculateOverlapArea(pos1, size1, pos2, size2) {
+            // 中心座標の計算
+            const r1 = size1 / 2;
+            const r2 = size2 / 2;
+            const x1 = pos1.x + r1;
+            const y1 = pos1.y + r1;
+            const x2 = pos2.x + r2;
+            const y2 = pos2.y + r2;
+
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // 触れない場合
+            if (distance >= r1 + r2) {
+                return 0;
+            }
+
+            // 一方が他方を完全に覆う場合
+            if (distance <= Math.abs(r1 - r2)) {
+                return Math.PI * Math.min(r1, r2) ** 2;
+            }
+
+            const phi = (Math.acos((distance ** 2 + r1 ** 2 - r2 ** 2) / (2 * distance * r1))) * 2;
+            const theta = (Math.acos((distance ** 2 + r2 ** 2 - r1 ** 2) / (2 * distance * r2))) * 2;
+            const area1 = 0.5 * r1 ** 2 * (phi - Math.sin(phi));
+            const area2 = 0.5 * r2 ** 2 * (theta - Math.sin(theta));
+
+            return area1 + area2;
         }
 
         // ランダムな速度の取得
