@@ -39,7 +39,7 @@
             width: 100px;
             height: 100px;
             background-image: url('Puzzle.png');
-            background-size: 300px 300px; /* 画像が300x300の場合 */
+            background-size: 300% 300%; /* 3x3グリッドに対応 */
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -124,7 +124,7 @@
             .puzzle-piece {
                 width: 80px;
                 height: 80px;
-                background-size: 240px 240px; /* 画像が240x240の場合 */
+                background-size: 240% 240%; /* 3x3グリッドに対応 */
             }
 
             #get-trump-button {
@@ -210,7 +210,7 @@
             }
             // 空白の行位置（0-based, from top）
             const emptyRow = Math.floor(pieces.indexOf(null) / GRID_SIZE);
-            // パズルが3x3の場合、奇数の場合はinversionが偶数で解ける
+            // パズルが3x3の場合、inversionが偶数で解ける
             return (inversion % 2 === 0);
         }
 
@@ -237,10 +237,12 @@
 
                     if (pieceNumber !== null) {
                         pieceDiv.classList.add('puzzle-piece');
-                        // 背景位置の設定
+                        // 背景位置の設定（パーセンテージ）
                         const imgRow = Math.floor(pieceNumber / GRID_SIZE);
                         const imgCol = pieceNumber % GRID_SIZE;
-                        pieceDiv.style.backgroundPosition = `-${imgCol * 100}px -${imgRow * 100}px`;
+                        const posX = (imgCol * 100) / (GRID_SIZE - 1);
+                        const posY = (imgRow * 100) / (GRID_SIZE - 1);
+                        pieceDiv.style.backgroundPosition = `${posX}% ${posY}%`;
                         pieceDiv.dataset.index = index;
                         pieceDiv.addEventListener('click', onPieceClick);
                     } else {
