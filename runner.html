@@ -245,7 +245,7 @@
                     }
                     break;
                 case 'ask_final':
-                    if (response === '3') {
+                    if (response === '3' || response === '３') { // ここを変更
                         state.step = 'end_success';
                         botEndSuccess();
                     } else {
