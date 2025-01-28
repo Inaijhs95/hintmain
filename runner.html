@@ -210,7 +210,7 @@
                 case 'ask_tengu':
                     if (response === '天狗') {
                         state.step = 'got_club_again';
-                        botQuestion('♣のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                        botQuestion('♠のトランプをゲットしましたか？', ['はい', 'いいえ']);
                     } else {
                         state.step = 'error';
                         botError();
