@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>チャットボット</title>
+    <title>お問い合わせ窓口</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { 
@@ -121,7 +121,7 @@
                 // テキストと画像を含むコンテナを作成
                 const content = document.createElement('div');
                 const textNode = document.createElement('div');
-                textNode.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
+                textNode.textContent = `${sender === 'user' ? 'あなた: ' : 'オペレーター: '}${text}`;
                 content.appendChild(textNode);
                 
                 const img = document.createElement('img');
@@ -131,7 +131,7 @@
 
                 msg.appendChild(content);
             } else {
-                msg.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
+                msg.textContent = `${sender === 'user' ? 'あなた: ' : 'オペレーター: '}${text}`;
             }
             chatbox.appendChild(msg);
             // 自動スクロール
@@ -201,7 +201,7 @@
                 case 'got_club':
                     if (response === 'はい') {
                         state.step = 'ask_tengu';
-                        botQuestion('登場したキャラの中で一番鼻の長いキャラクターを漢字二字で答えてください', []);
+                        botQuestion('登場したキャラの中で一番鼻の長いキャラクターを漢字二文字で答えてください', []);
                     } else {
                         state.step = 'error';
                         botError();
@@ -219,7 +219,7 @@
                 case 'got_club_again':
                     if (response === 'はい') {
                         state.step = 'ask_oni';
-                        botQuestion('追加モードの名前を漢字一字で答えてください', []);
+                        botQuestion('追加モードの名前を漢字一文字で答えてください', []);
                     } else {
                         state.step = 'error';
                         botError();
@@ -238,7 +238,7 @@
                     if (response === 'はい') {
                         state.step = 'ask_final';
                         // number.png を表示するために imageUrl を追加
-                        botQuestion('欠けていた箇所はどこでしたか？数字でお答えください', [], 'number.png');
+                        botQuestion('欠けていた箇所はどこでしたか？数字のみでお答えください', [], 'number.png');
                     } else {
                         state.step = 'error';
                         botError();
@@ -275,7 +275,7 @@
         }
 
         function botEndSuccess() {
-            addMessage('bot', 'それでは最後のトランプをお受け取り下さい。');
+            addMessage('bot', 'おみごとです。それでは最後のトランプをお受け取り下さい。');
             const btn = document.createElement('button');
             btn.textContent = '♥のトランプをゲットする';
             btn.onclick = () => {
