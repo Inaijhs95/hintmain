@@ -92,6 +92,13 @@
             background-color: rgba(0,0,0,0.2);
             border-radius: 3px;
         }
+        /* 画像のスタイル（オプション） */
+        .bot img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -107,10 +114,25 @@
             responses: {}
         };
 
-        function addMessage(sender, text) {
+        function addMessage(sender, text, imageUrl = null) { // 画像URLをオプション引数に追加
             const msg = document.createElement('div');
             msg.className = 'message ' + sender;
-            msg.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
+            if (imageUrl && sender === 'bot') { // 画像が指定され、送信者がボットの場合
+                // テキストと画像を含むコンテナを作成
+                const content = document.createElement('div');
+                const textNode = document.createElement('div');
+                textNode.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
+                content.appendChild(textNode);
+                
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = '関連画像';
+                content.appendChild(img);
+
+                msg.appendChild(content);
+            } else {
+                msg.textContent = `${sender === 'user' ? 'あなた: ' : 'ボット: '}${text}`;
+            }
             chatbox.appendChild(msg);
             // 自動スクロール
             chatbox.scrollTop = chatbox.scrollHeight;
@@ -215,7 +237,8 @@
                 case 'got_diamond':
                     if (response === 'はい') {
                         state.step = 'ask_final';
-                        botQuestion('欠けていた箇所はどこでしたか？数字でお答えください', []);
+                        // number.png を表示するために imageUrl を追加
+                        botQuestion('欠けていた箇所はどこでしたか？数字でお答えください', [], 'number.png');
                     } else {
                         state.step = 'error';
                         botError();
@@ -242,8 +265,8 @@
             }
         }
 
-        function botQuestion(text, options) {
-            addMessage('bot', text);
+        function botQuestion(text, options, imageUrl = null) { // imageUrl をオプション引数に追加
+            addMessage('bot', text, imageUrl); // 画像URLを渡す
             if (options.length > 0) {
                 showOptions(options);
             } else {
