@@ -215,14 +215,14 @@
                 case 'got_diamond':
                     if (response === 'はい') {
                         state.step = 'ask_final';
-                        botQuestion('○○○でしたね？', []);
+                        botQuestion('欠けていた箇所はどこでしたか？数字でお答えください', []);
                     } else {
                         state.step = 'error';
                         botError();
                     }
                     break;
                 case 'ask_final':
-                    if (response === 'そうだね') {
+                    if (response === '3') {
                         state.step = 'end_success';
                         botEndSuccess();
                     } else {
