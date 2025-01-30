@@ -1,777 +1,140 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Stick Hero Game</title>
-  <style>
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      background-color: #FEF1E1; /* ゲームの背景色 */
-    }
-    
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      cursor: pointer;
-      touch-action: manipulation; /* Prevent default touch actions */
-    }
-    
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      position: relative;
-    }
-    
-    #score {
-      position: absolute;
-      top: 30px;
-      right: 30px;
-      font-size: 2em;
-      font-weight: 900;
-      z-index: 2;
-      color: #333;
-    }
-    
-    #introduction {
-      width: 250px;
-      height: 150px;
-      position: absolute;
-      font-weight: 600;
-      font-size: 1em;
-      text-align: center;
-      transition: opacity 2s;
-      z-index: 2;
-      color: #333;
-    }
-    
-    #restart {
-      width: 120px;
-      height: 120px;
-      position: absolute;
-      border-radius: 50%;
-      color: white;
-      background-color: red;
-      border: none;
-      font-weight: 700;
-      font-size: 1.2em;
-      display: none;
-      cursor: pointer;
-      z-index: 2;
-    }
-    
-    #perfect {
-      position: absolute;
-      opacity: 0;
-      transition: opacity 2s;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.5em;
-      color: gold;
-      z-index: 2;
-      text-shadow: 1px 1px 2px #000;
-    }
-    
-    /* キャラクター選択画面のスタイル */
-    #character-selection {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 3;
-      text-align: center;
-      background-color: rgba(255, 255, 255, 0.95);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      pointer-events: all; /* Ensure the selection screen receives pointer events */
-    }
-    
-    #character-selection h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    
-    .character-option {
-      display: inline-block;
-      margin: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
-      user-select: none; /* Prevent text selection */
-    }
-    
-    .character-option:hover {
-      transform: scale(1.1);
-    }
-    
-    .character-option img {
-      width: 100px;
-      height: 100px;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      background-color: #fff;
-    }
-    
-    .character-option p {
-      margin-top: 10px;
-      font-weight: 600;
-      color: #333;
-    }
-    
-    /* スコア5以上で表示されるボタンのスタイル */
-    #achievement {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      padding: 10px 20px;
-      background-color: #FFD700; /* ゴールドカラー */
-      color: #333;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-      font-weight: 700;
-      cursor: pointer;
-      display: none; /* 初期状態では非表示 */
-      z-index: 2;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    
-    #achievement:hover {
-      background-color: #FFC700;
-    }
-    
-    /* レスポンシブデザイン */
-    @media (max-width: 600px) {
-      #introduction {
-        width: 180px;
-        height: 120px;
-        font-size: 0.9em;
-      }
-      
-      #score {
-        font-size: 1.5em;
-        top: 20px;
-        right: 20px;
-      }
-      
-      .character-option img {
-        width: 80px;
-        height: 80px;
-      }
-      
-      #achievement {
-        padding: 8px 16px;
-        font-size: 0.9em;
-        top: 20px;
-        left: 20px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>記憶力テストゲーム</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            display: grid;
+            grid-template-columns: repeat(2, 150px);
+            grid-template-rows: repeat(2, 150px);
+            gap: 20px;
+        }
+        .color-button {
+            width: 150px;
+            height: 150px;
+            border: none;
+            border-radius: 15px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        #start-button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        #start-button:hover {
+            background-color: #45a049;
+        }
+        #level-display {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div id="score">0</div>
-    <canvas id="game" width="375" height="375"></canvas>
-    <div id="introduction">タップしてスティックを伸ばしましょう</div>
-    <div id="perfect">DOUBLE SCORE</div>
-    <button id="restart">RESTART</button>
-    
-    <!-- スコア5以上で表示されるボタン -->
-    <button id="achievement">♦のトランプをゲットしました</button>
-    
-    <!-- キャラクター選択画面 -->
-    <div id="character-selection">
-      <h2>キャラクターを選択してください</h2>
-      <div class="character-option" data-character="gorilla">
-        <img src="redgorilla.png" alt="ゴリラ">
-        <p>ゴリラ</p>
-      </div>
-      <div class="character-option" data-character="dragon-panda">
-        <img src="dragonpanda.png" alt="ドラゴンパンダ">
-        <p>ドラゴンパンダ</p>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    // Extend the base functionality of JavaScript
-    Array.prototype.last = function () {
-      return this[this.length - 1];
-    };
-    
-    // A sinus function that accepts degrees instead of radians
-    Math.sinus = function (degree) {
-      return Math.sin((degree / 180) * Math.PI);
-    };
-    
-    // Game data
-    let phase = "waiting"; // waiting | stretching | turning | walking | transitioning | falling
-    let lastTimestamp; // The timestamp of the previous requestAnimationFrame cycle
-    
-    let heroX; // Changes when moving forward
-    let heroY; // Only changes when falling
-    let sceneOffset; // Moves the whole game
-    
-    let platforms = [];
-    let sticks = [];
-    let trees = [];
-    
-    // Todo: Save high score to localStorage (?)
-    
-    let score = 0;
-    
-    // Configuration
-    const canvasWidth = 375;
-    const canvasHeight = 375;
-    const platformHeight = 100;
-    const heroDistanceFromEdge = 10; // While waiting
-    const paddingX = 100; // The waiting position of the hero in from the original canvas size
-    const perfectAreaSize = 10;
-    
-    // The background moves slower than the hero
-    const backgroundSpeedMultiplier = 0.2;
-    
-    const hill1BaseHeight = 100;
-    const hill1Amplitude = 10;
-    const hill1Stretch = 1;
-    const hill2BaseHeight = 70;
-    const hill2Amplitude = 20;
-    const hill2Stretch = 0.5;
-    
-    const stretchingSpeed = 4; // Milliseconds it takes to draw a pixel
-    const turningSpeed = 4; // Milliseconds it takes to turn a degree
-    const walkingSpeed = 4;
-    const transitioningSpeed = 2;
-    const fallingSpeed = 2;
-    
-    const heroWidth = 90; // 30 * 2
-    const heroHeight = 100; // 50 * 1.5
-    
-    const canvas = document.getElementById("game");
-    canvas.width = window.innerWidth; // Make the Canvas full screen
-    canvas.height = window.innerHeight;
-    
-    const ctx = canvas.getContext("2d");
-    
-    const introductionElement = document.getElementById("introduction");
-    const perfectElement = document.getElementById("perfect");
-    const restartButton = document.getElementById("restart");
-    const scoreElement = document.getElementById("score");
-    
-    // スコア5以上で表示されるボタンの要素
-    const achievementButton = document.getElementById("achievement");
-    
-    // キャラクター選択画面の要素
-    const characterSelection = document.getElementById("character-selection");
-    const characterOptions = document.querySelectorAll(".character-option");
-    
-    // 現在選択されているキャラクター
-    let selectedCharacter = null;
-    
-    // 画像オブジェクト
-    const gorillaImage = new Image();
-    const dragonPandaImage = new Image();
-    gorillaImage.src = "redgorilla.png";
-    dragonPandaImage.src = "dragonpanda.png";
-    
-    // Ensure images are loaded before starting the game
-    let imagesLoaded = 0;
-    gorillaImage.onload = dragonPandaImage.onload = function() {
-      imagesLoaded++;
-      if (imagesLoaded === 2) {
-        resetGame();
-        // drawCharacterPreviews(); // Not needed since using images
-      }
-    };
-    
-    // Resets game variables and layouts but does not start the game (game starts on tap)
-    function resetGame() {
-      // Reset game progress
-      phase = "waiting";
-      lastTimestamp = undefined;
-      sceneOffset = 0;
-      score = 0;
-    
-      introductionElement.style.opacity = 1;
-      perfectElement.style.opacity = 0;
-      restartButton.style.display = "none";
-      scoreElement.innerText = score;
-      achievementButton.style.display = "none"; // Hide achievement button on reset
-    
-      // The first platform is always the same
-      // x + w has to match paddingX
-      platforms = [{ x: 50, w: 50 }];
-      generatePlatform();
-      generatePlatform();
-      generatePlatform();
-      generatePlatform();
-    
-      sticks = [{ x: platforms[0].x + platforms[0].w, length: 0, rotation: 0 }];
-    
-      trees = [];
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-      generateTree();
-    
-      heroX = platforms[0].x + platforms[0].w - heroDistanceFromEdge;
-      heroY = 0;
-    
-      draw();
-    }
-    
-    function generateTree() {
-      const minimumGap = 30;
-      const maximumGap = 150;
-    
-      // X coordinate of the right edge of the furthest tree
-      const lastTree = trees[trees.length - 1];
-      let furthestX = lastTree ? lastTree.x : 0;
-    
-      const x =
-        furthestX +
-        minimumGap +
-        Math.floor(Math.random() * (maximumGap - minimumGap));
-    
-      const treeColors = ["#6D8821", "#8FAC34", "#98B333"];
-      const color = treeColors[Math.floor(Math.random() * 3)];
-    
-      trees.push({ x, color });
-    }
-    
-    function generatePlatform() {
-      const minimumGap = 40;
-      const maximumGap = 200;
-      const minimumWidth = 20;
-      const maximumWidth = 100;
-    
-      // X coordinate of the right edge of the furthest platform
-      const lastPlatform = platforms[platforms.length - 1];
-      let furthestX = lastPlatform.x + lastPlatform.w;
-    
-      const x =
-        furthestX +
-        minimumGap +
-        Math.floor(Math.random() * (maximumGap - minimumGap));
-      const w =
-        minimumWidth + Math.floor(Math.random() * (maximumWidth - minimumWidth));
-    
-      platforms.push({ x, w });
-    }
-    
-    // キャラクター選択時の処理
-    characterOptions.forEach(option => {
-      option.addEventListener("click", function (event) {
-        event.stopPropagation(); // Prevent the click from bubbling up to the window
-        const character = this.getAttribute("data-character");
-        selectedCharacter = character;
-        characterSelection.style.display = "none";
-        introductionElement.style.opacity = 1;
-      });
-      
-      // タッチ操作でも選択できるように
-      option.addEventListener("touchstart", function (event) {
-        event.preventDefault(); // Prevent default touch behavior
-        event.stopPropagation(); // Prevent the touch from bubbling up to the window
-        const character = this.getAttribute("data-character");
-        selectedCharacter = character;
-        characterSelection.style.display = "none";
-        introductionElement.style.opacity = 1;
-      }, { passive: false });
-    });
-    
-    // If space was pressed restart the game
-    window.addEventListener("keydown", function (event) {
-      if (event.key === " ") {
-        event.preventDefault();
-        resetGame();
-        characterSelection.style.display = "block";
-        return;
-      }
-    });
-    
-    // Mouse events for desktop
-    window.addEventListener("mousedown", function (event) {
-      if (phase === "waiting" && selectedCharacter) {
-        lastTimestamp = undefined;
-        introductionElement.style.opacity = 0;
-        phase = "stretching";
-        window.requestAnimationFrame(animate);
-      }
-    });
-    
-    window.addEventListener("mouseup", function (event) {
-      if (phase === "stretching") {
-        phase = "turning";
-      }
-    });
-    
-    // Touch events for mobile
-    window.addEventListener("touchstart", function (event) {
-      if (phase === "waiting" && selectedCharacter) {
-        event.preventDefault(); // Prevent default touch behavior
-        lastTimestamp = undefined;
-        introductionElement.style.opacity = 0;
-        phase = "stretching";
-        window.requestAnimationFrame(animate);
-      }
-    }, { passive: false });
-    
-    window.addEventListener("touchend", function (event) {
-      if (phase === "stretching") {
-        phase = "turning";
-      }
-    });
-    
-    window.addEventListener("resize", function (event) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      draw();
-    });
-    
-    // The main game loop
-    function animate(timestamp) {
-      if (!lastTimestamp) {
-        lastTimestamp = timestamp;
-        window.requestAnimationFrame(animate);
-        return;
-      }
-    
-      switch (phase) {
-        case "waiting":
-          return; // Stop the loop
-        case "stretching": {
-          sticks.last().length += (timestamp - lastTimestamp) / stretchingSpeed;
-          break;
-        }
-        case "turning": {
-          sticks.last().rotation += (timestamp - lastTimestamp) / turningSpeed;
-    
-          if (sticks.last().rotation > 90) {
-            sticks.last().rotation = 90;
-    
-            const [nextPlatform, perfectHit] = thePlatformTheStickHits();
-            if (nextPlatform) {
-              // Increase score
-              score += perfectHit ? 2 : 1;
-              scoreElement.innerText = score;
-    
-              if (perfectHit) {
-                perfectElement.style.opacity = 1;
-                setTimeout(() => (perfectElement.style.opacity = 0), 1000);
-              }
-    
-              // スコアが5以上かつ未取得の場合、ボタンを表示
-              if (score >= 5 && !localStorage.getItem('gotDiamondCard')) {
-                achievementButton.style.display = "block";
-                localStorage.setItem('gotDiamondCard', 'true');
-              }
-    
-              generatePlatform();
-              generateTree();
-              generateTree();
-            }
-    
-            phase = "walking";
-          }
-          break;
-        }
-        case "walking": {
-          heroX += (timestamp - lastTimestamp) / walkingSpeed;
-    
-          const [nextPlatform] = thePlatformTheStickHits();
-          if (nextPlatform) {
-            // If hero will reach another platform then limit its position at the edge
-            const maxHeroX = nextPlatform.x + nextPlatform.w - heroDistanceFromEdge;
-            if (heroX > maxHeroX) {
-              heroX = maxHeroX;
-              phase = "transitioning";
-            }
-          } else {
-            // If hero won't reach another platform then limit its position at the end of the stick
-            const maxHeroX = sticks.last().x + sticks.last().length + heroWidth;
-            if (heroX > maxHeroX) {
-              heroX = maxHeroX;
-              phase = "falling";
-            }
-          }
-          break;
-        }
-        case "transitioning": {
-          sceneOffset += (timestamp - lastTimestamp) / transitioningSpeed;
-    
-          const [nextPlatform] = thePlatformTheStickHits();
-          if (sceneOffset > nextPlatform.x + nextPlatform.w - paddingX) {
-            // Add the next step
-            sticks.push({
-              x: nextPlatform.x + nextPlatform.w,
-              length: 0,
-              rotation: 0
+    <h1>記憶力テストゲーム</h1>
+    <div id="level-display">レベル: 1</div>
+    <div id="game-container">
+        <button class="color-button" id="red" style="background-color: red;"></button>
+        <button class="color-button" id="green" style="background-color: green;"></button>
+        <button class="color-button" id="blue" style="background-color: blue;"></button>
+        <button class="color-button" id="yellow" style="background-color: yellow;"></button>
+    </div>
+    <button id="start-button">スタート</button>
+
+    <script>
+        const colors = ['red', 'green', 'blue', 'yellow'];
+        let sequence = [];
+        let userSequence = [];
+        let level = 1;
+        let acceptingInput = false;
+
+        const levelDisplay = document.getElementById('level-display');
+        const startButton = document.getElementById('start-button');
+        const colorButtons = document.querySelectorAll('.color-button');
+
+        startButton.addEventListener('click', startGame);
+
+        colorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (!acceptingInput) return;
+                const color = button.id;
+                userSequence.push(color);
+                flashButton(color);
+                checkUserInput(userSequence.length - 1);
             });
-            phase = "waiting";
-          }
-          break;
+        });
+
+        function startGame() {
+            level = 1;
+            sequence = [];
+            userSequence = [];
+            levelDisplay.textContent = `レベル: ${level}`;
+            startButton.disabled = true;
+            nextLevel();
         }
-        case "falling": {
-          if (sticks.last().rotation < 180)
-            sticks.last().rotation += (timestamp - lastTimestamp) / turningSpeed;
-    
-          heroY += (timestamp - lastTimestamp) / fallingSpeed;
-          const maxHeroY =
-            platformHeight + 100 + (window.innerHeight - canvasHeight) / 2;
-          if (heroY > maxHeroY) {
-            restartButton.style.display = "block";
-            return;
-          }
-          break;
+
+        function nextLevel() {
+            acceptingInput = false;
+            userSequence = [];
+            sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+            playSequence();
         }
-        default:
-          throw Error("Wrong phase");
-      }
-    
-      draw();
-      window.requestAnimationFrame(animate);
-    
-      lastTimestamp = timestamp;
-    }
-    
-    // Returns the platform the stick hit (if it didn't hit any stick then return undefined)
-    function thePlatformTheStickHits() {
-      if (sticks.last().rotation !== 90)
-        throw Error(`Stick is ${sticks.last().rotation}°`);
-      const stickFarX = sticks.last().x + sticks.last().length;
-    
-      const platformTheStickHits = platforms.find(
-        (platform) => platform.x < stickFarX && stickFarX < platform.x + platform.w
-      );
-    
-      // If the stick hits the perfect area
-      if (
-        platformTheStickHits &&
-        platformTheStickHits.x + platformTheStickHits.w / 2 - perfectAreaSize / 2 <
-          stickFarX &&
-        stickFarX <
-          platformTheStickHits.x + platformTheStickHits.w / 2 + perfectAreaSize / 2
-      )
-        return [platformTheStickHits, true];
-    
-      return [platformTheStickHits, false];
-    }
-    
-    function draw() {
-      ctx.save();
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    
-      drawBackground();
-    
-      // Center main canvas area to the middle of the screen
-      ctx.translate(
-        (window.innerWidth - canvasWidth) / 2 - sceneOffset,
-        (window.innerHeight - canvasHeight) / 2
-      );
-    
-      // Draw scene
-      drawPlatforms();
-      drawHero();
-      drawSticks();
-    
-      // Restore transformation
-      ctx.restore();
-    }
-    
-    restartButton.addEventListener("click", function (event) {
-      event.preventDefault();
-      resetGame();
-      restartButton.style.display = "none";
-      characterSelection.style.display = "block";
-    });
-    
-    achievementButton.addEventListener("click", function (event) {
-      event.preventDefault();
-      achievementButton.style.display = "none"; // Hide the button when clicked
-      alert("♦のトランプをゲットしました！"); // Optional: Show an alert message
-    });
-    
-    function drawPlatforms() {
-      platforms.forEach(({ x, w }) => {
-        // Draw platform
-        ctx.fillStyle = "black";
-        ctx.fillRect(
-          x,
-          canvasHeight - platformHeight,
-          w,
-          platformHeight + (window.innerHeight - canvasHeight) / 2
-        );
-    
-        // Draw perfect area only if hero did not yet reach the platform
-        if (sticks.last().x < x) {
-          ctx.fillStyle = "red";
-          ctx.fillRect(
-            x + w / 2 - perfectAreaSize / 2,
-            canvasHeight - platformHeight,
-            perfectAreaSize,
-            perfectAreaSize
-          );
+
+        function playSequence() {
+            let delay = 500;
+            sequence.forEach((color, index) => {
+                setTimeout(() => {
+                    flashButton(color);
+                }, delay * (index + 1));
+            });
+            setTimeout(() => {
+                acceptingInput = true;
+            }, delay * (sequence.length + 1));
         }
-      });
-    }
-    
-    function drawHero() {
-      ctx.save();
-      ctx.translate(
-        heroX - heroWidth / 2,
-        heroY + canvasHeight - platformHeight - heroHeight / 2
-      );
-    
-      // Draw the selected character
-      if (selectedCharacter === "gorilla") {
-        if (gorillaImage.complete) {
-          ctx.drawImage(gorillaImage, -heroWidth / 2, -heroHeight / 2, heroWidth, heroHeight);
+
+        function flashButton(color) {
+            const button = document.getElementById(color);
+            button.style.opacity = '1';
+            setTimeout(() => {
+                button.style.opacity = '0.8';
+            }, 300);
         }
-      } else if (selectedCharacter === "dragon-panda") {
-        if (dragonPandaImage.complete) {
-          ctx.drawImage(dragonPandaImage, -heroWidth / 2, -heroHeight / 2, heroWidth, heroHeight);
+
+        function checkUserInput(index) {
+            if (userSequence[index] !== sequence[index]) {
+                gameOver();
+                return;
+            }
+            if (userSequence.length === sequence.length) {
+                level++;
+                levelDisplay.textContent = `レベル: ${level}`;
+                setTimeout(nextLevel, 1000);
+            }
         }
-      }
-    
-      ctx.restore();
-    }
-    
-    function drawSticks() {
-      sticks.forEach((stick) => {
-        ctx.save();
-    
-        // Move the anchor point to the start of the stick and rotate
-        ctx.translate(stick.x, canvasHeight - platformHeight);
-        ctx.rotate((Math.PI / 180) * stick.rotation);
-    
-        // Draw stick
-        ctx.beginPath();
-        ctx.lineWidth = 5; // Thicker stick
-        ctx.strokeStyle = "brown";
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, -stick.length);
-        ctx.stroke();
-    
-        // Restore transformations
-        ctx.restore();
-      });
-    }
-    
-    function drawBackground() {
-      // Draw sky
-      const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
-      gradient.addColorStop(0, "#BBD691");
-      gradient.addColorStop(1, "#FEF1E1");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-    
-      // Draw hills
-      drawHill(hill1BaseHeight, hill1Amplitude, hill1Stretch, "#95C629");
-      drawHill(hill2BaseHeight, hill2Amplitude, hill2Stretch, "#659F1C");
-    
-      // Draw trees
-      trees.forEach((tree) => drawTree(tree.x, tree.color));
-    }
-    
-    // A hill is a shape under a stretched out sinus wave
-    function drawHill(baseHeight, amplitude, stretch, color) {
-      ctx.beginPath();
-      ctx.moveTo(0, window.innerHeight);
-      ctx.lineTo(0, getHillY(0, baseHeight, amplitude, stretch));
-      for (let i = 0; i < window.innerWidth; i++) {
-        ctx.lineTo(i, getHillY(i, baseHeight, amplitude, stretch));
-      }
-      ctx.lineTo(window.innerWidth, window.innerHeight);
-      ctx.closePath();
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
-    
-    function drawTree(x, color) {
-      ctx.save();
-      ctx.translate(
-        (-sceneOffset * backgroundSpeedMultiplier + x) * hill1Stretch,
-        getTreeY(x, hill1BaseHeight, hill1Amplitude)
-      );
-    
-      const treeTrunkHeight = 10;
-      const treeTrunkWidth = 4;
-      const treeCrownHeight = 25;
-      const treeCrownWidth = 20;
-    
-      // Draw trunk
-      ctx.fillStyle = "#7D833C";
-      ctx.fillRect(
-        -treeTrunkWidth / 2,
-        -treeTrunkHeight,
-        treeTrunkWidth,
-        treeTrunkHeight
-      );
-    
-      // Draw crown
-      ctx.beginPath();
-      ctx.moveTo(-treeCrownWidth / 2, -treeTrunkHeight);
-      ctx.lineTo(0, -(treeTrunkHeight + treeCrownHeight));
-      ctx.lineTo(treeCrownWidth / 2, -treeTrunkHeight);
-      ctx.closePath();
-      ctx.fillStyle = color;
-      ctx.fill();
-    
-      ctx.restore();
-    }
-    
-    function getHillY(windowX, baseHeight, amplitude, stretch) {
-      const sineBaseY = window.innerHeight - baseHeight;
-      return (
-        Math.sinus((sceneOffset * backgroundSpeedMultiplier + windowX) * stretch) *
-          amplitude +
-        sineBaseY
-      );
-    }
-    
-    function getTreeY(x, baseHeight, amplitude) {
-      const sineBaseY = window.innerHeight - baseHeight;
-      return Math.sinus(x) * amplitude + sineBaseY;
-    }
-    
-    // キャラクター選択画面のプレビュー描画（画像を使用するため不要）
-    // 画像要素を使用しているため、この関数は不要です。
-    // 削除またはコメントアウトしても構いません。
-    
-    // function drawCharacterPreviews() {
-    //   // ゴリラのプレビュー
-    //   gorillaPreview.clearRect(0, 0, 100, 100);
-    //   gorillaPreview.save();
-    //   gorillaPreview.translate(50, 50);
-    //   drawGorillaPreview(gorillaPreview);
-    //   gorillaPreview.restore();
-    
-    //   // ドラゴンパンダのプレビュー
-    //   dragonPandaPreview.clearRect(0, 0, 100, 100);
-    //   dragonPandaPreview.save();
-    //   dragonPandaPreview.translate(50, 50);
-    //   drawDragonPandaPreview(dragonPandaPreview);
-    //   dragonPandaPreview.restore();
-    // }
-    
-    // // キャラクター選択画面のプレビュー描画関数（不要）
-    // function drawGorillaPreview(ctx) {
-    //   // プレビュー用の描画処理（不要）
-    // }
-    
-    // function drawDragonPandaPreview(ctx) {
-    //   // プレビュー用の描画処理（不要）
-    // }
-  </script>
+
+        function gameOver() {
+            alert(`ゲームオーバー！あなたのレベルは ${level} でした。`);
+            startButton.disabled = false;
+        }
+    </script>
+
 </body>
 </html>
