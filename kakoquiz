@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>配信済みの問題</title>
+    <style>
+        /* 全体のスタイル */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .question a {
+            color: #1e90ff;
+            text-decoration: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .question a:hover {
+            text-decoration: underline;
+        }
+        /* モーダルのスタイル */
+        .modal {
+            display: none; /* 初期状態は非表示 */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%;
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); /* 半透明の背景 */
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 700px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>配信済みの問題</h1>
+    <div id="questions">
+        <!-- 問題リンクがここに挿入されます -->
+    </div>
+
+    <!-- モーダルウィンドウ -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody" class="modal-body">
+                <!-- モーダルの内容がここに挿入されます -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 問題のデータ配列
+        const questions = [
+            {
+                id: 'Q1',
+                title: 'Q1',
+                openDate: new Date('2024-04-06T19:00:00'),
+                images: ['Q1.png'],
+                text: '問題文画像から導き出せるひらがな3文字をお答えください。'
+            },
+            {
+                id: 'Q2',
+                title: 'Q2',
+                openDate: new Date('2024-04-13T19:00:00'),
+                images: ['Q2.png'],
+                text: '画像から導き出せる言葉をお答えください。'
+            },
+            {
+                id: 'Q3',
+                title: 'Q3',
+                openDate: new Date('2024-04-20T19:00:00'),
+                images: ['Q3V1.png', 'Q3V2.png'],
+                text: '夕暮れの写真を入手しました。写真の一部にテープが貼られ、暗号が書かれています。写真裏側には４つの言葉が記載されていました。この写真の暗号を解き明かしてください。'
+            },
+            {
+                id: 'Q4',
+                title: 'Q4',
+                openDate: new Date('2024-04-27T00:00:00'),
+                images: ['Q4.png'],
+                text: ''
+            }
+        ];
+
+        // 現在の日時を取得
+        const now = new Date();
+
+        // 問題リストを表示するコンテナ
+        const questionsDiv = document.getElementById('questions');
+
+        // 各問題をチェックして表示
+        questions.forEach(question => {
+            if(now >= question.openDate){
+                // 問題のリンクを作成
+                const div = document.createElement('div');
+                div.className = 'question';
+                const link = document.createElement('a');
+                link.textContent = question.title;
+                link.href = '#';
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openModal(question);
+                });
+                div.appendChild(link);
+                questionsDiv.appendChild(div);
+            }
+        });
+
+        // モーダル要素の取得
+        const modal = document.getElementById('myModal');
+        const modalBody = document.getElementById('modalBody');
+        const span = document.getElementsByClassName('close')[0];
+
+        // モーダルを開く関数
+        function openModal(question){
+            // モーダルの内容をクリア
+            modalBody.innerHTML = '';
+
+            // 問題文を追加
+            const paragraph = document.createElement('p');
+            paragraph.textContent = question.text;
+            modalBody.appendChild(paragraph);
+
+            // 画像を追加
+            question.images.forEach(imgSrc => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = question.id;
+                modalBody.appendChild(img);
+            });
+
+            // モーダルを表示
+            modal.style.display = 'block';
+        }
+
+        // モーダルを閉じるイベント
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // モーダル外をクリックしたら閉じる
+        window.onclick = function(event) {
+            if(event.target == modal){
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
