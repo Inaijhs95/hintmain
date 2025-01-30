@@ -26,7 +26,19 @@
             border: none;
             border-radius: 15px;
             opacity: 0.8;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
+            position: relative;
+        }
+        .color-button.active {
+            opacity: 1;
+            transform: scale(1.1);
+            /* アニメーションの追加 */
+            animation: flash 0.5s;
+        }
+        @keyframes flash {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
         }
         #start-button {
             margin-top: 30px;
@@ -37,6 +49,7 @@
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         #start-button:hover {
             background-color: #45a049;
@@ -59,6 +72,13 @@
     </div>
     <button id="start-button">スタート</button>
 
+    <!-- 音声フィードバック用のオーディオファイル -->
+    <audio id="sound-red" src="https://example.com/sounds/red.mp3"></audio>
+    <audio id="sound-green" src="https://example.com/sounds/green.mp3"></audio>
+    <audio id="sound-blue" src="https://example.com/sounds/blue.mp3"></audio>
+    <audio id="sound-yellow" src="https://example.com/sounds/yellow.mp3"></audio>
+    <audio id="sound-wrong" src="https://example.com/sounds/wrong.mp3"></audio>
+
     <script>
         const colors = ['red', 'green', 'blue', 'yellow'];
         let sequence = [];
@@ -70,6 +90,15 @@
         const startButton = document.getElementById('start-button');
         const colorButtons = document.querySelectorAll('.color-button');
 
+        // 音声フィードバックの設定（オプション）
+        const sounds = {
+            red: document.getElementById('sound-red'),
+            green: document.getElementById('sound-green'),
+            blue: document.getElementById('sound-blue'),
+            yellow: document.getElementById('sound-yellow'),
+            wrong: document.getElementById('sound-wrong')
+        };
+
         startButton.addEventListener('click', startGame);
 
         colorButtons.forEach(button => {
@@ -77,7 +106,8 @@
                 if (!acceptingInput) return;
                 const color = button.id;
                 userSequence.push(color);
-                flashButton(color);
+                activateButton(color);
+                playSound(color);
                 checkUserInput(userSequence.length - 1);
             });
         });
@@ -99,10 +129,11 @@
         }
 
         function playSequence() {
-            let delay = 500;
+            let delay = 700;
             sequence.forEach((color, index) => {
                 setTimeout(() => {
-                    flashButton(color);
+                    activateButton(color);
+                    playSound(color);
                 }, delay * (index + 1));
             });
             setTimeout(() => {
@@ -110,16 +141,17 @@
             }, delay * (sequence.length + 1));
         }
 
-        function flashButton(color) {
+        function activateButton(color) {
             const button = document.getElementById(color);
-            button.style.opacity = '1';
+            button.classList.add('active');
             setTimeout(() => {
-                button.style.opacity = '0.8';
-            }, 300);
+                button.classList.remove('active');
+            }, 500);
         }
 
         function checkUserInput(index) {
             if (userSequence[index] !== sequence[index]) {
+                playSound('wrong');
                 gameOver();
                 return;
             }
@@ -133,6 +165,13 @@
         function gameOver() {
             alert(`ゲームオーバー！あなたのレベルは ${level} でした。`);
             startButton.disabled = false;
+        }
+
+        function playSound(color) {
+            if (sounds[color]) {
+                sounds[color].currentTime = 0;
+                sounds[color].play();
+            }
         }
     </script>
 
