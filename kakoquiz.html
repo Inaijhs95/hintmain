@@ -3,28 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>配信済みの問題</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         /* 全体のスタイル */
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
             background-color: #f9f9f9;
+            margin: 0;
         }
         h1 {
             text-align: center;
             color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
         }
         .question {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: center;
         }
-        .question a {
-            color: #1e90ff;
-            text-decoration: none;
-            font-size: 18px;
+        .question button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 25px;
+            font-size: 1.2em;
             cursor: pointer;
+            width: 80%;
+            max-width: 400px;
+            transition: background-color 0.3s;
         }
-        .question a:hover {
-            text-decoration: underline;
+        .question button:hover {
+            background-color: #005bb5;
         }
         /* モーダルのスタイル */
         .modal {
@@ -37,23 +48,25 @@
             height: 100%;
             overflow: auto; 
             background-color: rgba(0,0,0,0.5); /* 半透明の背景 */
+            padding: 10px;
         }
         .modal-content {
             background-color: #fff;
-            margin: 10% auto; 
+            margin: 50px auto; 
             padding: 20px;
             border: 1px solid #888;
-            width: 90%; 
-            max-width: 700px;
-            border-radius: 8px;
+            width: 100%; 
+            max-width: 600px;
+            border-radius: 10px;
             position: relative;
+            box-sizing: border-box;
         }
         .close {
             color: #aaa;
             position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
+            top: 15px;
+            right: 25px;
+            font-size: 28px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -62,10 +75,34 @@
             color: #000;
             text-decoration: none;
         }
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
         .modal-body img {
             max-width: 100%;
             height: auto;
-            margin-top: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        /* レスポンシブデザイン */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .question button {
+                font-size: 1em;
+                padding: 12px 20px;
+            }
+            .modal-content {
+                margin: 20px auto;
+                padding: 15px;
+            }
+            .close {
+                font-size: 24px;
+                top: 10px;
+                right: 15px;
+            }
         }
     </style>
 </head>
@@ -114,7 +151,7 @@
                 title: 'Q4',
                 openDate: new Date('2024-04-27T00:00:00'),
                 images: ['Q4.png'],
-                text: ''
+                text: '問題文がここに入ります。'
             }
         ];
 
@@ -127,17 +164,15 @@
         // 各問題をチェックして表示
         questions.forEach(question => {
             if(now >= question.openDate){
-                // 問題のリンクを作成
+                // 問題のボタンを作成
                 const div = document.createElement('div');
                 div.className = 'question';
-                const link = document.createElement('a');
-                link.textContent = question.title;
-                link.href = '#';
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
+                const button = document.createElement('button');
+                button.textContent = question.title;
+                button.addEventListener('click', () => {
                     openModal(question);
                 });
-                div.appendChild(link);
+                div.appendChild(button);
                 questionsDiv.appendChild(div);
             }
         });
@@ -153,15 +188,20 @@
             modalBody.innerHTML = '';
 
             // 問題文を追加
-            const paragraph = document.createElement('p');
-            paragraph.textContent = question.text;
-            modalBody.appendChild(paragraph);
+            if(question.text){
+                const paragraph = document.createElement('p');
+                paragraph.textContent = question.text;
+                modalBody.appendChild(paragraph);
+            }
 
             // 画像を追加
             question.images.forEach(imgSrc => {
                 const img = document.createElement('img');
                 img.src = imgSrc;
                 img.alt = question.id;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                }
                 modalBody.appendChild(img);
             });
 
