@@ -114,6 +114,45 @@
         .back-button:hover {
             background-color: #da190b;
         }
+        /* Loader Styles */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #4CAF50;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Text */
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 400px) {
+            .character img {
+                width: 40px;
+                height: 40px;
+            }
+            .options button, .dial-buttons button {
+                font-size: 14px;
+                padding: 8px;
+            }
+            #phone-display {
+                font-size: 14px;
+                padding: 8px;
+            }
+            p {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -148,15 +187,21 @@
     </div>
     <div id="message"></div>
     <div id="end-message">
-        <p>イナイ: 本当にありがとう！</p>
+        <div class="character" id="inai-dialogue">
+            <img src="inai.png" alt="イナイ">
+            <p>本当にありがとう！君のおかげで家族と連絡が取れたよ。</p>
+        </div>
         <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">詳細はこちら</a>
+        <button class="back-button" onclick="restartGame()">最初からやり直す</button>
     </div>
 </div>
 
 <script>
     let dialedNumber = '';
+    let currentStep = 0;
 
     function startConversation() {
+        currentStep = 1;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
@@ -172,25 +217,27 @@
     }
 
     function offerHelp() {
+        currentStep = 2;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="user-dialogue">
-                <img src="user.png" alt="あなた" style="display:none;">
+                <img src="user.png" alt="あなた">
                 <p>災害時には安否確認やメッセージを伝えるサービスがあるよ。一緒に試してみよう。</p>
             </div>
         `;
         const options = document.getElementById('options');
         options.innerHTML = `
             <button onclick="showService()">サービスを利用する</button>
-            <button class="back-button" onclick="startConversation()">戻る</button>
+            <button class="back-button" onclick="goBackToStep(1)">戻る</button>
         `;
     }
 
     function ignoreHelp() {
+        currentStep = 2;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="user-dialogue">
-                <img src="user.png" alt="あなた" style="display:none;">
+                <img src="user.png" alt="あなた">
                 <p>ごめん、手伝えることがないんだ。</p>
             </div>
         `;
@@ -202,6 +249,7 @@
     }
 
     function showService() {
+        currentStep = 3;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
@@ -217,6 +265,7 @@
     }
 
     function showPhone() {
+        currentStep = 4;
         const phone = document.getElementById('phone');
         phone.style.display = 'block';
         const options = document.getElementById('options');
@@ -230,6 +279,7 @@
     }
 
     function callService() {
+        currentStep = 5;
         const number = dialedNumber;
         const messageDiv = document.getElementById('message');
         const dialogue = document.getElementById('dialogue');
@@ -243,7 +293,7 @@
                 <p>通話成功！両親からのメッセージを聞くことができました。</p>
                 <p><strong>母:</strong> 無事でよかった。</p>
                 <p><strong>父:</strong> 気をつけてね。</p>
-                <button onclick="endGame()">次へ</button>
+                <button onclick="transitionToEnd()">次へ</button>
             `;
             phone.style.display = 'none';
             options.innerHTML = '';
@@ -262,6 +312,13 @@
         }
     }
 
+    function transitionToEnd() {
+        currentStep = 6;
+        const messageDiv = document.getElementById('message');
+        messageDiv.style.display = 'none';
+        endGame();
+    }
+
     function resetDial() {
         dialedNumber = '';
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
@@ -269,6 +326,7 @@
     }
 
     function endGame() {
+        currentStep = 7;
         const gameContainer = document.getElementById('game-container');
         gameContainer.innerHTML = `
             <div id="end-message">
@@ -284,6 +342,21 @@
 
     function restartGame() {
         location.reload();
+    }
+
+    function goBackToStep(step) {
+        switch(step) {
+            case 1:
+                startConversation();
+                break;
+            case 2:
+                if (currentStep === 1) {
+                    offerHelp();
+                }
+                break;
+            default:
+                restartGame();
+        }
     }
 </script>
 
