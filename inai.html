@@ -174,12 +174,13 @@
     <div id="game-content" style="display: none;">
         <div id="dialogue">
             <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
-                <p>助けて！困っているんだ。</p>
+                <img src="komari.png" alt="イナイ">
+                <p>実は困ってるんだ・・・</p>
             </div>
         </div>
         <div class="options" id="options">
-            <button onclick="startConversation()">イナイと話す</button>
+            <button onclick="selectOption('how_are_you')">どうしたの？</button>
+            <button onclick="selectOption('busy_now')">今忙しいから。</button>
         </div>
         <div id="phone">
             <div id="phone-display">ダイヤル: </div>
@@ -202,7 +203,7 @@
         <div id="message"></div>
         <div id="end-message">
             <div class="character" id="end-dialogue">
-                <img src="inai.png" alt="イナイ">
+                <img src="arigato.png" alt="イナイ">
                 <p>本当にありがとう！君のおかげで家族の無事が分かったよ！これはお礼だよ。</p>
             </div>
             <button class="back-button" onclick="receiveReward()">受け取る</button>
@@ -259,7 +260,7 @@
         // ダイアログをクリアして新しい内容を設定
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
+                <img src="komari.png" alt="イナイ">
                 <p>実は困ってるんだ・・・</p>
             </div>
         `;
@@ -281,7 +282,7 @@
         if (option === 'how_are_you') {
             dialogue.innerHTML = `
                 <div class="character" id="inai-dialogue">
-                    <img src="inai.png" alt="イナイ">
+                    <img src="komari.png" alt="イナイ">
                     <p>地元の○○村が大きな災害に見舞われてしまい、家族と連絡が取れなくなっているんだ。</p>
                 </div>
             `;
@@ -294,7 +295,7 @@
         } else if (option === 'terrible') {
             dialogue.innerHTML = `
                 <div class="character" id="inai-dialogue">
-                    <img src="inai.png" alt="イナイ">
+                    <img src="komari.png" alt="イナイ">
                     <p>被災地との通信が困難になったとき、安否確認やメッセージを伝えるためのサービスがあったと思うんだけど… このサービスを利用するためには、どのダイヤルに電話をかけるんだっけ…？</p>
                 </div>
             `;
@@ -324,7 +325,7 @@
         if (negativeChoicesCount === 1) {
             dialogue.innerHTML = `
                 <div class="character" id="inai-dialogue">
-                    <img src="inai.png" alt="イナイ">
+                    <img src="akire.png" alt="イナイ">
                     <p>そうだよね…ごめんね。</p>
                 </div>
             `;
@@ -334,7 +335,7 @@
         } else if (negativeChoicesCount === 2) {
             dialogue.innerHTML = `
                 <div class="character" id="inai-dialogue">
-                    <img src="inai.png" alt="イナイ">
+                    <img src="akire.png" alt="イナイ">
                     <p>そうだよね……ごめんね。</p>
                 </div>
             `;
@@ -344,7 +345,7 @@
         } else if (negativeChoicesCount >= 3) {
             dialogue.innerHTML = `
                 <div class="character" id="inai-dialogue">
-                    <img src="inai.png" alt="イナイ">
+                    <img src="akirame.png" alt="イナイ">
                     <p>……</p>
                 </div>
             `;
@@ -367,7 +368,7 @@
         phone.style.display = 'block';
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
+                <img src="yaruki.png" alt="イナイ">
                 <p>適切なダイヤルに電話をかけてください。</p>
             </div>
         `;
@@ -399,31 +400,74 @@
 
         if (number === '171') {
             // 成功
-            messageDiv.style.display = 'block';
-            messageDiv.innerHTML = `
-                <p>通話成功！災害用伝言ダイヤルに繋がった。</p>
-                <p>無事にイナイのパパとママのメッセージを確認できた。</p>
-                <button onclick="transitionToEnd()">次へ</button>
-            `;
-            phone.style.display = 'none';
-            options.innerHTML = '';
+            dialogueSuccess();
         } else if (number === '110') {
             // 警察
             messageDiv.style.display = 'block';
-            messageDiv.innerHTML = `<p>110は警察への電話です。災害通信サービスではありません。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
+            messageDiv.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="akire.png" alt="イナイ">
+                </div>
+                <p>110は警察への電話です。災害通信サービスではありません。</p>
+                <button class="back-button" onclick="resetDial()">戻る</button>
+            `;
+            phone.style.display = 'none';
+            options.innerHTML = '';
         } else if (number === '119') {
             // 消防
             messageDiv.style.display = 'block';
-            messageDiv.innerHTML = `<p>119は消防への電話です。災害通信サービスではありません。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
+            messageDiv.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="akire.png" alt="イナイ">
+                </div>
+                <p>119は消防への電話です。災害通信サービスではありません。</p>
+                <button class="back-button" onclick="resetDial()">戻る</button>
+            `;
+            phone.style.display = 'none';
+            options.innerHTML = '';
         } else {
             // その他
             messageDiv.style.display = 'block';
-            messageDiv.innerHTML = `<p>無効な番号です。もう一度試してください。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
+            messageDiv.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="akire.png" alt="イナイ">
+                </div>
+                <p>無効な番号です。もう一度試してください。</p>
+                <button class="back-button" onclick="resetDial()">戻る</button>
+            `;
+            phone.style.display = 'none';
+            options.innerHTML = '';
         }
 
         // ダイヤル番号をリセット
         dialedNumber = '';
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
+    }
+
+    function dialogueSuccess() {
+        const dialogue = document.getElementById('dialogue');
+        const options = document.getElementById('options');
+        const messageDiv = document.getElementById('message');
+        const phone = document.getElementById('phone');
+
+        // ダイアログをイナイのアイコンのみ表示に変更
+        dialogue.innerHTML = `
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+            </div>
+        `;
+
+        // メッセージ表示
+        messageDiv.style.display = 'block';
+        messageDiv.innerHTML = `
+            <p>通話成功！災害用伝言ダイヤルに繋がった。</p>
+            <p>無事にイナイのパパとママのメッセージを確認できた。</p>
+            <button onclick="transitionToEnd()">次へ</button>
+        `;
+
+        // 電話パッドを隠す
+        phone.style.display = 'none';
+        options.innerHTML = '';
     }
 
     function transitionToEnd() {
@@ -458,12 +502,13 @@
 
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
+                <img src="akirame.png" alt="イナイ">
                 <p>今は話しかけないで</p>
             </div>
         `;
         options.innerHTML = `
-            <p>ゲームを終了します。</p>
+            <button onclick="goToTop()">トップページに戻る</button>
+            <p>ゲームはロックされています。</p>
         `;
 
         // ロックタイムを翌日朝6時に設定
@@ -486,12 +531,13 @@
 
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
+                <img src="akirame.png" alt="イナイ">
                 <p>今は話しかけないで</p>
             </div>
         `;
         options.innerHTML = `
-            <p>ゲームはロックされています。翌日朝6時にリセットされます。</p>
+            <button onclick="goToTop()">トップページに戻る</button>
+            <p>ゲームはロックされています。</p>
         `;
     }
 
@@ -506,6 +552,9 @@
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
         document.getElementById('message').style.display = 'none';
     }
+
+    // デバッグ用: コンソールに選択肢のカウントを表示
+    // 否定的な選択肢を選んだ際にカウントが正しく増加しているか確認
 </script>
 
 </div>
