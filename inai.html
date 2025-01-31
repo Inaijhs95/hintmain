@@ -198,10 +198,8 @@
 
 <script>
     let dialedNumber = '';
-    let currentStep = 0;
 
     function startConversation() {
-        currentStep = 1;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
@@ -217,7 +215,6 @@
     }
 
     function offerHelp() {
-        currentStep = 2;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="user-dialogue">
@@ -228,12 +225,11 @@
         const options = document.getElementById('options');
         options.innerHTML = `
             <button onclick="showService()">サービスを利用する</button>
-            <button class="back-button" onclick="goBackToStep(1)">戻る</button>
+            <button class="back-button" onclick="startConversation()">戻る</button>
         `;
     }
 
     function ignoreHelp() {
-        currentStep = 2;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="user-dialogue">
@@ -249,7 +245,6 @@
     }
 
     function showService() {
-        currentStep = 3;
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
@@ -265,7 +260,6 @@
     }
 
     function showPhone() {
-        currentStep = 4;
         const phone = document.getElementById('phone');
         phone.style.display = 'block';
         const options = document.getElementById('options');
@@ -279,12 +273,14 @@
     }
 
     function callService() {
-        currentStep = 5;
         const number = dialedNumber;
         const messageDiv = document.getElementById('message');
-        const dialogue = document.getElementById('dialogue');
-        const options = document.getElementById('options');
         const phone = document.getElementById('phone');
+        const options = document.getElementById('options');
+
+        // リセット前に表示をクリア
+        messageDiv.style.display = 'none';
+        messageDiv.innerHTML = '';
 
         if (number === '171') {
             // 成功
@@ -310,13 +306,18 @@
             messageDiv.style.display = 'block';
             messageDiv.innerHTML = `<p>無効な番号です。もう一度試してください。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
         }
+
+        // ダイヤル番号をリセット
+        dialedNumber = '';
     }
 
     function transitionToEnd() {
-        currentStep = 6;
         const messageDiv = document.getElementById('message');
+        const endMessage = document.getElementById('end-message');
+
+        // メッセージを非表示にし、エンドメッセージを表示
         messageDiv.style.display = 'none';
-        endGame();
+        endMessage.style.display = 'block';
     }
 
     function resetDial() {
@@ -326,37 +327,11 @@
     }
 
     function endGame() {
-        currentStep = 7;
-        const gameContainer = document.getElementById('game-container');
-        gameContainer.innerHTML = `
-            <div id="end-message">
-                <div class="character" id="inai-dialogue">
-                    <img src="inai.png" alt="イナイ">
-                    <p>本当にありがとう！君のおかげで家族と連絡が取れたよ。</p>
-                </div>
-                <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">詳細はこちら</a>
-                <button class="back-button" onclick="restartGame()">最初からやり直す</button>
-            </div>
-        `;
+        // こちらの関数は不要にしました
     }
 
     function restartGame() {
         location.reload();
-    }
-
-    function goBackToStep(step) {
-        switch(step) {
-            case 1:
-                startConversation();
-                break;
-            case 2:
-                if (currentStep === 1) {
-                    offerHelp();
-                }
-                break;
-            default:
-                restartGame();
-        }
     }
 </script>
 
