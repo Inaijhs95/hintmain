@@ -271,6 +271,8 @@
 
     function handleNegativeChoice() {
         negativeChoicesCount++;
+        console.log('Negative Choices Count:', negativeChoicesCount); // デバッグ用
+
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
 
@@ -346,8 +348,7 @@
         const phone = document.getElementById('phone');
         const options = document.getElementById('options');
 
-        // Hide phone and clear previous message
-        phone.style.display = 'none';
+        // メッセージ表示前に既存の内容をクリア
         messageDiv.style.display = 'none';
         messageDiv.innerHTML = '';
 
@@ -359,6 +360,7 @@
                 <p>無事にイナイのパパとママのメッセージを確認できた。</p>
                 <button onclick="transitionToEnd()">次へ</button>
             `;
+            phone.style.display = 'none';
             options.innerHTML = '';
         } else if (number === '110') {
             // 警察
@@ -444,6 +446,9 @@
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
         document.getElementById('message').style.display = 'none';
     }
+
+    // デバッグ用: コンソールに選択肢のカウントを表示
+    // 否定的な選択肢を選んだ際にカウントが正しく増加しているか確認
 </script>
 
 </div>
