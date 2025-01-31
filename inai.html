@@ -11,12 +11,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
         }
         #game-container {
             background-color: #fff;
             border: 2px solid #ccc;
             border-radius: 10px;
-            width: 350px;
+            width: 400px;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
@@ -35,12 +36,21 @@
             border-radius: 50%;
             margin-right: 10px;
         }
-        .options button {
+        .options button, .dial-buttons button {
             margin: 5px 0;
             padding: 10px;
             width: 100%;
             font-size: 16px;
             cursor: pointer;
+        }
+        .dial-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .dial-buttons button {
+            width: 30%;
+            margin-bottom: 5px;
         }
         #phone {
             display: none;
@@ -54,13 +64,7 @@
             font-family: 'Courier New', Courier, monospace;
             margin-bottom: 10px;
             text-align: center;
-        }
-        .dial-buttons button {
-            width: 30%;
-            padding: 10px;
-            margin: 5px 1%;
-            font-size: 16px;
-            cursor: pointer;
+            min-height: 30px;
         }
         #message {
             margin-top: 20px;
@@ -80,6 +84,15 @@
             text-decoration: none;
             font-weight: bold;
         }
+        .back-button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -97,10 +110,20 @@
     <div id="phone">
         <div id="phone-display">ダイヤル: </div>
         <div class="dial-buttons">
-            <button onclick="dialNumber('171')">171</button>
-            <button onclick="dialNumber('110')">110</button>
-            <button onclick="dialNumber('119')">119</button>
+            <button onclick="dialNumber('1')">1</button>
+            <button onclick="dialNumber('2')">2</button>
+            <button onclick="dialNumber('3')">3</button>
+            <button onclick="dialNumber('4')">4</button>
+            <button onclick="dialNumber('5')">5</button>
+            <button onclick="dialNumber('6')">6</button>
+            <button onclick="dialNumber('7')">7</button>
+            <button onclick="dialNumber('8')">8</button>
+            <button onclick="dialNumber('9')">9</button>
+            <button onclick="dialNumber('*')">*</button>
+            <button onclick="dialNumber('0')">0</button>
+            <button onclick="dialNumber('#')">#</button>
         </div>
+        <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px;">電話をかける</button>
     </div>
     <div id="message"></div>
     <div id="end-message">
@@ -110,6 +133,8 @@
 </div>
 
 <script>
+    let dialedNumber = '';
+
     function startConversation() {
         const dialogue = document.getElementById('dialogue');
         dialogue.innerHTML = `
@@ -119,7 +144,37 @@
             </div>
         `;
         const options = document.getElementById('options');
-        options.innerHTML = `<button onclick="showService()">災害通信サービスを利用する</button>`;
+        options.innerHTML = `
+            <button onclick="offerHelp()">助ける</button>
+            <button onclick="ignoreHelp()">無視する</button>
+        `;
+    }
+
+    function offerHelp() {
+        const dialogue = document.getElementById('dialogue');
+        dialogue.innerHTML = `
+            <div class="character" id="user-dialogue">
+                <img src="user.png" alt="あなた" style="display:none;">
+                <p>災害通信サービスを利用する手伝いをするよ。</p>
+            </div>
+        `;
+        const options = document.getElementById('options');
+        options.innerHTML = `<button onclick="showService()">サービスを利用する</button>`;
+    }
+
+    function ignoreHelp() {
+        const dialogue = document.getElementById('dialogue');
+        dialogue.innerHTML = `
+            <div class="character" id="user-dialogue">
+                <img src="user.png" alt="あなた" style="display:none;">
+                <p>ごめん、手伝えないよ。</p>
+            </div>
+        `;
+        const options = document.getElementById('options');
+        options.innerHTML = `
+            <p>手伝わなかったため、イナイは困ったままです。</p>
+            <button class="back-button" onclick="restartGame()">もう一度試す</button>
+        `;
     }
 
     function showService() {
@@ -141,10 +196,18 @@
         options.innerHTML = `<p>適切なダイヤルに電話をかけてください。</p>`;
     }
 
-    function dialNumber(number) {
+    function dialNumber(num) {
         const phoneDisplay = document.getElementById('phone-display');
-        phoneDisplay.textContent = `ダイヤル: ${number}`;
+        dialedNumber += num;
+        phoneDisplay.textContent = `ダイヤル: ${dialedNumber}`;
+    }
+
+    function callService() {
+        const number = dialedNumber;
         const messageDiv = document.getElementById('message');
+        const dialogue = document.getElementById('dialogue');
+        const options = document.getElementById('options');
+
         if (number === '171') {
             // 成功
             messageDiv.style.display = 'block';
@@ -154,15 +217,27 @@
                 <p>父: 気をつけてね。</p>
                 <button onclick="endGame()">次へ</button>
             `;
+            phone.style.display = 'none';
+            options.innerHTML = '';
         } else if (number === '110') {
             // 警察
             messageDiv.style.display = 'block';
-            messageDiv.innerHTML = `<p>110は警察への電話です。災害通信サービスではありません。</p>`;
+            messageDiv.innerHTML = `<p>110は警察への電話です。災害通信サービスではありません。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
         } else if (number === '119') {
             // 消防
             messageDiv.style.display = 'block';
-            messageDiv.innerHTML = `<p>119は消防への電話です。災害通信サービスではありません。</p>`;
+            messageDiv.innerHTML = `<p>119は消防への電話です。災害通信サービスではありません。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
+        } else {
+            // その他
+            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = `<p>無効な番号です。もう一度試してください。</p><button class="back-button" onclick="resetDial()">戻る</button>`;
         }
+    }
+
+    function resetDial() {
+        dialedNumber = '';
+        document.getElementById('phone-display').textContent = 'ダイヤル: ';
+        document.getElementById('message').style.display = 'none';
     }
 
     function endGame() {
@@ -173,6 +248,10 @@
                 <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">詳細はこちら</a>
             </div>
         `;
+    }
+
+    function restartGame() {
+        location.reload();
     }
 </script>
 
