@@ -317,11 +317,17 @@
     }
 
     function transitionToEnd() {
+        const dialogue = document.getElementById('dialogue');
+        const options = document.getElementById('options');
         const messageDiv = document.getElementById('message');
         const endMessage = document.getElementById('end-message');
 
-        // メッセージを非表示にし、エンドメッセージを表示
+        // メッセージを非表示にし、dialogueとoptionsをクリア
         messageDiv.style.display = 'none';
+        dialogue.innerHTML = '';
+        options.innerHTML = '';
+        
+        // エンドメッセージを表示
         endMessage.style.display = 'block';
     }
 
