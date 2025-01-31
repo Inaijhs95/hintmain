@@ -193,81 +193,143 @@
     <div id="end-message">
         <div class="character" id="end-dialogue">
             <img src="inai.png" alt="イナイ">
-            <p>本当にありがとう！君のおかげで家族と連絡が取れたよ。</p>
+            <p>本当にありがとう！君のおかげで家族の無事が分かったよ！ これはお礼だよ。</p>
         </div>
-        <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">詳細はこちら</a>
-        <button class="back-button" onclick="restartGame()">最初からやり直す</button>
+        <button class="back-button" onclick="receiveReward()">受け取る</button>
     </div>
 </div>
 
 <script>
     let dialedNumber = '';
+    let negativeChoicesCount = 0;
+    const maxNegativeChoices = 3;
+    let isGameLocked = false;
 
     function startConversation() {
+        if (isGameLocked) return;
+
         const dialogue = document.getElementById('dialogue');
+        const options = document.getElementById('options');
+
+        // ダイアログをクリアして新しい内容を設定
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
                 <img src="inai.png" alt="イナイ">
-                <p>地元の○○村が大きな災害に見舞われてしまい、家族と連絡が取れなくなっているんだ。</p>
+                <p>実は困ってるんだ・・・</p>
             </div>
         `;
-        const options = document.getElementById('options');
         options.innerHTML = `
-            <button onclick="offerHelp()">助ける</button>
-            <button onclick="ignoreHelp()">無視する</button>
+            <button onclick="selectOption('how_are_you')">どうしたの？</button>
+            <button onclick="selectOption('busy_now')">今忙しいから。</button>
         `;
     }
 
-    function offerHelp() {
+    function selectOption(option) {
+        if (isGameLocked) return;
+
         const dialogue = document.getElementById('dialogue');
-        dialogue.innerHTML = `
-            <div class="character" id="user-dialogue">
-                <img src="user.png" alt="あなた">
-                <p>災害時には安否確認やメッセージを伝えるサービスがあるよ。一緒に試してみよう。</p>
-            </div>
-        `;
         const options = document.getElementById('options');
-        options.innerHTML = `
-            <button onclick="showService()">サービスを利用する</button>
-            <button class="back-button" onclick="startConversation()">戻る</button>
-        `;
+
+        if (option === 'how_are_you') {
+            dialogue.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="inai.png" alt="イナイ">
+                    <p>地元の○○村が大きな災害に見舞われてしまい、家族と連絡が取れなくなっているんだ。</p>
+                </div>
+            `;
+            options.innerHTML = `
+                <button onclick="selectOption('terrible')">それは大変だ</button>
+                <button onclick="selectOption('more_difficult')">でも私のほうが大変</button>
+            `;
+        } else if (option === 'busy_now') {
+            handleNegativeChoice();
+        } else if (option === 'terrible') {
+            dialogue.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="inai.png" alt="イナイ">
+                    <p>被災地との通信が困難になったとき、安否確認やメッセージを伝えるためのサービスがあったと思うんだけど… このサービスを利用するためには、どのダイヤルに電話をかけるんだっけ…？</p>
+                </div>
+            `;
+            options.innerHTML = `
+                <button onclick="selectOption('think_together')">一緒に考える</button>
+                <button onclick="selectOption('dont_know')">それは知らん</button>
+            `;
+        } else if (option === 'more_difficult') {
+            handleNegativeChoice();
+        } else if (option === 'think_together') {
+            showPhone();
+        } else if (option === 'dont_know') {
+            handleNegativeChoice();
+        }
     }
 
-    function ignoreHelp() {
+    function handleNegativeChoice() {
+        negativeChoicesCount++;
         const dialogue = document.getElementById('dialogue');
-        dialogue.innerHTML = `
-            <div class="character" id="user-dialogue">
-                <img src="user.png" alt="あなた">
-                <p>ごめん、手伝えることがないんだ。</p>
-            </div>
-        `;
         const options = document.getElementById('options');
-        options.innerHTML = `
-            <p>手伝わなかったため、イナイは困ったままです。</p>
-            <button class="back-button" onclick="restartGame()">もう一度試す</button>
-        `;
-    }
 
-    function showService() {
-        const dialogue = document.getElementById('dialogue');
-        dialogue.innerHTML = `
-            <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
-                <p>災害時には専用のダイヤルに電話をかけることで、安否確認やメッセージの送受信ができるサービスがあるんだ。でも、どの番号に電話をかければいいかわからない。</p>
-            </div>
-        `;
-        const options = document.getElementById('options');
-        options.innerHTML = `
-            <button onclick="showPhone()">サービスを利用する</button>
-            <button class="back-button" onclick="offerHelp()">戻る</button>
-        `;
+        if (negativeChoicesCount === 1) {
+            dialogue.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="inai.png" alt="イナイ">
+                    <p>そうだよね…ごめんね。</p>
+                </div>
+            `;
+            options.innerHTML = `
+                <button onclick="goToTop()">トップページに戻る</button>
+            `;
+        } else if (negativeChoicesCount === 2) {
+            dialogue.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="inai.png" alt="イナイ">
+                    <p>そうだよね……ごめんね。</p>
+                </div>
+            `;
+            options.innerHTML = `
+                <button onclick="goToTop()">トップページに戻る</button>
+            `;
+        } else if (negativeChoicesCount >= 3) {
+            dialogue.innerHTML = `
+                <div class="character" id="inai-dialogue">
+                    <img src="inai.png" alt="イナイ">
+                    <p>……</p>
+                </div>
+            `;
+            options.innerHTML = `
+                <button onclick="lockGame()">今は話しかけないで</button>
+            `;
+        }
     }
 
     function showPhone() {
         const phone = document.getElementById('phone');
-        phone.style.display = 'block';
+        const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
-        options.innerHTML = `<p>適切なダイヤルに電話をかけてください。</p>`;
+
+        phone.style.display = 'block';
+        dialogue.innerHTML = `
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>適切なダイヤルに電話をかけてください。</p>
+            </div>
+        `;
+        options.innerHTML = `
+            <div class="dial-buttons">
+                <button onclick="dialNumber('1')">1</button>
+                <button onclick="dialNumber('2')">2</button>
+                <button onclick="dialNumber('3')">3</button>
+                <button onclick="dialNumber('4')">4</button>
+                <button onclick="dialNumber('5')">5</button>
+                <button onclick="dialNumber('6')">6</button>
+                <button onclick="dialNumber('7')">7</button>
+                <button onclick="dialNumber('8')">8</button>
+                <button onclick="dialNumber('9')">9</button>
+                <button onclick="dialNumber('*')">*</button>
+                <button onclick="dialNumber('0')">0</button>
+                <button onclick="dialNumber('#')">#</button>
+            </div>
+            <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px; background-color:#f0ad4e;">電話をかける</button>
+        `;
     }
 
     function dialNumber(num) {
@@ -290,9 +352,8 @@
             // 成功
             messageDiv.style.display = 'block';
             messageDiv.innerHTML = `
-                <p>通話成功！両親からのメッセージを聞くことができました。</p>
-                <p><strong>母:</strong> 無事でよかった。</p>
-                <p><strong>父:</strong> 気をつけてね。</p>
+                <p>通話成功！災害用伝言ダイヤルに繋がった。</p>
+                <p>無事にイナイのパパとママのメッセージを確認できた。</p>
                 <button onclick="transitionToEnd()">次へ</button>
             `;
             phone.style.display = 'none';
@@ -326,19 +387,68 @@
         messageDiv.style.display = 'none';
         dialogue.innerHTML = '';
         options.innerHTML = '';
-        
+
         // エンドメッセージを表示
         endMessage.style.display = 'block';
+    }
+
+    function receiveReward() {
+        window.open('https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F', '_blank');
+    }
+
+    function goToTop() {
+        // トップページに戻る処理
+        location.reload();
+    }
+
+    function lockGame() {
+        const dialogue = document.getElementById('dialogue');
+        const options = document.getElementById('options');
+
+        dialogue.innerHTML = `
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>今は話しかけないで</p>
+            </div>
+        `;
+        options.innerHTML = `
+            <p>ゲームを終了します。</p>
+        `;
+        isGameLocked = true;
+
+        // 翌日朝6時にリセットする場合（簡易的に1時間後にリセット）
+        // 実際のリセット時間に合わせて調整してください
+        setTimeout(() => {
+            location.reload();
+        }, 3600000); // 1時間（3600000ミリ秒）
+    }
+
+    function handleFinalNegative() {
+        const dialogue = document.getElementById('dialogue');
+        const options = document.getElementById('options');
+
+        dialogue.innerHTML = `
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>今は話しかけないで</p>
+            </div>
+        `;
+        options.innerHTML = `
+            <p>ゲームを終了します。</p>
+        `;
+        isGameLocked = true;
+
+        // 翌日朝6時にリセットする場合（簡易的に1時間後にリセット）
+        // 実際のリセット時間に合わせて調整してください
+        setTimeout(() => {
+            location.reload();
+        }, 3600000); // 1時間（3600000ミリ秒）
     }
 
     function resetDial() {
         dialedNumber = '';
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
         document.getElementById('message').style.display = 'none';
-    }
-
-    function restartGame() {
-        location.reload();
     }
 </script>
 
