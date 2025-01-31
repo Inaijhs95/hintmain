@@ -25,6 +25,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
             max-height: 90vh;
+            text-align: center;
         }
         #dialogue {
             margin-top: 20px;
@@ -33,6 +34,7 @@
         .character {
             display: flex;
             align-items: center;
+            justify-content: center;
             margin-bottom: 10px;
         }
         .character img {
@@ -162,40 +164,49 @@
 <body>
 
 <div id="game-container">
-    <div id="dialogue">
-        <div class="character" id="inai-dialogue">
-            <img src="inai.png" alt="イナイ">
-            <p>助けて！困っているんだ。</p>
-        </div>
-    </div>
-    <div class="options" id="options">
+    <!-- トップページ -->
+    <div id="top-page">
+        <img src="allinai.png" alt="All Inai" style="max-width: 100%; height: auto;">
         <button onclick="startConversation()">イナイと話す</button>
     </div>
-    <div id="phone">
-        <div id="phone-display">ダイヤル: </div>
-        <div class="dial-buttons">
-            <button onclick="dialNumber('1')">1</button>
-            <button onclick="dialNumber('2')">2</button>
-            <button onclick="dialNumber('3')">3</button>
-            <button onclick="dialNumber('4')">4</button>
-            <button onclick="dialNumber('5')">5</button>
-            <button onclick="dialNumber('6')">6</button>
-            <button onclick="dialNumber('7')">7</button>
-            <button onclick="dialNumber('8')">8</button>
-            <button onclick="dialNumber('9')">9</button>
-            <button onclick="dialNumber('*')">*</button>
-            <button onclick="dialNumber('0')">0</button>
-            <button onclick="dialNumber('#')">#</button>
+
+    <!-- ゲームコンテンツ -->
+    <div id="game-content" style="display: none;">
+        <div id="dialogue">
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>助けて！困っているんだ。</p>
+            </div>
         </div>
-        <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px; background-color:#f0ad4e;">電話をかける</button>
-    </div>
-    <div id="message"></div>
-    <div id="end-message">
-        <div class="character" id="end-dialogue">
-            <img src="inai.png" alt="イナイ">
-            <p>本当にありがとう！君のおかげで家族の無事が分かったよ！これはお礼だよ。</p>
+        <div class="options" id="options">
+            <button onclick="startConversation()">イナイと話す</button>
         </div>
-        <button class="back-button" onclick="receiveReward()">受け取る</button>
+        <div id="phone">
+            <div id="phone-display">ダイヤル: </div>
+            <div class="dial-buttons">
+                <button onclick="dialNumber('1')">1</button>
+                <button onclick="dialNumber('2')">2</button>
+                <button onclick="dialNumber('3')">3</button>
+                <button onclick="dialNumber('4')">4</button>
+                <button onclick="dialNumber('5')">5</button>
+                <button onclick="dialNumber('6')">6</button>
+                <button onclick="dialNumber('7')">7</button>
+                <button onclick="dialNumber('8')">8</button>
+                <button onclick="dialNumber('9')">9</button>
+                <button onclick="dialNumber('*')">*</button>
+                <button onclick="dialNumber('0')">0</button>
+                <button onclick="dialNumber('#')">#</button>
+            </div>
+            <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px; background-color:#f0ad4e;">電話をかける</button>
+        </div>
+        <div id="message"></div>
+        <div id="end-message">
+            <div class="character" id="end-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>本当にありがとう！君のおかげで家族の無事が分かったよ！これはお礼だよ。</p>
+            </div>
+            <button class="back-button" onclick="receiveReward()">受け取る</button>
+        </div>
     </div>
 </div>
 
@@ -205,11 +216,42 @@
     const maxNegativeChoices = 3;
     let isGameLocked = false;
 
+    // 初期化: ローカルストレージからカウントを取得
+    window.onload = function() {
+        const storedCount = localStorage.getItem('negativeChoicesCount');
+        if (storedCount !== null) {
+            negativeChoicesCount = parseInt(storedCount, 10);
+        }
+
+        // ロック状態の確認
+        const lockTime = localStorage.getItem('lockTime');
+        if (lockTime) {
+            const currentTime = new Date().getTime();
+            if (currentTime < parseInt(lockTime, 10)) {
+                isGameLocked = true;
+                showLockedState();
+            } else {
+                // リセット時間が過ぎていればリセット
+                localStorage.removeItem('lockTime');
+                localStorage.removeItem('negativeChoicesCount');
+            }
+        }
+
+        // 初期表示の調整
+        if (document.getElementById('game-content').style.display === 'none') {
+            document.getElementById('top-page').style.display = 'block';
+        }
+    };
+
     function startConversation() {
         if (isGameLocked) {
             displayLockedMessage();
             return;
         }
+
+        // トップページを非表示にし、ゲームコンテンツを表示
+        document.getElementById('top-page').style.display = 'none';
+        document.getElementById('game-content').style.display = 'block';
 
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
@@ -272,6 +314,9 @@
     function handleNegativeChoice() {
         negativeChoicesCount++;
         console.log('Negative Choices Count:', negativeChoicesCount); // デバッグ用
+
+        // ローカルストレージにカウントを保存
+        localStorage.setItem('negativeChoicesCount', negativeChoicesCount);
 
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
@@ -401,8 +446,9 @@
     }
 
     function goToTop() {
-        // トップページに戻る処理（ここではページをリロード）
-        location.reload();
+        // トップページに戻る処理
+        document.getElementById('game-content').style.display = 'none';
+        document.getElementById('top-page').style.display = 'block';
     }
 
     function lockGame() {
@@ -420,10 +466,18 @@
             <p>ゲームを終了します。</p>
         `;
 
-        // 翌日朝6時にリセットする場合（ここでは1時間後にリセット）
+        // ロックタイムを翌日朝6時に設定
+        const now = new Date();
+        const tomorrow6AM = new Date();
+        tomorrow6AM.setDate(now.getDate() + 1);
+        tomorrow6AM.setHours(6, 0, 0, 0); // 6:00:00.000
+
+        const timeUntilReset = tomorrow6AM - now;
+        localStorage.setItem('lockTime', tomorrow6AM.getTime());
+
         setTimeout(() => {
             location.reload();
-        }, 3600000); // 1時間（3600000ミリ秒）
+        }, timeUntilReset);
     }
 
     function displayLockedMessage() {
@@ -441,14 +495,17 @@
         `;
     }
 
+    function showLockedState() {
+        document.getElementById('top-page').style.display = 'none';
+        document.getElementById('game-content').style.display = 'block';
+        displayLockedMessage();
+    }
+
     function resetDial() {
         dialedNumber = '';
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
         document.getElementById('message').style.display = 'none';
     }
-
-    // デバッグ用: コンソールに選択肢のカウントを表示
-    // 否定的な選択肢を選んだ際にカウントが正しく増加しているか確認
 </script>
 
 </div>
