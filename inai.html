@@ -23,6 +23,8 @@
             max-width: 400px;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 90vh;
         }
         #dialogue {
             margin-top: 20px;
@@ -49,6 +51,7 @@
             border-radius: 5px;
             background-color: #4CAF50;
             color: white;
+            transition: background-color 0.3s;
         }
         .options button:hover, .dial-buttons button:hover {
             background-color: #45a049;
@@ -110,6 +113,7 @@
             border: none;
             border-radius: 5px;
             color: white;
+            transition: background-color 0.3s;
         }
         .back-button:hover {
             background-color: #da190b;
@@ -187,7 +191,7 @@
     </div>
     <div id="message"></div>
     <div id="end-message">
-        <div class="character" id="inai-dialogue">
+        <div class="character" id="end-dialogue">
             <img src="inai.png" alt="イナイ">
             <p>本当にありがとう！君のおかげで家族と連絡が取れたよ。</p>
         </div>
@@ -278,7 +282,7 @@
         const phone = document.getElementById('phone');
         const options = document.getElementById('options');
 
-        // リセット前に表示をクリア
+        // メッセージ表示前に既存の内容をクリア
         messageDiv.style.display = 'none';
         messageDiv.innerHTML = '';
 
@@ -309,6 +313,7 @@
 
         // ダイヤル番号をリセット
         dialedNumber = '';
+        document.getElementById('phone-display').textContent = 'ダイヤル: ';
     }
 
     function transitionToEnd() {
@@ -324,10 +329,6 @@
         dialedNumber = '';
         document.getElementById('phone-display').textContent = 'ダイヤル: ';
         document.getElementById('message').style.display = 'none';
-    }
-
-    function endGame() {
-        // こちらの関数は不要にしました
     }
 
     function restartGame() {
