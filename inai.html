@@ -59,15 +59,14 @@
             background-color: #45a049;
         }
         .dial-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             margin-top: 10px;
         }
         .dial-buttons button {
-            width: 30%;
-            margin-bottom: 5px;
             background-color: #008CBA;
+            width: 100%;
         }
         .dial-buttons button:hover {
             background-color: #007bb5;
@@ -96,7 +95,7 @@
             display: none;
         }
         #end-message {
-            margin-top: 20px;
+            margin-top: 10px; /* 上部の余白を削除 */
             text-align: center;
             display: none;
         }
@@ -198,6 +197,7 @@
                 <button onclick="dialNumber('0')">0</button>
                 <button onclick="dialNumber('#')">#</button>
             </div>
+            <!-- 「電話をかける」ボタンを1つに統一 -->
             <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px; background-color:#f0ad4e;">電話をかける</button>
         </div>
         <div id="message"></div>
@@ -216,6 +216,7 @@
     let negativeChoicesCount = 0;
     const maxNegativeChoices = 3;
     let isGameLocked = false;
+    let hasShownLockedPopup = false; // ポップアップ表示のフラグ
 
     // 初期化: ローカルストレージからカウントを取得
     window.onload = function() {
@@ -493,6 +494,19 @@
         // トップページに戻る処理
         document.getElementById('game-content').style.display = 'none';
         document.getElementById('top-page').style.display = 'block';
+
+        // ロック状態の場合の追加処理
+        if (isGameLocked) {
+            // イナイと話すボタンを押した際の挙動をカスタマイズ
+            // 既にロックされている場合はポップアップを表示
+            if (!hasShownLockedPopup) {
+                alert('今は話しかけてほしくないみたい。また明日話しかけてみよう。');
+                hasShownLockedPopup = true;
+            }
+
+            // トップページに戻った後、イナイと話すボタンを押してもロックメッセージが表示されるようにする
+            // 既にボタン押下時にロックメッセージを表示するため、特別な変更は不要
+        }
     }
 
     function lockGame() {
