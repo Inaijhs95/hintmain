@@ -5,6 +5,7 @@
     <title>イナイの救出シミュレーション</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* 全体スタイル */
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f8ff;
@@ -28,6 +29,7 @@
             text-align: center;
             position: relative;
         }
+        /* ダイアログスタイル */
         #dialogue {
             margin-top: 20px;
             min-height: 100px;
@@ -44,7 +46,8 @@
             border-radius: 50%;
             margin-right: 10px;
         }
-        .options button, .dial-buttons button {
+        /* オプションボタンスタイル */
+        .options button {
             margin: 5px 0;
             padding: 10px;
             width: 100%;
@@ -56,9 +59,10 @@
             color: white;
             transition: background-color 0.3s;
         }
-        .options button:hover, .dial-buttons button:hover {
+        .options button:hover {
             background-color: #45a049;
         }
+        /* ダイヤルパッドスタイル */
         .dial-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -66,100 +70,134 @@
             margin-top: 10px;
         }
         .dial-buttons button {
-            background-color: #008CBA;
+            background-color: #f0f0f0;
             width: 100%;
-            height: 50px;
-            font-size: 18px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
         .dial-buttons button:hover {
-            background-color: #007bb5;
+            background-color: #ddd;
         }
+        /* 電話をかけるボタンスタイル */
+        #phone button.call-button {
+            margin-top: 20px;
+            padding: 15px;
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            background-image: url('phone-icon.png');
+            background-size: 30px 30px;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #phone button.call-button:hover {
+            background-color: #45a049;
+        }
+        /* 電話画面枠 */
         #phone {
             display: none;
             margin-top: 20px;
             border: 2px solid #000;
-            border-radius: 20px;
-            padding: 10px;
+            border-radius: 30px;
+            padding: 20px;
             background-color: #fff;
+            position: relative;
         }
+        /* ダイヤル表示スタイル */
         #phone-display {
             background-color: #000;
             color: #0f0;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             font-family: 'Courier New', Courier, monospace;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             text-align: center;
             min-height: 30px;
             word-break: break-all;
+            font-size: 18px;
         }
+        /* メッセージスタイル */
         #message {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             background-color: #e6ffe6;
             border: 1px solid #b3ffb3;
-            border-radius: 5px;
+            border-radius: 10px;
             display: none;
+            text-align: left;
         }
+        /* エンドメッセージスタイル */
         #end-message {
             margin-top: 10px; /* 上部の余白を削除 */
             text-align: center;
             display: none;
         }
-        #end-message a {
-            color: #0066cc;
-            text-decoration: none;
-            font-weight: bold;
+        #end-message .character img {
+            width: 60px;
+            height: 60px;
         }
+        /* バックボタンスタイル */
         .back-button {
-            margin-top: 10px;
-            padding: 10px;
-            width: 100%;
+            margin-top: 20px;
+            padding: 10px 20px;
+            width: auto;
             font-size: 16px;
             cursor: pointer;
             background-color: #f44336;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             color: white;
             transition: background-color 0.3s;
         }
         .back-button:hover {
             background-color: #da190b;
         }
-        /* Loader Styles */
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #4CAF50;
-            border-radius: 50%;
+        /* ロックメッセージ */
+        #lock-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ffe6e6;
+            border: 1px solid #ffb3b3;
+            border-radius: 10px;
+        }
+        /* スマホ風枠 */
+        #game-container::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+            height: 5px;
+            background-color: #ccc;
+            border-radius: 10px;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Responsive Text */
+        /* レスポンシブテキスト */
         p {
             font-size: 16px;
             line-height: 1.5;
             margin: 5px 0;
         }
-
         @media (max-width: 400px) {
             .character img {
                 width: 40px;
                 height: 40px;
             }
-            .options button, .dial-buttons button {
-                font-size: 14px;
-                padding: 8px;
+            .dial-buttons button {
+                height: 50px;
+                font-size: 18px;
             }
             #phone-display {
-                font-size: 14px;
+                font-size: 16px;
                 padding: 8px;
             }
             p {
@@ -169,7 +207,11 @@
                 border-radius: 15px;
             }
             #phone {
-                border-radius: 15px;
+                border-radius: 20px;
+            }
+            #end-message .character img {
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
@@ -212,7 +254,7 @@
                 <button onclick="dialNumber('#')">#</button>
             </div>
             <!-- 「電話をかける」ボタンを1つに統一 -->
-            <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px; background-color:#4CAF50;">電話をかける</button>
+            <button class="call-button" onclick="callService()"></button>
         </div>
         <div id="message"></div>
         <div id="end-message">
@@ -222,6 +264,12 @@
             </div>
             <button class="back-button" onclick="receiveReward()">受け取る</button>
         </div>
+    </div>
+
+    <!-- ロックメッセージ -->
+    <div id="lock-message">
+        <p>今は話しかけないで</p>
+        <button class="back-button" onclick="goToTop()">トップページに戻る</button>
     </div>
 </div>
 
@@ -365,7 +413,7 @@
                 </div>
             `;
             options.innerHTML = `
-                <button onclick="lockGame()">トップページに戻る</button>
+                <button onclick="goToTop()">トップページに戻る</button>
             `;
         }
     }
@@ -465,11 +513,9 @@
         const messageDiv = document.getElementById('message');
         const phone = document.getElementById('phone');
 
-        // ダイアログをイナイのアイコンのみ表示に変更（アイコンを削除）
+        // ダイアログをクリア
         dialogue.innerHTML = `
-            <div class="character" id="inai-dialogue">
-                <!-- アイコンを削除 -->
-            </div>
+            <!-- アイコンを削除 -->
         `;
 
         // メッセージ表示
@@ -477,7 +523,7 @@
         messageDiv.innerHTML = `
             <p>通話成功！災害用伝言ダイヤルに繋がった。</p>
             <p>無事にイナイのパパとママのメッセージを確認できた。</p>
-            <button onclick="transitionToEnd()">次へ</button>
+            <button class="back-button" onclick="transitionToEnd()">次へ</button>
         `;
 
         // 電話パッドを隠す
@@ -507,6 +553,7 @@
     function goToTop() {
         // トップページに戻る処理
         document.getElementById('game-content').style.display = 'none';
+        document.getElementById('lock-message').style.display = 'none';
         document.getElementById('top-page').style.display = 'block';
 
         // ロック状態の場合の追加処理
@@ -517,9 +564,6 @@
                 alert('今は話しかけてほしくないみたい。また明日話しかけてみよう。');
                 hasShownLockedPopup = true;
             }
-
-            // トップページに戻った後、イナイと話すボタンを押してもロックメッセージが表示されるようにする
-            // 既にボタン押下時にロックメッセージを表示するため、特別な変更は不要
         }
     }
 
@@ -539,7 +583,7 @@
             <p>ゲームはロックされています。</p>
         `;
 
-        // ロックタイムを翌日朝6時に設定
+        // ロックタイムを翌朝6時に設定
         const now = new Date();
         const tomorrow6AM = new Date();
         tomorrow6AM.setDate(now.getDate() + 1);
