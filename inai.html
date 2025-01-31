@@ -193,7 +193,7 @@
     <div id="end-message">
         <div class="character" id="end-dialogue">
             <img src="inai.png" alt="イナイ">
-            <p>本当にありがとう！君のおかげで家族の無事が分かったよ！ これはお礼だよ。</p>
+            <p>本当にありがとう！君のおかげで家族の無事が分かったよ！これはお礼だよ。</p>
         </div>
         <button class="back-button" onclick="receiveReward()">受け取る</button>
     </div>
@@ -206,7 +206,10 @@
     let isGameLocked = false;
 
     function startConversation() {
-        if (isGameLocked) return;
+        if (isGameLocked) {
+            displayLockedMessage();
+            return;
+        }
 
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
@@ -225,7 +228,10 @@
     }
 
     function selectOption(option) {
-        if (isGameLocked) return;
+        if (isGameLocked) {
+            displayLockedMessage();
+            return;
+        }
 
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
@@ -302,6 +308,11 @@
     }
 
     function showPhone() {
+        if (isGameLocked) {
+            displayLockedMessage();
+            return;
+        }
+
         const phone = document.getElementById('phone');
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
@@ -314,21 +325,7 @@
             </div>
         `;
         options.innerHTML = `
-            <div class="dial-buttons">
-                <button onclick="dialNumber('1')">1</button>
-                <button onclick="dialNumber('2')">2</button>
-                <button onclick="dialNumber('3')">3</button>
-                <button onclick="dialNumber('4')">4</button>
-                <button onclick="dialNumber('5')">5</button>
-                <button onclick="dialNumber('6')">6</button>
-                <button onclick="dialNumber('7')">7</button>
-                <button onclick="dialNumber('8')">8</button>
-                <button onclick="dialNumber('9')">9</button>
-                <button onclick="dialNumber('*')">*</button>
-                <button onclick="dialNumber('0')">0</button>
-                <button onclick="dialNumber('#')">#</button>
-            </div>
-            <button onclick="callService()" style="margin-top:10px; padding:10px; width:100%; font-size:16px; background-color:#f0ad4e;">電話をかける</button>
+            <button onclick="callService()">電話をかける</button>
         `;
     }
 
@@ -339,12 +336,18 @@
     }
 
     function callService() {
+        if (isGameLocked) {
+            displayLockedMessage();
+            return;
+        }
+
         const number = dialedNumber;
         const messageDiv = document.getElementById('message');
         const phone = document.getElementById('phone');
         const options = document.getElementById('options');
 
-        // メッセージ表示前に既存の内容をクリア
+        // Hide phone and clear previous message
+        phone.style.display = 'none';
         messageDiv.style.display = 'none';
         messageDiv.innerHTML = '';
 
@@ -356,7 +359,6 @@
                 <p>無事にイナイのパパとママのメッセージを確認できた。</p>
                 <button onclick="transitionToEnd()">次へ</button>
             `;
-            phone.style.display = 'none';
             options.innerHTML = '';
         } else if (number === '110') {
             // 警察
@@ -397,11 +399,12 @@
     }
 
     function goToTop() {
-        // トップページに戻る処理
+        // トップページに戻る処理（ここではページをリロード）
         location.reload();
     }
 
     function lockGame() {
+        isGameLocked = true;
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
 
@@ -414,16 +417,14 @@
         options.innerHTML = `
             <p>ゲームを終了します。</p>
         `;
-        isGameLocked = true;
 
-        // 翌日朝6時にリセットする場合（簡易的に1時間後にリセット）
-        // 実際のリセット時間に合わせて調整してください
+        // 翌日朝6時にリセットする場合（ここでは1時間後にリセット）
         setTimeout(() => {
             location.reload();
         }, 3600000); // 1時間（3600000ミリ秒）
     }
 
-    function handleFinalNegative() {
+    function displayLockedMessage() {
         const dialogue = document.getElementById('dialogue');
         const options = document.getElementById('options');
 
@@ -434,15 +435,8 @@
             </div>
         `;
         options.innerHTML = `
-            <p>ゲームを終了します。</p>
+            <p>ゲームはロックされています。翌日朝6時にリセットされます。</p>
         `;
-        isGameLocked = true;
-
-        // 翌日朝6時にリセットする場合（簡易的に1時間後にリセット）
-        // 実際のリセット時間に合わせて調整してください
-        setTimeout(() => {
-            location.reload();
-        }, 3600000); // 1時間（3600000ミリ秒）
     }
 
     function resetDial() {
