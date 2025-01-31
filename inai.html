@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>イナイの救出シミュレーション</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #game-container {
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            width: 350px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #dialogue {
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        .character {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .character img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .options button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #phone {
+            display: none;
+            margin-top: 20px;
+        }
+        #phone-display {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .dial-buttons button {
+            width: 30%;
+            padding: 10px;
+            margin: 5px 1%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e6ffe6;
+            border: 1px solid #b3ffb3;
+            border-radius: 5px;
+            display: none;
+        }
+        #end-message {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        #end-message a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="dialogue">
+        <div class="character" id="inai-dialogue">
+            <img src="inai.png" alt="イナイ">
+            <p>助けて！困っているんだ。</p>
+        </div>
+    </div>
+    <div class="options" id="options">
+        <button onclick="startConversation()">イナイと話す</button>
+    </div>
+    <div id="phone">
+        <div id="phone-display">ダイヤル: </div>
+        <div class="dial-buttons">
+            <button onclick="dialNumber('171')">171</button>
+            <button onclick="dialNumber('110')">110</button>
+            <button onclick="dialNumber('119')">119</button>
+        </div>
+    </div>
+    <div id="message"></div>
+    <div id="end-message">
+        <p>イナイ: 本当にありがとう！</p>
+        <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">詳細はこちら</a>
+    </div>
+</div>
+
+<script>
+    function startConversation() {
+        const dialogue = document.getElementById('dialogue');
+        dialogue.innerHTML = `
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>地元の○○村が災害にあって、家族と連絡が取れないんだ。</p>
+            </div>
+        `;
+        const options = document.getElementById('options');
+        options.innerHTML = `<button onclick="showService()">災害通信サービスを利用する</button>`;
+    }
+
+    function showService() {
+        const dialogue = document.getElementById('dialogue');
+        dialogue.innerHTML = `
+            <div class="character" id="inai-dialogue">
+                <img src="inai.png" alt="イナイ">
+                <p>災害時には安否確認やメッセージを伝えるサービスがあるけど、どのダイヤルに電話をかければいいかわからない。</p>
+            </div>
+        `;
+        const options = document.getElementById('options');
+        options.innerHTML = `<button onclick="showPhone()">サービスを利用する</button>`;
+    }
+
+    function showPhone() {
+        const phone = document.getElementById('phone');
+        phone.style.display = 'block';
+        const options = document.getElementById('options');
+        options.innerHTML = `<p>適切なダイヤルに電話をかけてください。</p>`;
+    }
+
+    function dialNumber(number) {
+        const phoneDisplay = document.getElementById('phone-display');
+        phoneDisplay.textContent = `ダイヤル: ${number}`;
+        const messageDiv = document.getElementById('message');
+        if (number === '171') {
+            // 成功
+            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = `
+                <p>通話成功！両親からのメッセージを聞くことができました。</p>
+                <p>母: 無事でよかった。</p>
+                <p>父: 気をつけてね。</p>
+                <button onclick="endGame()">次へ</button>
+            `;
+        } else if (number === '110') {
+            // 警察
+            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = `<p>110は警察への電話です。災害通信サービスではありません。</p>`;
+        } else if (number === '119') {
+            // 消防
+            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = `<p>119は消防への電話です。災害通信サービスではありません。</p>`;
+        }
+    }
+
+    function endGame() {
+        const gameContainer = document.getElementById('game-container');
+        gameContainer.innerHTML = `
+            <div id="end-message">
+                <p>イナイ: 本当にありがとう！</p>
+                <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">詳細はこちら</a>
+            </div>
+        `;
+    }
+</script>
+
+</div>
+
+</body>
+</html>
