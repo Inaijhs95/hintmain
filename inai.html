@@ -351,7 +351,7 @@
                 </div>
             `;
             options.innerHTML = `
-                <button onclick="lockGame()">今は話しかけないで</button>
+                <button onclick="lockGame()">トップページに戻る</button>
             `;
         }
     }
@@ -451,10 +451,10 @@
         const messageDiv = document.getElementById('message');
         const phone = document.getElementById('phone');
 
-        // ダイアログをイナイのアイコンのみ表示に変更
+        // ダイアログをイナイのアイコンのみ表示に変更（アイコンを削除）
         dialogue.innerHTML = `
             <div class="character" id="inai-dialogue">
-                <img src="inai.png" alt="イナイ">
+                <!-- アイコンを削除 -->
             </div>
         `;
 
