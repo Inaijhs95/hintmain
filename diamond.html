@@ -2,178 +2,189 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>記憶力テストゲーム</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スマホ向けパズルゲーム</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
         }
-        #game-container {
-            display: grid;
-            grid-template-columns: repeat(2, 150px);
-            grid-template-rows: repeat(2, 150px);
-            gap: 20px;
+
+        .game-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
         }
-        .color-button {
-            width: 150px;
-            height: 150px;
-            border: none;
-            border-radius: 15px;
-            opacity: 0.8;
-            transition: opacity 0.2s, transform 0.2s;
-            position: relative;
+
+        .puzzle-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            gap: 10px;
+            justify-content: center;
         }
-        .color-button.active {
-            opacity: 1;
-            transform: scale(1.1);
-            /* アニメーションの追加 */
-            animation: flash 0.5s;
-        }
-        @keyframes flash {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-        #start-button {
-            margin-top: 30px;
-            padding: 10px 20px;
-            font-size: 18px;
-            border: none;
-            border-radius: 10px;
+
+        .puzzle-item {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             background-color: #4CAF50;
             color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #start-button:hover {
-            background-color: #45a049;
-        }
-        #level-display {
-            margin-top: 20px;
             font-size: 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+        }
+
+        #status {
+            font-size: 16px;
+            color: green;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-
-    <h1>記憶力テストゲーム</h1>
-    <div id="level-display">レベル: 1</div>
-    <div id="game-container">
-        <button class="color-button" id="red" style="background-color: red;"></button>
-        <button class="color-button" id="green" style="background-color: green;"></button>
-        <button class="color-button" id="blue" style="background-color: blue;"></button>
-        <button class="color-button" id="yellow" style="background-color: yellow;"></button>
+    <div class="game-container">
+        <h1>数字並べパズル</h1>
+        <p id="timer">残り時間: <span id="time-left">900</span>秒</p>
+        <div id="puzzle" class="puzzle-container"></div>
+        <button id="start-button">スタート</button>
+        <button id="end-button" style="display:none;">ゲーム終了</button>
+        <p id="status"></p>
     </div>
-    <button id="start-button">スタート</button>
-
-    <!-- 音声フィードバック用のオーディオファイル -->
-    <audio id="sound-red" src="https://example.com/sounds/red.mp3"></audio>
-    <audio id="sound-green" src="https://example.com/sounds/green.mp3"></audio>
-    <audio id="sound-blue" src="https://example.com/sounds/blue.mp3"></audio>
-    <audio id="sound-yellow" src="https://example.com/sounds/yellow.mp3"></audio>
-    <audio id="sound-wrong" src="https://example.com/sounds/wrong.mp3"></audio>
 
     <script>
-        const colors = ['red', 'green', 'blue', 'yellow'];
-        let sequence = [];
-        let userSequence = [];
-        let level = 1;
-        let acceptingInput = false;
+        let timerInterval;
+        let timeLeft = 900; // 15分（900秒）
+        let puzzleItems = [];
+        let isGameActive = false;
 
-        const levelDisplay = document.getElementById('level-display');
-        const startButton = document.getElementById('start-button');
-        const colorButtons = document.querySelectorAll('.color-button');
-
-        // 音声フィードバックの設定（オプション）
-        const sounds = {
-            red: document.getElementById('sound-red'),
-            green: document.getElementById('sound-green'),
-            blue: document.getElementById('sound-blue'),
-            yellow: document.getElementById('sound-yellow'),
-            wrong: document.getElementById('sound-wrong')
-        };
-
-        startButton.addEventListener('click', startGame);
-
-        colorButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                if (!acceptingInput) return;
-                const color = button.id;
-                userSequence.push(color);
-                activateButton(color);
-                playSound(color);
-                checkUserInput(userSequence.length - 1);
-            });
-        });
+        document.getElementById('start-button').addEventListener('click', startGame);
+        document.getElementById('end-button').addEventListener('click', endGame);
 
         function startGame() {
-            level = 1;
-            sequence = [];
-            userSequence = [];
-            levelDisplay.textContent = `レベル: ${level}`;
-            startButton.disabled = true;
-            nextLevel();
+            resetGame();
+            shufflePuzzle();
+            displayPuzzle();
+            startTimer();
+            document.getElementById('start-button').style.display = 'none';
+            document.getElementById('end-button').style.display = 'inline';
+            document.getElementById('status').textContent = '';
         }
 
-        function nextLevel() {
-            acceptingInput = false;
-            userSequence = [];
-            sequence.push(colors[Math.floor(Math.random() * colors.length)]);
-            playSequence();
+        function resetGame() {
+            isGameActive = true;
+            timeLeft = 900; // 15分にリセット
+            document.getElementById('time-left').textContent = timeLeft;
+            document.getElementById('status').textContent = '';
+            clearInterval(timerInterval);
         }
 
-        function playSequence() {
-            let delay = 700;
-            sequence.forEach((color, index) => {
-                setTimeout(() => {
-                    activateButton(color);
-                    playSound(color);
-                }, delay * (index + 1));
+        function shufflePuzzle() {
+            puzzleItems = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            puzzleItems.sort(() => Math.random() - 0.5); // ランダムに並べ替え
+        }
+
+        function displayPuzzle() {
+            const puzzleContainer = document.getElementById('puzzle');
+            puzzleContainer.innerHTML = '';
+            puzzleItems.forEach((item, index) => {
+                const puzzleItem = document.createElement('div');
+                puzzleItem.className = 'puzzle-item';
+                puzzleItem.textContent = item;
+                puzzleItem.dataset.index = index;
+                puzzleItem.addEventListener('click', () => handleItemClick(index));
+                puzzleContainer.appendChild(puzzleItem);
             });
-            setTimeout(() => {
-                acceptingInput = true;
-            }, delay * (sequence.length + 1));
         }
 
-        function activateButton(color) {
-            const button = document.getElementById(color);
-            button.classList.add('active');
-            setTimeout(() => {
-                button.classList.remove('active');
-            }, 500);
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    checkWinCondition();
+                }
+            }, 1000);
         }
 
-        function checkUserInput(index) {
-            if (userSequence[index] !== sequence[index]) {
-                playSound('wrong');
-                gameOver();
-                return;
+        function handleItemClick(index) {
+            if (!isGameActive) return;
+
+            // 隣接する数字を入れ替え
+            const swapIndex = getAdjacentSwapIndex(index);
+            if (swapIndex !== -1) {
+                [puzzleItems[index], puzzleItems[swapIndex]] = [puzzleItems[swapIndex], puzzleItems[index]];
+                displayPuzzle();
+                checkWinCondition();
             }
-            if (userSequence.length === sequence.length) {
-                level++;
-                levelDisplay.textContent = `レベル: ${level}`;
-                setTimeout(nextLevel, 1000);
+        }
+
+        function getAdjacentSwapIndex(index) {
+            const rowLength = 3; // 3x3のグリッド
+            const currentRow = Math.floor(index / rowLength);
+            const currentCol = index % rowLength;
+
+            const directions = [
+                { row: -1, col: 0 }, // 上
+                { row: 1, col: 0 },  // 下
+                { row: 0, col: -1 }, // 左
+                { row: 0, col: 1 }   // 右
+            ];
+
+            for (const dir of directions) {
+                const newRow = currentRow + dir.row;
+                const newCol = currentCol + dir.col;
+                if (newRow >= 0 && newRow < rowLength && newCol >= 0 && newCol < rowLength) {
+                    const newIndex = newRow * rowLength + newCol;
+                    if (Math.abs(puzzleItems[index] - puzzleItems[newIndex]) === 1) {
+                        return newIndex;
+                    }
+                }
+            }
+            return -1; // 隣接する数字がない場合
+        }
+
+        function checkWinCondition() {
+            if (puzzleItems.join('') === '123456789') {
+                isGameActive = false;
+                clearInterval(timerInterval);
+                document.getElementById('status').textContent = 'おめでとう！ 正解です！';
             }
         }
 
-        function gameOver() {
-            alert(`ゲームオーバー！あなたのレベルは ${level} でした。`);
-            startButton.disabled = false;
-        }
-
-        function playSound(color) {
-            if (sounds[color]) {
-                sounds[color].currentTime = 0;
-                sounds[color].play();
-            }
+        function endGame() {
+            clearInterval(timerInterval);
+            document.getElementById('status').textContent = 'ゲーム終了！';
+            document.getElementById('start-button').style.display = 'inline';
+            document.getElementById('end-button').style.display = 'none';
         }
     </script>
-
 </body>
 </html>
