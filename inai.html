@@ -139,7 +139,7 @@
   background-position: center;
   cursor: pointer;
   transition: background-color 0.3s;
-  transform: translateX(10px); /* 右に10pxずらす */
+  transform: translateX(15px); /* 右に10pxずらす */
 }
 .call-button:hover {
   background-color: #45a049;
@@ -272,7 +272,7 @@
           <button onclick="dialNumber('7')">7</button>
           <button onclick="dialNumber('8')">8</button>
           <button onclick="dialNumber('9')">9</button>
-          <button onclick="dialNumber('*')">*</button>
+          <button onclick="dialNumber('*')">＊</button>
           <button onclick="dialNumber('0')">0</button>
           <button onclick="dialNumber('#')">#</button>
         </div>
@@ -510,7 +510,7 @@
       dialogue.innerHTML = ``;
       messageDiv.style.display = 'block';
       messageDiv.innerHTML = `
-        <p>通話成功！災害用伝言ダイヤルに繋がった。</p>
+        <p>災害用伝言ダイヤルセンターに繋がった。</p>
         <p>無事にイナイのパパとママのメッセージを確認できた。</p>
         <button class="back-button" onclick="transitionToEnd()">次へ</button>
       `;
