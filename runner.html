@@ -238,7 +238,7 @@
                     if (response === 'はい') {
                         state.step = 'ask_final';
                         // number.png を表示するために imageUrl を追加
-                        botQuestion('欠けていた箇所はどこでしたか？数字のみでお答えください', [], 'number.png');
+                        botQuestion('絵柄が完成したときに欠けていた箇所はどこでしたか？数字のみでお答えください', [], 'number.png');
                     } else {
                         state.step = 'error';
                         botError();
@@ -275,7 +275,7 @@
         }
 
         function botEndSuccess() {
-            addMessage('bot', 'おみごとです。それでは最後のトランプをお受け取り下さい。');
+            addMessage('bot', '正解です。それでは最後のトランプをお受け取り下さい。');
             const btn = document.createElement('button');
             btn.textContent = '♥のトランプをゲットする';
             btn.onclick = () => {
@@ -305,7 +305,7 @@
         }
 
         // 初期質問
-        botQuestion('あなたはどんな目的でここに訪れましたか', ['ある物を探している', 'たまたま開いた']);
+        botQuestion('ご用件をお伺いいたします。', ['ある物を探している', 'たまたま開いた']);
     </script>
 </body>
 </html>
