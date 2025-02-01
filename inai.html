@@ -126,24 +126,25 @@
       gap: 10px;
       margin-top: 20px;
     }
-    /* 電話をかけるボタン（中央に配置） */
-    .call-button {
-      grid-column: 2;
-      width: 60px;
-      height: 60px;
-      border: none;
-      border-radius: 50%;
-      background-color: #4CAF50;
-      background-image: url('phone-icon.png');
-      background-size: 30px 30px;
-      background-repeat: no-repeat;
-      background-position: center;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .call-button:hover {
-      background-color: #45a049;
-    }
+.call-button {
+  grid-column: 2;
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  background-image: url('phone-icon.png');
+  background-size: 30px 30px;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  transform: translateX(10px); /* 右に10pxずらす */
+}
+.call-button:hover {
+  background-color: #45a049;
+}
+
     /* 削除ボタン（右側に配置、少し小さめ、5角形） */
     .delete-button {
       grid-column: 3;
