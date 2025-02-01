@@ -119,14 +119,14 @@
       word-break: break-all;
       font-size: 18px;
     }
-    /* コール＆削除ボタンコンテナ（グリッドレイアウト） */
+    /* コール＆削除ボタンコンテナ */
     #call-container {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
       margin-top: 20px;
     }
-    /* 電話をかけるボタン（中央に配置） */
+    /* 電話をかけるボタン（中央） */
     .call-button {
       grid-column: 2;
       width: 60px;
@@ -144,7 +144,7 @@
     .call-button:hover {
       background-color: #45a049;
     }
-    /* 削除ボタン（右側に配置、少し小さめ） */
+    /* 削除ボタン（右側） */
     .delete-button {
       grid-column: 3;
       width: 50px;
@@ -296,13 +296,11 @@
       <button class="back-button" onclick="goToTop()">トップページに戻る</button>
     </div>
   </div>
-
   <script>
     let dialedNumber = '';
     let negativeChoicesCount = 0;
     const maxNegativeChoices = 3;
     let isGameLocked = false;
-
     // 初期化: ローカルストレージからカウントとロック状態を取得
     window.onload = function() {
       const storedCount = localStorage.getItem('negativeChoicesCount');
@@ -322,7 +320,6 @@
       }
       document.getElementById('top-page').style.display = 'block';
     };
-
     function startConversation() {
       if (negativeChoicesCount >= 3 || isGameLocked) {
         isGameLocked = true;
@@ -345,7 +342,6 @@
         <button onclick="selectOption('busy_now')">今忙しいから。</button>
       `;
     }
-
     function selectOption(option) {
       if (isGameLocked) {
         displayLockedMessage();
@@ -374,9 +370,8 @@
             このサービスを利用するには、どのダイヤルに電話をかけるんだっけ？</p>
           </div>
         `;
-        options.innerHTML = `
-          <!-- キーパッド画面には「一緒に考える」や「それは知らん」は表示しません -->
-        `;
+        // ここでは「続ける」ボタンを追加してキーパッドへ進む
+        options.innerHTML = `<button onclick="showPhone()">続ける</button>`;
       } else if (option === 'more_difficult') {
         handleNegativeChoice();
       } else if (option === 'think_together') {
@@ -385,7 +380,6 @@
         handleNegativeChoice();
       }
     }
-
     function handleNegativeChoice() {
       negativeChoicesCount++;
       console.log('Negative Choices Count:', negativeChoicesCount);
@@ -418,7 +412,6 @@
         options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
       }
     }
-
     function showPhone() {
       if (isGameLocked) {
         displayLockedMessage();
@@ -434,23 +427,19 @@
           <p>適切なダイヤルに電話をかけてください。</p>
         </div>
       `;
-      // オプションはクリア
       options.innerHTML = ``;
     }
-
     function dialNumber(num) {
       const phoneDisplay = document.getElementById('phone-display');
       dialedNumber += num;
       phoneDisplay.textContent = `ダイヤル: ${dialedNumber}`;
     }
-
     function deleteLastDigit() {
       if (dialedNumber.length > 0) {
         dialedNumber = dialedNumber.slice(0, -1);
         document.getElementById('phone-display').textContent = `ダイヤル: ${dialedNumber}`;
       }
     }
-
     function callService() {
       if (isGameLocked) {
         displayLockedMessage();
@@ -501,7 +490,6 @@
       dialedNumber = '';
       document.getElementById('phone-display').textContent = 'ダイヤル: ';
     }
-
     function dialogueSuccess() {
       const dialogue = document.getElementById('dialogue');
       const options = document.getElementById('options');
@@ -517,7 +505,6 @@
       phone.style.display = 'none';
       options.innerHTML = '';
     }
-
     function transitionToEnd() {
       const dialogue = document.getElementById('dialogue');
       const options = document.getElementById('options');
@@ -528,11 +515,9 @@
       options.innerHTML = '';
       endMessage.style.display = 'block';
     }
-
     function receiveReward() {
       window.open('https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F', '_blank');
     }
-
     function goToTop() {
       document.getElementById('game-content').style.display = 'none';
       document.getElementById('lock-message').style.display = 'none';
@@ -541,7 +526,6 @@
         alert('今は話しかけてほしくないみたい。また明日話しかけてみよう。');
       }
     }
-
     function lockGame() {
       isGameLocked = true;
       const dialogue = document.getElementById('dialogue');
@@ -563,35 +547,4 @@
       const timeUntilReset = tomorrow6AM - now;
       localStorage.setItem('lockTime', tomorrow6AM.getTime());
       setTimeout(() => { location.reload(); }, timeUntilReset);
-    }
-
-    function displayLockedMessage() {
-      const dialogue = document.getElementById('dialogue');
-      const options = document.getElementById('options');
-      dialogue.innerHTML = `
-        <div class="character" id="inai-dialogue">
-          <img src="akirame.png" alt="イナイ">
-          <p>今は話しかけないで</p>
-        </div>
-      `;
-      options.innerHTML = `
-        <button onclick="goToTop()">トップページに戻る</button>
-        <p>ゲームはロックされています。</p>
-      `;
-    }
-
-    function showLockedState() {
-      document.getElementById('top-page').style.display = 'none';
-      document.getElementById('game-content').style.display = 'block';
-      displayLockedMessage();
-    }
-
-    function resetDial() {
-      dialedNumber = '';
-      document.getElementById('phone-display').textContent = 'ダイヤル: ';
-      document.getElementById('message').style.display = 'none';
-      document.getElementById('phone').style.display = 'block';
-    }
-  </script>
-</body>
-</html>
+   
