@@ -41,7 +41,7 @@
       background-color: #ccc;
       border-radius: 10px;
     }
-    /* ダイアログスタイル */
+    /* ダイアログ */
     #dialogue {
       margin-top: 20px;
       min-height: 100px;
@@ -74,7 +74,7 @@
     .options button:hover {
       background-color: #45a049;
     }
-    /* ダイヤルパッド */
+    /* キーパッド */
     .dial-buttons {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -95,7 +95,7 @@
     .dial-buttons button:hover {
       background-color: #ddd;
     }
-    /* 電話画面枠（スマホ風） */
+    /* 電話画面枠 */
     #phone {
       display: none;
       margin-top: 20px;
@@ -119,15 +119,16 @@
       word-break: break-all;
       font-size: 18px;
     }
-    /* コール＆削除ボタンコンテナ */
+    /* コール＆削除ボタンコンテナ（グリッドレイアウト） */
     #call-container {
-      display: flex;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
       margin-top: 20px;
     }
-    /* 電話をかけるボタン */
+    /* 電話をかけるボタン（中央に配置） */
     .call-button {
+      grid-column: 2;
       width: 60px;
       height: 60px;
       border: none;
@@ -143,16 +144,17 @@
     .call-button:hover {
       background-color: #45a049;
     }
-    /* 削除ボタン：5角形のイメージ（正方形と左側に三角形） */
+    /* 削除ボタン（右側に配置、少し小さめ） */
     .delete-button {
-      width: 60px;
-      height: 60px;
+      grid-column: 3;
+      width: 50px;
+      height: 50px;
       background-color: #f0f0f0;
       color: #000;
       border: none;
       cursor: pointer;
-      font-size: 24px;
-      /* clip-pathで五角形：正四角と左側に三角形 */
+      font-size: 20px;
+      /* clip-pathで五角形（正方形＋左側に正三角形） */
       clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%);
       transition: background-color 0.3s;
     }
@@ -246,7 +248,6 @@
       <img src="allinai.png" alt="All Inai" style="max-width: 100%; height: auto;">
       <button onclick="startConversation()">イナイと話す</button>
     </div>
-
     <!-- ゲームコンテンツ -->
     <div id="game-content" style="display: none;">
       <div id="dialogue">
@@ -289,7 +290,6 @@
         <button class="back-button" onclick="receiveReward()">受け取る</button>
       </div>
     </div>
-
     <!-- ロックメッセージ -->
     <div id="lock-message">
       <p>今は話しかけないで</p>
@@ -324,7 +324,6 @@
     };
 
     function startConversation() {
-      // もし否定的な選択が4回目以降ならロック状態とする
       if (negativeChoicesCount >= 3 || isGameLocked) {
         isGameLocked = true;
         alert('今は話しかけてほしくないみたい。また明日話しかけてみよう。');
@@ -376,8 +375,7 @@
           </div>
         `;
         options.innerHTML = `
-          <button onclick="selectOption('think_together')">一緒に考える</button>
-          <button onclick="selectOption('dont_know')">それは知らん</button>
+          <!-- キーパッド画面には「一緒に考える」や「それは知らん」は表示しません -->
         `;
       } else if (option === 'more_difficult') {
         handleNegativeChoice();
@@ -436,7 +434,8 @@
           <p>適切なダイヤルに電話をかけてください。</p>
         </div>
       `;
-      // オプションは空（キーパッドは常に表示される）
+      // オプションはクリア
+      options.innerHTML = ``;
     }
 
     function dialNumber(num) {
@@ -508,7 +507,6 @@
       const options = document.getElementById('options');
       const messageDiv = document.getElementById('message');
       const phone = document.getElementById('phone');
-      // 通話成功時はアイコンを削除し余白を調整
       dialogue.innerHTML = ``;
       messageDiv.style.display = 'block';
       messageDiv.innerHTML = `
@@ -539,7 +537,6 @@
       document.getElementById('game-content').style.display = 'none';
       document.getElementById('lock-message').style.display = 'none';
       document.getElementById('top-page').style.display = 'block';
-      // ロック状態なら毎回ポップアップ表示
       if (isGameLocked) {
         alert('今は話しかけてほしくないみたい。また明日話しかけてみよう。');
       }
@@ -593,7 +590,6 @@
       dialedNumber = '';
       document.getElementById('phone-display').textContent = 'ダイヤル: ';
       document.getElementById('message').style.display = 'none';
-      // 戻るボタンを押したら、キーパッド画面に戻る
       document.getElementById('phone').style.display = 'block';
     }
   </script>
