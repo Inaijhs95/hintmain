@@ -441,13 +441,13 @@
     function dialNumber(num) {
       const phoneDisplay = document.getElementById('phone-display');
       dialedNumber += num;
-      phoneDisplay.textContent = `ダイヤル: ${dialedNumber}`;
+      phoneDisplay.textContent = ` ${dialedNumber}`;
     }
 
     function deleteLastDigit() {
       if (dialedNumber.length > 0) {
         dialedNumber = dialedNumber.slice(0, -1);
-        document.getElementById('phone-display').textContent = `ダイヤル: ${dialedNumber}`;
+        document.getElementById('phone-display').textContent = ` ${dialedNumber}`;
       }
     }
 
@@ -470,7 +470,7 @@
           <div class="character">
             <img src="akire.png" alt="イナイ">
           </div>
-          <p>110は警察への電話です。災害通信サービスではありません。</p>
+          <p>警視庁、事件ですか？事故ですか？</p>
           <button class="back-button" onclick="resetDial()">戻る</button>
         `;
         phone.style.display = 'none';
@@ -481,7 +481,7 @@
           <div class="character">
             <img src="akire.png" alt="イナイ">
           </div>
-          <p>119は消防への電話です。災害通信サービスではありません。</p>
+          <p>消防庁、火事ですか？救急ですか？</p>
           <button class="back-button" onclick="resetDial()">戻る</button>
         `;
         phone.style.display = 'none';
