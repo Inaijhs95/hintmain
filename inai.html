@@ -357,12 +357,12 @@
         dialogue.innerHTML = `
           <div class="character" id="inai-dialogue">
             <img src="komari.png" alt="イナイ">
-            <p>地元の○○村が大きな災害に見舞われ、家族と連絡が取れなくなっているんだ。</p>
+            <p>地元の村が大きな災害に見舞われ、家族と連絡が取れなくなっているんだ。</p>
           </div>
         `;
         options.innerHTML = `
-          <button onclick="selectOption('terrible')">それは大変だ</button>
-          <button onclick="selectOption('more_difficult')">でも私のほうが大変</button>
+          <button onclick="selectOption('terrible')">チカラになるよ!!</button>
+          <button onclick="selectOption('more_difficult')">でも私のほうがもっと大変</button>
         `;
       } else if (option === 'busy_now') {
         handleNegativeChoice();
@@ -375,8 +375,8 @@
           </div>
         `;
         options.innerHTML = `
-          <button onclick="selectOption('think_together')">一緒に考える</button>
-          <button onclick="selectOption('dont_know')">それは知らん</button>
+          <button onclick="selectOption('think_together')">一緒に考えよう</button>
+          <button onclick="selectOption('dont_know')">自分で調べなよ</button>
         `;
       } else if (option === 'more_difficult') {
         handleNegativeChoice();
@@ -432,7 +432,7 @@
       dialogue.innerHTML = `
         <div class="character" id="inai-dialogue">
           <img src="yaruki.png" alt="イナイ">
-          <p>適切なダイヤルに電話をかけてください。</p>
+          <p>適切なダイヤルに電話をかけよう</p>
         </div>
       `;
       options.innerHTML = ``;
@@ -549,7 +549,7 @@
       dialogue.innerHTML = `
         <div class="character" id="inai-dialogue">
           <img src="akirame.png" alt="イナイ">
-          <p>………今は話しかけないで。</p>
+          <p>………今はもう話しかけないで。</p>
         </div>
       `;
       options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
