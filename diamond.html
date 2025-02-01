@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スマホ向けパズルゲーム</title>
+    <title>リズムゲーム</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,179 +12,143 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
+            background-color: #f0f0f0;
         }
 
-        .game-container {
+        #game-container {
             text-align: center;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 600px;
         }
 
-        .puzzle-container {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 20px 0;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .puzzle-item {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #4CAF50;
-            color: white;
+        #score {
             font-size: 24px;
-            border-radius: 5px;
-            cursor: pointer;
-            user-select: none;
+            font-weight: bold;
         }
 
-        button {
+        #note-container {
+            position: relative;
+            width: 200px;
+            height: 400px;
+            margin: 20px auto;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #hit-button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 30px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
+            font-size: 18px;
         }
 
-        button:disabled {
+        #hit-button:disabled {
             background-color: #ccc;
         }
 
-        #status {
-            font-size: 16px;
-            color: green;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>数字並べパズル</h1>
-        <p id="timer">残り時間: <span id="time-left">900</span>秒</p>
-        <div id="puzzle" class="puzzle-container"></div>
-        <button id="start-button">スタート</button>
-        <button id="end-button" style="display:none;">ゲーム終了</button>
-        <p id="status"></p>
-    </div>
 
-    <script>
-        let timerInterval;
-        let timeLeft = 900; // 15分（900秒）
-        let puzzleItems = [];
-        let isGameActive = false;
+<div id="game-container">
+    <h1>リズムゲーム</h1>
+    <div id="score">スコア: 0</div>
+    <div id="note-container"></div>
+    <button id="hit-button">ヒット</button>
+    <audio id="background-music" src="your-music-file.mp3" preload="auto"></audio>
+</div>
 
-        document.getElementById('start-button').addEventListener('click', startGame);
-        document.getElementById('end-button').addEventListener('click', endGame);
+<script>
+    let score = 0;
+    let noteSpeed = 2; // ノーツの速度
+    let notes = [];
+    let isGameRunning = false;
+    let noteInterval;
 
-        function startGame() {
-            resetGame();
-            shufflePuzzle();
-            displayPuzzle();
-            startTimer();
-            document.getElementById('start-button').style.display = 'none';
-            document.getElementById('end-button').style.display = 'inline';
-            document.getElementById('status').textContent = '';
-        }
+    const scoreElement = document.getElementById('score');
+    const noteContainer = document.getElementById('note-container');
+    const hitButton = document.getElementById('hit-button');
+    const backgroundMusic = document.getElementById('background-music');
 
-        function resetGame() {
-            isGameActive = true;
-            timeLeft = 900; // 15分にリセット
-            document.getElementById('time-left').textContent = timeLeft;
-            document.getElementById('status').textContent = '';
-            clearInterval(timerInterval);
-        }
+    hitButton.addEventListener('click', hitAction);
 
-        function shufflePuzzle() {
-            puzzleItems = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-            puzzleItems.sort(() => Math.random() - 0.5); // ランダムに並べ替え
-        }
+    function startGame() {
+        isGameRunning = true;
+        score = 0;
+        scoreElement.textContent = `スコア: ${score}`;
+        hitButton.disabled = false;
+        backgroundMusic.play();
+        generateNotes();
+    }
 
-        function displayPuzzle() {
-            const puzzleContainer = document.getElementById('puzzle');
-            puzzleContainer.innerHTML = '';
-            puzzleItems.forEach((item, index) => {
-                const puzzleItem = document.createElement('div');
-                puzzleItem.className = 'puzzle-item';
-                puzzleItem.textContent = item;
-                puzzleItem.dataset.index = index;
-                puzzleItem.addEventListener('click', () => handleItemClick(index));
-                puzzleContainer.appendChild(puzzleItem);
-            });
-        }
+    function generateNotes() {
+        noteInterval = setInterval(() => {
+            if (!isGameRunning) return;
 
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('time-left').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    checkWinCondition();
-                }
-            }, 1000);
-        }
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.style.left = `${Math.random() * 100}%`; // ランダムな位置にノーツを生成
+            noteContainer.appendChild(note);
 
-        function handleItemClick(index) {
-            if (!isGameActive) return;
+            moveNoteDown(note);
 
-            // 隣接する数字を入れ替え
-            const swapIndex = getAdjacentSwapIndex(index);
-            if (swapIndex !== -1) {
-                [puzzleItems[index], puzzleItems[swapIndex]] = [puzzleItems[swapIndex], puzzleItems[index]];
-                displayPuzzle();
-                checkWinCondition();
+            notes.push(note);
+        }, 1000); // 1秒ごとにノーツを生成
+    }
+
+    function moveNoteDown(note) {
+        let notePosition = 0;
+        const moveInterval = setInterval(() => {
+            if (notePosition >= noteContainer.offsetHeight) {
+                clearInterval(moveInterval);
+                note.remove();
+                return;
             }
-        }
 
-        function getAdjacentSwapIndex(index) {
-            const rowLength = 3; // 3x3のグリッド
-            const currentRow = Math.floor(index / rowLength);
-            const currentCol = index % rowLength;
+            notePosition += noteSpeed;
+            note.style.top = `${notePosition}px`;
 
-            const directions = [
-                { row: -1, col: 0 }, // 上
-                { row: 1, col: 0 },  // 下
-                { row: 0, col: -1 }, // 左
-                { row: 0, col: 1 }   // 右
-            ];
-
-            for (const dir of directions) {
-                const newRow = currentRow + dir.row;
-                const newCol = currentCol + dir.col;
-                if (newRow >= 0 && newRow < rowLength && newCol >= 0 && newCol < rowLength) {
-                    const newIndex = newRow * rowLength + newCol;
-                    if (Math.abs(puzzleItems[index] - puzzleItems[newIndex]) === 1) {
-                        return newIndex;
-                    }
-                }
+            // ノーツが画面下部に来たときに反応がないと「Miss」と判定
+            if (notePosition >= noteContainer.offsetHeight - 10 && isHit(note)) {
+                score++;
+                scoreElement.textContent = `スコア: ${score}`;
+                note.remove();
+                clearInterval(moveInterval);
             }
-            return -1; // 隣接する数字がない場合
-        }
+        }, 20);
+    }
 
-        function checkWinCondition() {
-            if (puzzleItems.join('') === '123456789') {
-                isGameActive = false;
-                clearInterval(timerInterval);
-                document.getElementById('status').textContent = 'おめでとう！ 正解です！';
+    function isHit(note) {
+        const noteRect = note.getBoundingClientRect();
+        const buttonRect = hitButton.getBoundingClientRect();
+
+        return noteRect.bottom > buttonRect.top && noteRect.top < buttonRect.bottom;
+    }
+
+    function hitAction() {
+        if (!isGameRunning) return;
+
+        // ヒット判定
+        notes.forEach(note => {
+            if (isHit(note)) {
+                score++;
+                scoreElement.textContent = `スコア: ${score}`;
+                note.remove();
             }
-        }
+        });
+    }
 
-        function endGame() {
-            clearInterval(timerInterval);
-            document.getElementById('status').textContent = 'ゲーム終了！';
-            document.getElementById('start-button').style.display = 'inline';
-            document.getElementById('end-button').style.display = 'none';
-        }
-    </script>
+    function stopGame() {
+        clearInterval(noteInterval);
+        hitButton.disabled = true;
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    }
+
+    startGame(); // ゲーム開始
+</script>
+
 </body>
 </html>
