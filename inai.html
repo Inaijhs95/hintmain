@@ -126,25 +126,24 @@
       gap: 10px;
       margin-top: 20px;
     }
-.call-button {
-  grid-column: 2;
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  background-color: #4CAF50;
-  background-image: url('phone-icon.png');
-  background-size: 30px 30px;
-  background-repeat: no-repeat;
-  background-position: center;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  transform: translateX(15px); /* 右に10pxずらす */
-}
-.call-button:hover {
-  background-color: #45a049;
-}
-
+    .call-button {
+      grid-column: 2;
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      background-color: #4CAF50;
+      background-image: url('phone-icon.png');
+      background-size: 30px 30px;
+      background-repeat: no-repeat;
+      background-position: center;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      transform: translateX(15px); /* 右に10pxずらす */
+    }
+    .call-button:hover {
+      background-color: #45a049;
+    }
     /* 削除ボタン（右側に配置、少し小さめ、5角形） */
     .delete-button {
       grid-column: 3;
@@ -261,7 +260,7 @@
         <button onclick="selectOption('busy_now')">今忙しいから。</button>
       </div>
       <div id="phone">
-        <div id="phone-display"> </div>
+        <div id="phone-display">ダイヤル: </div>
         <div class="dial-buttons">
           <button onclick="dialNumber('1')">1</button>
           <button onclick="dialNumber('2')">2</button>
@@ -288,7 +287,6 @@
           <p>本当にありがとう！<br>
 君のおかげで家族の無事が分かったよ！<br>
 下記のリンクから報告してね。</p>
-
         </div>
         <button class="back-button" onclick="receiveReward()">報告する</button>
       </div>
@@ -303,7 +301,6 @@
   <script>
     let dialedNumber = '';
     let negativeChoicesCount = 0;
-    const maxNegativeChoices = 3;
     let isGameLocked = false;
 
     // 初期化: ローカルストレージからカウントとロック状態を取得
@@ -319,8 +316,10 @@
           isGameLocked = true;
           showLockedState();
         } else {
+          // ロック解除時刻を過ぎたら、ローカルストレージの値を削除
           localStorage.removeItem('lockTime');
           localStorage.removeItem('negativeChoicesCount');
+          negativeChoicesCount = 0;
         }
       }
       document.getElementById('top-page').style.display = 'block';
@@ -413,13 +412,8 @@
         `;
         options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
       } else if (negativeChoicesCount >= 3) {
-        dialogue.innerHTML = `
-          <div class="character" id="inai-dialogue">
-            <img src="akirame.png" alt="イナイ">
-            <p>………今は話しかけないで。</p>
-          </div>
-        `;
-        options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
+        // 3回以上のネガティブな選択でロックする
+        lockGame();
       }
     }
 
@@ -444,13 +438,13 @@
     function dialNumber(num) {
       const phoneDisplay = document.getElementById('phone-display');
       dialedNumber += num;
-      phoneDisplay.textContent = ` ${dialedNumber}`;
+      phoneDisplay.textContent = `ダイヤル: ${dialedNumber}`;
     }
 
     function deleteLastDigit() {
       if (dialedNumber.length > 0) {
         dialedNumber = dialedNumber.slice(0, -1);
-        document.getElementById('phone-display').textContent = ` ${dialedNumber}`;
+        document.getElementById('phone-display').textContent = `ダイヤル: ${dialedNumber}`;
       }
     }
 
@@ -562,6 +556,7 @@
       tomorrow6AM.setHours(6, 0, 0, 0);
       const timeUntilReset = tomorrow6AM - now;
       localStorage.setItem('lockTime', tomorrow6AM.getTime());
+      // 一定時間後に自動でリロードしてロック解除する
       setTimeout(() => { location.reload(); }, timeUntilReset);
     }
 
