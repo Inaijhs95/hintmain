@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>難易度高めの間違い探しゲーム</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #game-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .game-area {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border: 2px solid #333;
+      background-color: #fff;
+    }
+    /* 共通の図形スタイル */
+    .shape {
+      position: absolute;
+    }
+    /* 円 */
+    .circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #ccc;
+    }
+    /* 四角 */
+    .square {
+      width: 50px;
+      height: 50px;
+      background-color: #ccc;
+    }
+    /* 三角（下向き） */
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 25px solid transparent;
+      border-right: 25px solid transparent;
+      border-bottom: 50px solid #ccc;
+    }
+    /* 修正済みエリア用の差分（変更部分）の設定 */
+    /* 修正済みエリアの円は位置をずらす */
+    #modified .circle {
+      left: 30px;
+      top: 20px;
+    }
+    /* 修正済みエリアの四角は色を変更 */
+    #modified .square {
+      left: 230px;
+      top: 230px;
+      background-color: #aaa;
+    }
+    /* 修正済みエリアでは三角は表示しない（差分3） */
+    
+    /* ユーザーがクリックできる差分エリア（初期状態は透明） */
+    .difference {
+      position: absolute;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    /* 発見済みの場合のスタイル */
+    .difference.found {
+      border-color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>難易度高めの間違い探しゲーム</h1>
+  <p>左右のエリアで微妙な違いが3か所あります。右側エリアの違い部分をクリックしてみましょう！</p>
+  
+  <div id="game-container">
+    <!-- オリジナルエリア（左側） -->
+    <div class="game-area" id="original">
+      <!-- 円：左上に配置 -->
+      <div class="shape circle" style="left: 20px; top: 20px;"></div>
+      <!-- 四角：右下に配置 -->
+      <div class="shape square" style="left: 230px; top: 230px;"></div>
+      <!-- 三角：中央付近に配置 -->
+      <div class="shape triangle" style="left: 125px; top: 125px;"></div>
+    </div>
+    
+    <!-- 修正済みエリア（右側） -->
+    <div class="game-area" id="modified">
+      <!-- 円：位置がずれている -->
+      <div class="shape circle"></div>
+      <!-- 四角：色が変更されている -->
+      <div class="shape square"></div>
+      <!-- 三角は表示しない（差分としての「欠落」） -->
+      
+      <!-- 透明なクリック領域（差分検出用） -->
+      <!-- 差分1：円の位置ずれ。オリジナルの位置（left:20px, top:20px）の領域を設定 -->
+      <div class="difference" id="diff1" style="left: 20px; top: 20px; width: 50px; height: 50px;"></div>
+      <!-- 差分2：四角の色変更。オリジナルと同じ位置 -->
+      <div class="difference" id="diff2" style="left: 230px; top: 230px; width: 50px; height: 50px;"></div>
+      <!-- 差分3：三角の欠落。オリジナルで三角があった位置 -->
+      <div class="difference" id="diff3" style="left: 125px; top: 125px; width: 50px; height: 50px;"></div>
+    </div>
+  </div>
+  
+  <script>
+    let foundCount = 0;
+    const totalDifferences = 3;
+    
+    // 各差分エリアにクリックイベントを設定
+    document.querySelectorAll('.difference').forEach(function(diffElem) {
+      diffElem.addEventListener('click', function() {
+        // 既に発見済みなら何もしない
+        if(diffElem.classList.contains('found')) return;
+        
+        // 発見済みとしてマーク
+        diffElem.classList.add('found');
+        foundCount++;
+        
+        alert('差分発見！ 残り ' + (totalDifferences - foundCount) + ' 箇所');
+        
+        // すべての差分を見つけた場合
+        if(foundCount === totalDifferences) {
+          alert('すべての差分を発見しました！ おめでとうございます！');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
