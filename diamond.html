@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <!-- 画面幅に合わせた表示を実現 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>記憶力ゲーム - 補充＆ゲームオーバー時全カード表示</title>
+  <title>神経衰弱</title>
   <style>
     /* すべての要素のボックスサイズをborder-boxに */
     * { box-sizing: border-box; }
@@ -25,7 +25,17 @@
       font-size: 6vw;
     }
 
-    #move-counter, #mistake-counter, #message {
+    /* ターン数表示はそのまま、ライフ（♥）は赤字で表示 */
+    #move-counter {
+      font-size: 5vw;
+      margin: 5px 0;
+    }
+    #mistake-counter {
+      font-size: 5vw;
+      margin: 5px 0;
+      color: red;
+    }
+    #message {
       font-size: 5vw;
       margin: 5px 0;
     }
@@ -83,9 +93,10 @@
   </style>
 </head>
 <body>
-  <h1>記憶力ゲーム</h1>
-  <div id="move-counter">ムーブ数: 0</div>
-  <div id="mistake-counter">ミス: 0</div>
+  <h1>神経衰弱</h1>
+  <div id="move-counter">ターン数: 0</div>
+  <!-- ここではミス数の代わりに♥を表示 -->
+  <div id="mistake-counter">♥♥♥♥♥</div>
   <div id="game-board"></div>
   <div id="message"></div>
   <button id="restart-button">再スタート</button>
@@ -95,15 +106,17 @@
      * ゲーム仕様設定
      ***********************/
     const BOARD_SIZE = 16;        // 盤面は16枠（4×4）
-    const MAX_MISTAKES = 5;       // ミス5回でゲームオーバー
+    // ※ライフは「heartCount」で管理。最大は5。
 
     /***********************
      * グローバル変数
      ***********************/
     let initialDeck = [];       // 初期配置用デッキ：1～8の数字（各2枚＝16枚）
-    let replenishDeck = [];     // 補充用デッキ：9～16の数字（各2枚＝16枚）
-    let moveCount = 0;          // ムーブ数（カードをめくった回数）
-    let mistakeCount = 0;       // ミス回数
+    let firstReplenishDeck = [];  // 1回目補充用：9～12の数字（各2枚＝8枚）
+    let secondReplenishDeck = []; // 2回目補充用：13～16の数字（各2枚＝8枚）
+    let replenishCount = 0;       // 補充回数（0または1）
+    let moveCount = 0;          // ターン数（カードをめくった回数）
+    let heartCount = 5;         // ライフ：初期は5個
     let removedCount = 0;       // 盤面から取り除かれたカード枚数
     let firstCard = null;       // 1枚目にめくったカード
     let secondCard = null;      // 2枚目にめくったカード
@@ -114,9 +127,16 @@
      ***********************/
     const boardElement = document.getElementById('game-board');
     const moveCounterElement = document.getElementById('move-counter');
-    const mistakeCounterElement = document.getElementById('mistake-counter');
+    const heartIndicatorElement = document.getElementById('mistake-counter');
     const messageElement = document.getElementById('message');
     const restartButton = document.getElementById('restart-button');
+
+    /***********************
+     * ヘルプ関数：ライフ表示更新
+     ***********************/
+    function updateHearts() {
+      heartIndicatorElement.innerHTML = "♥".repeat(heartCount);
+    }
 
     /***********************
      * 初期化関数
@@ -124,29 +144,39 @@
     function initGame() {
       // 変数リセット
       initialDeck = [];
-      replenishDeck = [];
+      firstReplenishDeck = [];
+      secondReplenishDeck = [];
+      replenishCount = 0;
       moveCount = 0;
-      mistakeCount = 0;
+      heartCount = 5;
       removedCount = 0;
       firstCard = null;
       secondCard = null;
       lockBoard = false;
       messageElement.textContent = "";
-      moveCounterElement.textContent = "ムーブ数: " + moveCount;
-      mistakeCounterElement.textContent = "ミス: " + mistakeCount;
+      moveCounterElement.textContent = "ターン数: " + moveCount;
+      updateHearts();
       
       // 初期デッキ作成：1～8の数字のカードを2枚ずつ（全16枚）
       for (let i = 1; i <= 8; i++) {
         initialDeck.push({ value: i });
         initialDeck.push({ value: i });
       }
-      // 補充用デッキ作成：9～16の数字のカードを2枚ずつ（全16枚）
-      for (let i = 9; i <= 16; i++) {
-        replenishDeck.push({ value: i });
-        replenishDeck.push({ value: i });
-      }
       shuffle(initialDeck);
-      shuffle(replenishDeck);
+
+      // 補充用デッキ作成：
+      // 1回目補充用：9～12の数字（各2枚＝8枚）
+      for (let i = 9; i <= 12; i++) {
+        firstReplenishDeck.push({ value: i });
+        firstReplenishDeck.push({ value: i });
+      }
+      // 2回目補充用：13～16の数字（各2枚＝8枚）
+      for (let i = 13; i <= 16; i++) {
+        secondReplenishDeck.push({ value: i });
+        secondReplenishDeck.push({ value: i });
+      }
+      shuffle(firstReplenishDeck);
+      shuffle(secondReplenishDeck);
 
       // 盤面の生成（初期盤面は初期デッキから配置）
       boardElement.innerHTML = "";
@@ -212,7 +242,7 @@
       secondCard = this;
       lockBoard = true;
       moveCount++;
-      moveCounterElement.textContent = "ムーブ数: " + moveCount;
+      moveCounterElement.textContent = "ターン数: " + moveCount;
 
       // 一致判定
       if (firstCard.dataset.value === secondCard.dataset.value) {
@@ -234,11 +264,9 @@
           secondCard.onclick = null;
           // 取り除かれたカード枚数を更新
           removedCount += 2;
-          // ペア成立ごとにミスを1回復（0未満にならないように）
-          if (mistakeCount > 0) {
-            mistakeCount = Math.max(0, mistakeCount - 1);
-            mistakeCounterElement.textContent = "ミス: " + mistakeCount;
-          }
+          // ペア成立ごとにライフを1回復（最大5個まで）
+          heartCount = Math.min(5, heartCount + 1);
+          updateHearts();
           // 取り除かれたカードが合計8枚（4ペア）に達したら補充
           if (removedCount % 8 === 0) {
             replenishBoard();
@@ -246,7 +274,7 @@
           resetTurn();
         }, 500);
       } else {
-        // 不一致の場合 → ミスカウント増加
+        // 不一致の場合 → ライフ1個減少
         setTimeout(() => {
           firstCard.classList.remove('flipped');
           secondCard.classList.remove('flipped');
@@ -254,9 +282,9 @@
           secondCard.textContent = "";
           resetTurn();
         }, 1000);
-        mistakeCount++;
-        mistakeCounterElement.textContent = "ミス: " + mistakeCount;
-        if (mistakeCount >= MAX_MISTAKES) {
+        heartCount = Math.max(0, heartCount - 1);
+        updateHearts();
+        if (heartCount <= 0) {
           setTimeout(gameOver, 1100);
         }
       }
@@ -273,15 +301,27 @@
 
     /***********************
      * 補充処理：空枠に補充用デッキから新カードを配置
+     * 補充は必ずペアで行い、1回目は9～12、2回目は13～16のカードを使用
      ***********************/
     function replenishBoard() {
       const emptyCards = document.querySelectorAll('.card.empty');
-      emptyCards.forEach(card => {
-        if (replenishDeck.length > 0) {
-          const newCardData = replenishDeck.pop();
-          assignCard(card, newCardData);
-        }
-      });
+      if (replenishCount === 0 && firstReplenishDeck.length > 0) {
+        emptyCards.forEach(card => {
+          if (firstReplenishDeck.length > 0) {
+            const newCardData = firstReplenishDeck.pop();
+            assignCard(card, newCardData);
+          }
+        });
+        replenishCount++;
+      } else if (replenishCount === 1 && secondReplenishDeck.length > 0) {
+        emptyCards.forEach(card => {
+          if (secondReplenishDeck.length > 0) {
+            const newCardData = secondReplenishDeck.pop();
+            assignCard(card, newCardData);
+          }
+        });
+        replenishCount++;
+      }
     }
 
     /***********************
