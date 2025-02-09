@@ -81,7 +81,7 @@
      * ゲーム仕様設定
      ***********************/
     const BOARD_SIZE = 16;        // 盤面は16枠（4×4）
-    const MAX_MISTAKES = 3;       // ミス3回でゲームオーバー
+    const MAX_MISTAKES = 5;       // ミス5回でゲームオーバー
 
     /***********************
      * グローバル変数
@@ -220,6 +220,11 @@
           secondCard.onclick = null;
           // 取り除かれたカード枚数を更新
           removedCount += 2;
+          // ペア成立ごとにミスを1回復（0未満にならないように）
+          if (mistakeCount > 0) {
+            mistakeCount = Math.max(0, mistakeCount - 1);
+            mistakeCounterElement.textContent = "ミス: " + mistakeCount;
+          }
           // 取り除かれたカードが合計8枚（4ペア）に達したら補充
           if (removedCount % 8 === 0) {
             replenishBoard();
