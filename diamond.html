@@ -113,8 +113,8 @@
      * グローバル変数
      ***********************/
     let initialDeck = [];         // 初期配置用デッキ：1～8（各2枚＝16枚）
-    let nextReplenishStart = 9;     // 補充用は無限。次に生成するカードの最小値。最初は9から
-    let moveCount = 0;            // 内部でのターン数（※表示はペア数）
+    let supplementIndex = 0;      // 補充グループのインデックス（0:9-12, 1:13-16, 2:17-20, ...）
+    let moveCount = 0;            // 内部のターン数（※表示はペア数）
     let matchedPairs = 0;         // 正解したペア数
     let heartCount = 5;           // ライフ：初期は5個
     let firstCard = null;         // 1枚目にめくったカード
@@ -138,12 +138,27 @@
     }
 
     /***********************
+     * 補充グループを生成する関数
+     * 補充グループは、グループ番号 supplementIndex に対して
+     * [9 + supplementIndex*4, 10 + supplementIndex*4, 11 + supplementIndex*4, 12 + supplementIndex*4]
+     * を返します
+     ***********************/
+    function getSupplementGroup(index) {
+      let start = 9 + index * 4;
+      let group = [];
+      for (let i = 0; i < 4; i++) {
+        group.push(start + i);
+      }
+      return group;
+    }
+
+    /***********************
      * 初期化関数
      ***********************/
     function initGame() {
       // 変数リセット
       initialDeck = [];
-      nextReplenishStart = 9;
+      supplementIndex = 0;
       moveCount = 0;
       matchedPairs = 0;
       heartCount = 5;
@@ -250,7 +265,7 @@
           // 正解のたびにライフを1回復（最大5個まで）
           heartCount = Math.min(5, heartCount + 1);
           updateHearts();
-          // 補充のタイミング：ペア数が4の倍数なら空枠に補充（無限補充）
+          // 補充のタイミング：ペア数が4の倍数になるたびに補充
           if (matchedPairs % 4 === 0) {
             replenishBoard();
           }
@@ -284,16 +299,18 @@
 
     /***********************
      * 補充処理：空枠に新しいカードを配置（無限補充）
-     * 補充は必ずペアで行い、次の4連番（各2枚＝8枚）を生成して使用
+     * 補充グループは、各グループ 4 個の数字（各2枚＝8枚）で構成
      ***********************/
     function replenishBoard() {
       const emptyCards = document.querySelectorAll('.card.empty');
-      // 新しい補充用デッキを生成（nextReplenishStart～nextReplenishStart+3 の各2枚）
+      // 補充グループを取得（例: supplementIndex = 0 → [9,10,11,12]、1 → [13,14,15,16]、…）
+      const group = getSupplementGroup(supplementIndex);
+      // 各数字は2枚ずつ用意して合計8枚の新カードを作成
       let newDeck = [];
-      for (let i = nextReplenishStart; i < nextReplenishStart + 4; i++) {
-        newDeck.push({ value: i });
-        newDeck.push({ value: i });
-      }
+      group.forEach(num => {
+        newDeck.push({ value: num });
+        newDeck.push({ value: num });
+      });
       shuffle(newDeck);
       // 空枠に新しいカードを配置
       emptyCards.forEach(card => {
@@ -302,8 +319,7 @@
           assignCard(card, newCardData);
         }
       });
-      // 次回補充用の数値を更新（4ずつ増加）
-      nextReplenishStart += 4;
+      supplementIndex++;  // 次回は次の補充グループを使用
     }
 
     /***********************
