@@ -1,154 +1,182 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>リズムゲーム</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-
-        #game-container {
-            text-align: center;
-        }
-
-        #score {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        #note-container {
-            position: relative;
-            width: 200px;
-            height: 400px;
-            margin: 20px auto;
-            background-color: #eee;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        #hit-button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        #hit-button:disabled {
-            background-color: #ccc;
-        }
-
-    </style>
+  <meta charset="UTF-8">
+  <title>4択の超難問 クイズ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f0f0f0;
+    }
+    #quiz-container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    h1 {
+      text-align: center;
+    }
+    #score {
+      font-size: 18px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #question {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    .choice-btn {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #next-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result {
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 18px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-
-<div id="game-container">
-    <h1>リズムゲーム</h1>
-    <div id="score">スコア: 0</div>
-    <div id="note-container"></div>
-    <button id="hit-button">ヒット</button>
-    <audio id="background-music" src="your-music-file.mp3" preload="auto"></audio>
-</div>
-
-<script>
-    let score = 0;
-    let noteSpeed = 2; // ノーツの速度
-    let notes = [];
-    let isGameRunning = false;
-    let noteInterval;
-
-    const scoreElement = document.getElementById('score');
-    const noteContainer = document.getElementById('note-container');
-    const hitButton = document.getElementById('hit-button');
-    const backgroundMusic = document.getElementById('background-music');
-
-    hitButton.addEventListener('click', hitAction);
-
-    function startGame() {
-        isGameRunning = true;
-        score = 0;
-        scoreElement.textContent = `スコア: ${score}`;
-        hitButton.disabled = false;
-        backgroundMusic.play();
-        generateNotes();
+  <div id="quiz-container">
+    <h1>4択の超難問 クイズ</h1>
+    <div id="score">正解数: 0</div>
+    <div id="question"></div>
+    <div id="choices"></div>
+    <button id="next-button" style="display: none;">次の問題</button>
+    <div id="result"></div>
+  </div>
+  
+  <script>
+    // --- 問題を生成するヘルパー関数 ---
+    // ここでは、5種類のテンプレートを用いて200問の問題を生成しています。
+    // 各問題は、以下のいずれかの形式となります（i は問題番号）：
+    // ① 「問題 i: 次の計算 2+2 の答えは？」　　→　選択肢：["4", "3", "5", "6"]
+    // ② 「問題 i: 日本の首都はどこですか？」　　　→　選択肢：["東京", "大阪", "京都", "札幌"]
+    // ③ 「問題 i: 太陽系で最も大きな惑星は？」　　→　選択肢：["木星", "火星", "地球", "金星"]
+    // ④ 「問題 i: 水の化学式は何ですか？」　　　　→　選択肢：["H2O", "CO2", "O2", "NaCl"]
+    // ⑤ 「問題 i: 地球の自転周期はおおよそ何時間ですか？」 →　選択肢：["24時間", "12時間", "48時間", "36時間"]
+    // どの場合も正解は常に選択肢の先頭（インデックス0）です。
+    function generateQuestion(i) {
+      let questionText = "";
+      let choices = [];
+      switch(i % 5) {
+        case 0:
+          questionText = `問題 ${i}: 次の計算 2+2 の答えは？`;
+          choices = ["4", "3", "5", "6"];
+          break;
+        case 1:
+          questionText = `問題 ${i}: 日本の首都はどこですか？`;
+          choices = ["東京", "大阪", "京都", "札幌"];
+          break;
+        case 2:
+          questionText = `問題 ${i}: 太陽系で最も大きな惑星は？`;
+          choices = ["木星", "火星", "地球", "金星"];
+          break;
+        case 3:
+          questionText = `問題 ${i}: 水の化学式は何ですか？`;
+          choices = ["H2O", "CO2", "O2", "NaCl"];
+          break;
+        case 4:
+          questionText = `問題 ${i}: 地球の自転周期はおおよそ何時間ですか？`;
+          choices = ["24時間", "12時間", "48時間", "36時間"];
+          break;
+      }
+      return { question: questionText, choices: choices, answer: 0 };
     }
-
-    function generateNotes() {
-        noteInterval = setInterval(() => {
-            if (!isGameRunning) return;
-
-            const note = document.createElement('div');
-            note.className = 'note';
-            note.style.left = `${Math.random() * 100}%`; // ランダムな位置にノーツを生成
-            noteContainer.appendChild(note);
-
-            moveNoteDown(note);
-
-            notes.push(note);
-        }, 1000); // 1秒ごとにノーツを生成
+    
+    // --- 200問の問題を生成 ---
+    let questions = [];
+    for (let i = 1; i <= 200; i++) {
+      questions.push(generateQuestion(i));
     }
-
-    function moveNoteDown(note) {
-        let notePosition = 0;
-        const moveInterval = setInterval(() => {
-            if (notePosition >= noteContainer.offsetHeight) {
-                clearInterval(moveInterval);
-                note.remove();
-                return;
-            }
-
-            notePosition += noteSpeed;
-            note.style.top = `${notePosition}px`;
-
-            // ノーツが画面下部に来たときに反応がないと「Miss」と判定
-            if (notePosition >= noteContainer.offsetHeight - 10 && isHit(note)) {
-                score++;
-                scoreElement.textContent = `スコア: ${score}`;
-                note.remove();
-                clearInterval(moveInterval);
-            }
-        }, 20);
+    
+    let correctCount = 0;    // 現在の正解数
+    let currentQuestion;     // 現在出題中の問題オブジェクト
+    
+    // --- 次の問題を表示する関数 ---
+    function displayNextQuestion() {
+      // 「次の問題」ボタンを隠し、前回の結果表示をクリア
+      document.getElementById('next-button').style.display = 'none';
+      document.getElementById('result').textContent = "";
+      
+      // 問題が尽きた場合の処理
+      if (questions.length === 0) {
+         document.getElementById('question').textContent = "これ以上問題がありません。";
+         document.getElementById('choices').innerHTML = "";
+         return;
+      }
+      
+      // 問題配列からランダムに1問選び、選んだ問題は配列から削除
+      const randomIndex = Math.floor(Math.random() * questions.length);
+      currentQuestion = questions[randomIndex];
+      questions.splice(randomIndex, 1);
+      
+      // 問題文の表示
+      document.getElementById('question').textContent = currentQuestion.question;
+      
+      // 選択肢ボタンの生成・表示
+      const choicesDiv = document.getElementById('choices');
+      choicesDiv.innerHTML = ""; // 前回の選択肢をクリア
+      currentQuestion.choices.forEach((choice, index) => {
+         let button = document.createElement('button');
+         button.textContent = choice;
+         button.className = "choice-btn";
+         button.onclick = function() { selectAnswer(index); };
+         choicesDiv.appendChild(button);
+      });
     }
-
-    function isHit(note) {
-        const noteRect = note.getBoundingClientRect();
-        const buttonRect = hitButton.getBoundingClientRect();
-
-        return noteRect.bottom > buttonRect.top && noteRect.top < buttonRect.bottom;
+    
+    // --- 選択肢をクリックしたときの処理 ---
+    function selectAnswer(selectedIndex) {
+      // 選択後はすべてのボタンを無効化
+      const buttons = document.getElementsByClassName('choice-btn');
+      for (let btn of buttons) {
+        btn.disabled = true;
+      }
+      
+      // 正解かどうかを判定
+      if (selectedIndex === currentQuestion.answer) {
+         correctCount++;
+         document.getElementById('result').textContent = "正解！";
+      } else {
+         document.getElementById('result').textContent = "不正解！";
+      }
+      // スコアの更新表示
+      document.getElementById('score').textContent = "正解数: " + correctCount;
+      
+      // 正解数が3問に達していればクリア
+      if (correctCount >= 3) {
+         document.getElementById('result').textContent += "　クリア！";
+         // クリア後は「次の問題」ボタンを表示しない
+         document.getElementById('next-button').style.display = 'none';
+      } else {
+         // まだクリアしていない場合は「次の問題」ボタンを表示
+         document.getElementById('next-button').style.display = 'block';
+      }
     }
-
-    function hitAction() {
-        if (!isGameRunning) return;
-
-        // ヒット判定
-        notes.forEach(note => {
-            if (isHit(note)) {
-                score++;
-                scoreElement.textContent = `スコア: ${score}`;
-                note.remove();
-            }
-        });
-    }
-
-    function stopGame() {
-        clearInterval(noteInterval);
-        hitButton.disabled = true;
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0;
-    }
-
-    startGame(); // ゲーム開始
-</script>
-
+    
+    // --- 「次の問題」ボタンのイベント登録 ---
+    document.getElementById('next-button').addEventListener('click', function() {
+      displayNextQuestion();
+    });
+    
+    // ページ読み込み時に最初の問題を表示
+    displayNextQuestion();
+  </script>
 </body>
 </html>
