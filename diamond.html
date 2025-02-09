@@ -2,181 +2,279 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>4択の超難問 クイズ</title>
+  <title>記憶力ゲーム - 補充機能＆ミス制限</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f0f0f0;
-    }
-    #quiz-container {
-      max-width: 600px;
-      margin: auto;
-      background: #fff;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      margin: 0;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
     h1 {
-      text-align: center;
+      margin-top: 20px;
     }
-    #score {
-      font-size: 18px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    #question {
+    #move-counter, #mistake-counter {
       font-size: 20px;
-      margin-bottom: 20px;
+      margin: 10px;
     }
-    .choice-btn {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 16px;
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+      width: 440px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #2c3e50;
+      border-radius: 8px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: #ecf0f1;
+      user-select: none;
+      transition: background-color 0.3s, color 0.3s;
     }
-    #next-button {
+    /* 表向き時 */
+    .card.flipped {
+      background-color: #ecf0f1;
+      color: #2c3e50;
+    }
+    /* ペア成立後（取り除かれた状態） */
+    .card.matched {
+      background-color: #95a5a6;
+      color: #2c3e50;
+    }
+    /* 空のカード枠（補充対象） */
+    .card.empty {
+      background-color: #bdc3c7;
+      cursor: default;
+    }
+    #message {
+      font-size: 24px;
+      color: red;
+      margin-top: 20px;
+    }
+    #restart-button {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
     }
-    #result {
-      font-weight: bold;
-      margin-top: 20px;
-      font-size: 18px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
-  <div id="quiz-container">
-    <h1>4択の超難問 クイズ</h1>
-    <div id="score">正解数: 0</div>
-    <div id="question"></div>
-    <div id="choices"></div>
-    <button id="next-button" style="display: none;">次の問題</button>
-    <div id="result"></div>
-  </div>
+  <h1>記憶力ゲーム</h1>
+  <div id="move-counter">ムーブ数: 0</div>
+  <div id="mistake-counter">ミス: 0</div>
+  <div id="game-board"></div>
+  <div id="message"></div>
+  <button id="restart-button">再スタート</button>
   
   <script>
-    // --- 問題を生成するヘルパー関数 ---
-    // ここでは、5種類のテンプレートを用いて200問の問題を生成しています。
-    // 各問題は、以下のいずれかの形式となります（i は問題番号）：
-    // ① 「問題 i: 次の計算 2+2 の答えは？」　　→　選択肢：["4", "3", "5", "6"]
-    // ② 「問題 i: 日本の首都はどこですか？」　　　→　選択肢：["東京", "大阪", "京都", "札幌"]
-    // ③ 「問題 i: 太陽系で最も大きな惑星は？」　　→　選択肢：["木星", "火星", "地球", "金星"]
-    // ④ 「問題 i: 水の化学式は何ですか？」　　　　→　選択肢：["H2O", "CO2", "O2", "NaCl"]
-    // ⑤ 「問題 i: 地球の自転周期はおおよそ何時間ですか？」 →　選択肢：["24時間", "12時間", "48時間", "36時間"]
-    // どの場合も正解は常に選択肢の先頭（インデックス0）です。
-    function generateQuestion(i) {
-      let questionText = "";
-      let choices = [];
-      switch(i % 5) {
-        case 0:
-          questionText = `問題 ${i}: 次の計算 2+2 の答えは？`;
-          choices = ["4", "3", "5", "6"];
-          break;
-        case 1:
-          questionText = `問題 ${i}: 日本の首都はどこですか？`;
-          choices = ["東京", "大阪", "京都", "札幌"];
-          break;
-        case 2:
-          questionText = `問題 ${i}: 太陽系で最も大きな惑星は？`;
-          choices = ["木星", "火星", "地球", "金星"];
-          break;
-        case 3:
-          questionText = `問題 ${i}: 水の化学式は何ですか？`;
-          choices = ["H2O", "CO2", "O2", "NaCl"];
-          break;
-        case 4:
-          questionText = `問題 ${i}: 地球の自転周期はおおよそ何時間ですか？`;
-          choices = ["24時間", "12時間", "48時間", "36時間"];
-          break;
+    /***********************
+     * ゲームの仕様設定
+     ***********************/
+    const BOARD_SIZE = 16;        // 盤面は16枠（4×4）
+    const TOTAL_PAIRS = 20;       // 全体で20ペア（40枚）のカードを用意
+    const MAX_MISTAKES = 3;       // ミス3回でゲームオーバー
+
+    /***********************
+     * グローバル変数
+     ***********************/
+    let deck = [];              // デッキ（未使用カードの山）
+    let moveCount = 0;          // ムーブ数（カードをめくった回数）
+    let mistakeCount = 0;       // ミス回数
+    let removedCount = 0;       // 盤面から抜けたカード枚数
+    let firstCard = null;       // 1枚目にめくったカード
+    let secondCard = null;      // 2枚目にめくったカード
+    let lockBoard = false;      // 他のカードをクリックできない状態
+
+    /***********************
+     * DOM要素の取得
+     ***********************/
+    const boardElement = document.getElementById('game-board');
+    const moveCounterElement = document.getElementById('move-counter');
+    const mistakeCounterElement = document.getElementById('mistake-counter');
+    const messageElement = document.getElementById('message');
+    const restartButton = document.getElementById('restart-button');
+
+    /***********************
+     * 初期化関数
+     ***********************/
+    function initGame() {
+      // 変数リセット
+      deck = [];
+      moveCount = 0;
+      mistakeCount = 0;
+      removedCount = 0;
+      firstCard = null;
+      secondCard = null;
+      lockBoard = false;
+      messageElement.textContent = "";
+      moveCounterElement.textContent = "ムーブ数: " + moveCount;
+      mistakeCounterElement.textContent = "ミス: " + mistakeCount;
+      
+      // デッキ作成：1～TOTAL_PAIRSの数字のカードを2枚ずつ生成
+      for (let i = 1; i <= TOTAL_PAIRS; i++) {
+        deck.push({ value: i });
+        deck.push({ value: i });
       }
-      return { question: questionText, choices: choices, answer: 0 };
-    }
-    
-    // --- 200問の問題を生成 ---
-    let questions = [];
-    for (let i = 1; i <= 200; i++) {
-      questions.push(generateQuestion(i));
-    }
-    
-    let correctCount = 0;    // 現在の正解数
-    let currentQuestion;     // 現在出題中の問題オブジェクト
-    
-    // --- 次の問題を表示する関数 ---
-    function displayNextQuestion() {
-      // 「次の問題」ボタンを隠し、前回の結果表示をクリア
-      document.getElementById('next-button').style.display = 'none';
-      document.getElementById('result').textContent = "";
-      
-      // 問題が尽きた場合の処理
-      if (questions.length === 0) {
-         document.getElementById('question').textContent = "これ以上問題がありません。";
-         document.getElementById('choices').innerHTML = "";
-         return;
+      shuffle(deck);
+
+      // ゲームボードの生成
+      boardElement.innerHTML = "";
+      // BOARD_SIZE分のカードをデッキから配置（※デッキは山から順に配布）
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        const card = createCardElement();
+        if (deck.length > 0) {
+          const cardData = deck.pop();
+          assignCard(card, cardData);
+        }
+        boardElement.appendChild(card);
       }
-      
-      // 問題配列からランダムに1問選び、選んだ問題は配列から削除
-      const randomIndex = Math.floor(Math.random() * questions.length);
-      currentQuestion = questions[randomIndex];
-      questions.splice(randomIndex, 1);
-      
-      // 問題文の表示
-      document.getElementById('question').textContent = currentQuestion.question;
-      
-      // 選択肢ボタンの生成・表示
-      const choicesDiv = document.getElementById('choices');
-      choicesDiv.innerHTML = ""; // 前回の選択肢をクリア
-      currentQuestion.choices.forEach((choice, index) => {
-         let button = document.createElement('button');
-         button.textContent = choice;
-         button.className = "choice-btn";
-         button.onclick = function() { selectAnswer(index); };
-         choicesDiv.appendChild(button);
+    }
+
+    /***********************
+     * Fisher–Yates アルゴリズムでデッキをシャッフル
+     ***********************/
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    /***********************
+     * カード要素の生成
+     ***********************/
+    function createCardElement() {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.addEventListener('click', flipCard);
+      return card;
+    }
+
+    /***********************
+     * カードにデータを割り当てる関数
+     ***********************/
+    function assignCard(card, cardData) {
+      card.dataset.value = cardData.value;
+      card.textContent = "";  // 裏向き状態
+      card.classList.remove('flipped', 'matched', 'empty');
+      // クリックイベントを（再）設定（もし以前解除していた場合）
+      card.addEventListener('click', flipCard);
+    }
+
+    /***********************
+     * カードをめくる処理
+     ***********************/
+    function flipCard() {
+      if (lockBoard) return;
+      // 既に表向きまたはマッチ済みの場合は無視
+      if (this.classList.contains('flipped') || this.classList.contains('matched')) return;
+
+      // カードを表にして値を表示
+      this.classList.add('flipped');
+      this.textContent = this.dataset.value;
+
+      // 1枚目のカードなら記憶して終了
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      // 2枚目のカードとして記憶し、ムーブ数を更新
+      secondCard = this;
+      lockBoard = true;
+      moveCount++;
+      moveCounterElement.textContent = "ムーブ数: " + moveCount;
+
+      // 一致判定
+      if (firstCard.dataset.value === secondCard.dataset.value) {
+        // ペア成立
+        setTimeout(() => {
+          // 見た目でペア成立を示す
+          firstCard.classList.add('matched');
+          secondCard.classList.add('matched');
+          // この2枚を空状態に（補充対象）としてマーク
+          firstCard.classList.add('empty');
+          secondCard.classList.add('empty');
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          firstCard.textContent = "";
+          secondCard.textContent = "";
+          // クリックイベント解除
+          firstCard.removeEventListener('click', flipCard);
+          secondCard.removeEventListener('click', flipCard);
+
+          removedCount += 2;
+          // 8枚（4ペア）分カードが抜けたタイミングで補充
+          if (removedCount % 8 === 0) {
+            replenishBoard();
+          }
+          resetTurn();
+        }, 500);
+      } else {
+        // ペア不一致の場合はミスカウントを増やす
+        setTimeout(() => {
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          firstCard.textContent = "";
+          secondCard.textContent = "";
+          resetTurn();
+        }, 1000);
+        mistakeCount++;
+        mistakeCounterElement.textContent = "ミス: " + mistakeCount;
+        if (mistakeCount >= MAX_MISTAKES) {
+          setTimeout(gameOver, 1100);
+        }
+      }
+    }
+
+    /***********************
+     * ターン終了時のリセット処理
+     ***********************/
+    function resetTurn() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+
+    /***********************
+     * 補充処理：空になっているカード枠に新カードを配置
+     ***********************/
+    function replenishBoard() {
+      const emptyCards = document.querySelectorAll('.card.empty');
+      emptyCards.forEach(card => {
+        if (deck.length > 0) {
+          const newCardData = deck.pop();
+          assignCard(card, newCardData);
+        }
       });
     }
-    
-    // --- 選択肢をクリックしたときの処理 ---
-    function selectAnswer(selectedIndex) {
-      // 選択後はすべてのボタンを無効化
-      const buttons = document.getElementsByClassName('choice-btn');
-      for (let btn of buttons) {
-        btn.disabled = true;
-      }
-      
-      // 正解かどうかを判定
-      if (selectedIndex === currentQuestion.answer) {
-         correctCount++;
-         document.getElementById('result').textContent = "正解！";
-      } else {
-         document.getElementById('result').textContent = "不正解！";
-      }
-      // スコアの更新表示
-      document.getElementById('score').textContent = "正解数: " + correctCount;
-      
-      // 正解数が3問に達していればクリア
-      if (correctCount >= 3) {
-         document.getElementById('result').textContent += "　クリア！";
-         // クリア後は「次の問題」ボタンを表示しない
-         document.getElementById('next-button').style.display = 'none';
-      } else {
-         // まだクリアしていない場合は「次の問題」ボタンを表示
-         document.getElementById('next-button').style.display = 'block';
-      }
+
+    /***********************
+     * ゲームオーバー処理
+     ***********************/
+    function gameOver() {
+      // すべてのカードのクリックイベントを解除
+      const allCards = document.querySelectorAll('.card');
+      allCards.forEach(card => {
+        card.removeEventListener('click', flipCard);
+      });
+      messageElement.textContent = "ゲームオーバー！";
     }
-    
-    // --- 「次の問題」ボタンのイベント登録 ---
-    document.getElementById('next-button').addEventListener('click', function() {
-      displayNextQuestion();
-    });
-    
-    // ページ読み込み時に最初の問題を表示
-    displayNextQuestion();
+
+    /***********************
+     * イベント設定＆ゲーム開始
+     ***********************/
+    restartButton.addEventListener('click', initGame);
+    window.onload = initGame;
   </script>
 </body>
 </html>
