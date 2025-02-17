@@ -97,7 +97,7 @@
   <!-- ペア数表示（正解したペアの数） -->
   <div id="move-counter">ペア数: 0</div>
   <!-- ライフ表示（♥） -->
-  <div id="mistake-counter">♥♥♥♥</div>
+  <div id="mistake-counter">♥♥♥♥♥</div>
   <div id="game-board"></div>
   <div id="message"></div>
   <button id="restart-button">再スタート</button>
@@ -107,16 +107,16 @@
      * ゲーム仕様設定
      ***********************/
     const BOARD_SIZE = 16;  // 盤面は16枠（4×4）
-    // ※ライフは heartCount（最大4）、ペア数は matchedPairs で管理
+    // ※ライフは heartCount（最大5）、ペア数は matchedPairs で管理
 
     /***********************
      * グローバル変数
      ***********************/
     let initialDeck = [];         // 初期配置用デッキ：1～8（各2枚＝16枚）
-    let supplementIndex = 0;      // 補充グループのインデックス（0:9-12, 1:13-16, 2:17-20, ...）
+    let supplementIndex = 0;      // 補充グループのインデックス（0:9-16, 1:17-24, 2:25-32, ...）
     let moveCount = 0;            // 内部のターン数（※表示はペア数）
     let matchedPairs = 0;         // 正解したペア数
-    let heartCount = 4;           // ライフ：初期は4個
+    let heartCount = 5;           // ライフ：初期は5個
     let firstCard = null;         // 1枚目にめくったカード
     let secondCard = null;        // 2枚目にめくったカード
     let lockBoard = false;        // クリック制御用
@@ -140,13 +140,13 @@
     /***********************
      * 補充グループを生成する関数
      * 補充グループは、グループ番号 supplementIndex に対して
-     * [9 + supplementIndex*4, 10 + supplementIndex*4, 11 + supplementIndex*4, 12 + supplementIndex*4]
+     * [9 + supplementIndex*8, 10 + supplementIndex*8, ..., 16 + supplementIndex*8]
      * を返します
      ***********************/
     function getSupplementGroup(index) {
-      let start = 9 + index * 4;
+      let start = 9 + index * 8;
       let group = [];
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 8; i++) {
         group.push(start + i);
       }
       return group;
@@ -161,7 +161,7 @@
       supplementIndex = 0;
       moveCount = 0;
       matchedPairs = 0;
-      heartCount = 4;
+      heartCount = 5;
       firstCard = null;
       secondCard = null;
       lockBoard = false;
@@ -262,11 +262,11 @@
           // ペア成立数を更新
           matchedPairs++;
           moveCounterElement.textContent = "ペア数: " + matchedPairs;
-          // 正解のたびにライフを1回復（最大4個まで）
-          heartCount = Math.min(4, heartCount + 1);
+          // 正解のたびにライフを1回復（最大5個まで）
+          heartCount = Math.min(5, heartCount + 1);
           updateHearts();
-          // 補充のタイミング：ペア数が4の倍数になるたびに補充
-          if (matchedPairs % 4 === 0) {
+          // 補充のタイミング：ペア数が8の倍数になるたびに補充
+          if (matchedPairs % 8 === 0) {
             replenishBoard();
           }
           resetTurn();
@@ -299,13 +299,13 @@
 
     /***********************
      * 補充処理：空枠に新しいカードを配置（無限補充）
-     * 補充グループは、各グループ 4 個の数字（各2枚＝8枚）で構成
+     * 補充グループは、各グループ 8 個の数字（各2枚＝16枚）で構成
      ***********************/
     function replenishBoard() {
       const emptyCards = document.querySelectorAll('.card.empty');
-      // 補充グループを取得（例: supplementIndex = 0 → [9,10,11,12], 1 → [13,14,15,16], 2 → [17,18,19,20], ...）
+      // 補充グループを取得（例: supplementIndex = 0 → [9,...,16], 1 → [17,...,24], 2 → [25,...,32], ...）
       const group = getSupplementGroup(supplementIndex);
-      // 各数字は2枚ずつ用意して合計8枚の新カードを作成
+      // 各数字は2枚ずつ用意して合計16枚の新カードを作成
       let newDeck = [];
       group.forEach(num => {
         newDeck.push({ value: num });
