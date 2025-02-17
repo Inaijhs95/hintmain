@@ -205,8 +205,8 @@
       ctx.strokeStyle = "#333";
       ctx.stroke();
 
-      // 80%以上のセルが触れた場合、報酬ボタンを表示（1度だけ）
-      if (!rewardShown && getPaintedPercentage() >= 0.85) {
+      // 95%以上のセルが触れた場合、報酬ボタンを表示（1度だけ）
+      if (!rewardShown && getPaintedPercentage() >= 0.95) {
         rewardShown = true;
         document.getElementById("rewardContainer").style.display = "block";
       }
