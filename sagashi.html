@@ -37,8 +37,7 @@
   </style>
 </head>
 <body>
-  <div id="info"></div>
-  <button id="permissionBtn" style="display:none;">スタート</button>
+  <button id="permissionBtn" style="display:none;">開始する</button>
   <canvas id="gameCanvas"></canvas>
   <!-- 報酬ボタン -->
   <div id="rewardContainer">
@@ -81,8 +80,8 @@
     // ジャイロセンサーからの加速度
     let ax = 0, ay = 0;
 
-    // 報酬ボタンの表示状態
-    let gameCompleted = false;
+    // 報酬ボタンの表示状態（1度だけ表示するためのフラグ）
+    let rewardShown = false;
 
     // DeviceOrientation イベントハンドラ
     function handleOrientation(event) {
@@ -108,6 +107,17 @@
     }
 
     let lastTime = performance.now();
+
+    // 80%達成の割合を計算する関数
+    function getPaintedPercentage() {
+      let painted = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (grid[r][c]) painted++;
+        }
+      }
+      return painted / (rows * cols);
+    }
 
     function update() {
       const now = performance.now();
@@ -195,23 +205,13 @@
       ctx.strokeStyle = "#333";
       ctx.stroke();
 
-      // 全セルが触れた場合、報酬ボタンを表示（1度だけ）
-      if (!gameCompleted && isAllPainted()) {
-        gameCompleted = true;
+      // 80%以上のセルが触れた場合、報酬ボタンを表示（1度だけ）
+      if (!rewardShown && getPaintedPercentage() >= 0.8) {
+        rewardShown = true;
         document.getElementById("rewardContainer").style.display = "block";
       }
 
       requestAnimationFrame(update);
-    }
-
-    // 全セルが触れたかチェックする関数
-    function isAllPainted() {
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (!grid[r][c]) return false;
-        }
-      }
-      return true;
     }
 
     update();
