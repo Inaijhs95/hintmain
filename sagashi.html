@@ -2,135 +2,130 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>難易度高めの間違い探しゲーム</title>
+  <title>デジタル知恵の輪パズル</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       text-align: center;
-      margin: 20px;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
     }
     h1 {
       margin-bottom: 10px;
     }
-    #game-container {
+    p {
+      margin: 10px 0;
+    }
+    #puzzle-container {
+      margin: 20px auto;
+      width: 500px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       gap: 20px;
-      margin-top: 20px;
+      align-items: center;
     }
-    .game-area {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      border: 2px solid #333;
-      background-color: #fff;
-    }
-    /* 共通の図形スタイル */
-    .shape {
-      position: absolute;
-    }
-    /* 円 */
-    .circle {
-      width: 50px;
-      height: 50px;
+    .ring {
+      width: 150px;
+      height: 150px;
+      border: 5px solid #333;
       border-radius: 50%;
-      background-color: #ccc;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.5s ease;
+      position: relative;
     }
-    /* 四角 */
-    .square {
-      width: 50px;
-      height: 50px;
-      background-color: #ccc;
+    .controls {
+      margin-top: 5px;
     }
-    /* 三角（下向き） */
-    .triangle {
-      width: 0;
-      height: 0;
-      border-left: 25px solid transparent;
-      border-right: 25px solid transparent;
-      border-bottom: 50px solid #ccc;
+    .controls button {
+      font-size: 16px;
+      padding: 5px 10px;
+      margin: 0 5px;
     }
-    /* 修正済みエリア用の差分（変更部分）の設定 */
-    /* 修正済みエリアの円は位置をずらす */
-    #modified .circle {
-      left: 30px;
-      top: 20px;
-    }
-    /* 修正済みエリアの四角は色を変更 */
-    #modified .square {
-      left: 230px;
-      top: 230px;
-      background-color: #aaa;
-    }
-    /* 修正済みエリアでは三角は表示しない（差分3） */
-    
-    /* ユーザーがクリックできる差分エリア（初期状態は透明） */
-    .difference {
-      position: absolute;
-      border: 2px solid transparent;
-      cursor: pointer;
-    }
-    /* 発見済みの場合のスタイル */
-    .difference.found {
-      border-color: red;
+    #hiddenMessage {
+      margin-top: 30px;
+      font-size: 24px;
+      color: green;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>難易度高めの間違い探しゲーム</h1>
-  <p>左右のエリアで微妙な違いが3か所あります。右側エリアの違い部分をクリックしてみましょう！</p>
-  
-  <div id="game-container">
-    <!-- オリジナルエリア（左側） -->
-    <div class="game-area" id="original">
-      <!-- 円：左上に配置 -->
-      <div class="shape circle" style="left: 20px; top: 20px;"></div>
-      <!-- 四角：右下に配置 -->
-      <div class="shape square" style="left: 230px; top: 230px;"></div>
-      <!-- 三角：中央付近に配置 -->
-      <div class="shape triangle" style="left: 125px; top: 125px;"></div>
+  <h1>デジタル知恵の輪パズル</h1>
+  <p>各リングを回転させ、正しい角度に合わせてください。<br>
+     リング1：90°、リング2：180°、リング3：270°</p>
+  <div id="puzzle-container">
+    <!-- リング1 -->
+    <div class="ring" id="ring1">
+      <span id="angle-ring1">0°</span>
     </div>
-    
-    <!-- 修正済みエリア（右側） -->
-    <div class="game-area" id="modified">
-      <!-- 円：位置がずれている -->
-      <div class="shape circle"></div>
-      <!-- 四角：色が変更されている -->
-      <div class="shape square"></div>
-      <!-- 三角は表示しない（差分としての「欠落」） -->
-      
-      <!-- 透明なクリック領域（差分検出用） -->
-      <!-- 差分1：円の位置ずれ。オリジナルの位置（left:20px, top:20px）の領域を設定 -->
-      <div class="difference" id="diff1" style="left: 20px; top: 20px; width: 50px; height: 50px;"></div>
-      <!-- 差分2：四角の色変更。オリジナルと同じ位置 -->
-      <div class="difference" id="diff2" style="left: 230px; top: 230px; width: 50px; height: 50px;"></div>
-      <!-- 差分3：三角の欠落。オリジナルで三角があった位置 -->
-      <div class="difference" id="diff3" style="left: 125px; top: 125px; width: 50px; height: 50px;"></div>
+    <div class="controls">
+      <button onclick="rotateRing('ring1', -15)">←</button>
+      <button onclick="rotateRing('ring1', 15)">→</button>
+    </div>
+    <!-- リング2 -->
+    <div class="ring" id="ring2">
+      <span id="angle-ring2">0°</span>
+    </div>
+    <div class="controls">
+      <button onclick="rotateRing('ring2', -15)">←</button>
+      <button onclick="rotateRing('ring2', 15)">→</button>
+    </div>
+    <!-- リング3 -->
+    <div class="ring" id="ring3">
+      <span id="angle-ring3">0°</span>
+    </div>
+    <div class="controls">
+      <button onclick="rotateRing('ring3', -15)">←</button>
+      <button onclick="rotateRing('ring3', 15)">→</button>
     </div>
   </div>
-  
+  <!-- 解答表示エリア -->
+  <div id="hiddenMessage" style="display:none;">
+    <p>正解！「解答」が浮かび上がりました！</p>
+  </div>
+
   <script>
-    let foundCount = 0;
-    const totalDifferences = 3;
-    
-    // 各差分エリアにクリックイベントを設定
-    document.querySelectorAll('.difference').forEach(function(diffElem) {
-      diffElem.addEventListener('click', function() {
-        // 既に発見済みなら何もしない
-        if(diffElem.classList.contains('found')) return;
-        
-        // 発見済みとしてマーク
-        diffElem.classList.add('found');
-        foundCount++;
-        
-        alert('差分発見！ 残り ' + (totalDifferences - foundCount) + ' 箇所');
-        
-        // すべての差分を見つけた場合
-        if(foundCount === totalDifferences) {
-          alert('すべての差分を発見しました！ おめでとうございます！');
-        }
-      });
-    });
+    // 正解の角度設定（°）
+    const targetAngles = {
+      ring1: 90,
+      ring2: 180,
+      ring3: 270
+    };
+
+    // 各リングの現在の角度を保持
+    const currentAngles = {
+      ring1: 0,
+      ring2: 0,
+      ring3: 0
+    };
+
+    // 指定されたリングを回転させる関数
+    function rotateRing(ringId, delta) {
+      currentAngles[ringId] = (currentAngles[ringId] + delta + 360) % 360;
+      // 対象のリングの回転を更新
+      document.getElementById(ringId).style.transform = "rotate(" + currentAngles[ringId] + "deg)";
+      // 表示される角度のテキストを更新
+      document.getElementById("angle-" + ringId).textContent = currentAngles[ringId] + "°";
+      // 正解チェック
+      checkSolution();
+    }
+
+    // 各リングの角度が正しいかを確認し、全て正しければ隠しメッセージを表示
+    function checkSolution() {
+      if (
+        currentAngles.ring1 === targetAngles.ring1 &&
+        currentAngles.ring2 === targetAngles.ring2 &&
+        currentAngles.ring3 === targetAngles.ring3
+      ) {
+        document.getElementById("hiddenMessage").style.display = "block";
+      } else {
+        document.getElementById("hiddenMessage").style.display = "none";
+      }
+    }
   </script>
 </body>
 </html>
