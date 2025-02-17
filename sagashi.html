@@ -2,130 +2,190 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>デジタル知恵の輪パズル</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>転がるペイントパズル</title>
   <style>
-    body {
+    body { margin: 0; padding: 0; overflow: hidden; background: white; }
+    canvas { display: block; }
+    #info {
+      position: absolute; top: 10px; left: 10px; z-index: 10;
+      background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 5px;
       font-family: sans-serif;
-      text-align: center;
-      background-color: #f0f0f0;
-      margin: 0;
-      padding: 20px;
     }
-    h1 {
-      margin-bottom: 10px;
-    }
-    p {
-      margin: 10px 0;
-    }
-    #puzzle-container {
-      margin: 20px auto;
-      width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
-    }
-    .ring {
-      width: 150px;
-      height: 150px;
-      border: 5px solid #333;
-      border-radius: 50%;
-      background-color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.5s ease;
-      position: relative;
-    }
-    .controls {
-      margin-top: 5px;
-    }
-    .controls button {
-      font-size: 16px;
-      padding: 5px 10px;
-      margin: 0 5px;
-    }
-    #hiddenMessage {
-      margin-top: 30px;
-      font-size: 24px;
-      color: green;
-      font-weight: bold;
+    #permissionBtn {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 20px; padding: 10px 20px; z-index: 20;
     }
   </style>
 </head>
 <body>
-  <h1>デジタル知恵の輪パズル</h1>
-  <p>各リングを回転させ、正しい角度に合わせてください。<br>
-     リング1：90°、リング2：180°、リング3：270°</p>
-  <div id="puzzle-container">
-    <!-- リング1 -->
-    <div class="ring" id="ring1">
-      <span id="angle-ring1">0°</span>
-    </div>
-    <div class="controls">
-      <button onclick="rotateRing('ring1', -15)">←</button>
-      <button onclick="rotateRing('ring1', 15)">→</button>
-    </div>
-    <!-- リング2 -->
-    <div class="ring" id="ring2">
-      <span id="angle-ring2">0°</span>
-    </div>
-    <div class="controls">
-      <button onclick="rotateRing('ring2', -15)">←</button>
-      <button onclick="rotateRing('ring2', 15)">→</button>
-    </div>
-    <!-- リング3 -->
-    <div class="ring" id="ring3">
-      <span id="angle-ring3">0°</span>
-    </div>
-    <div class="controls">
-      <button onclick="rotateRing('ring3', -15)">←</button>
-      <button onclick="rotateRing('ring3', 15)">→</button>
-    </div>
-  </div>
-  <!-- 解答表示エリア -->
-  <div id="hiddenMessage" style="display:none;">
-    <p>正解！「解答」が浮かび上がりました！</p>
-  </div>
-
+  <div id="info">端末を傾けてボールを転がそう！</div>
+  <button id="permissionBtn" style="display:none;">センサー使用を許可する</button>
+  <canvas id="gameCanvas"></canvas>
   <script>
-    // 正解の角度設定（°）
-    const targetAngles = {
-      ring1: 90,
-      ring2: 180,
-      ring3: 270
-    };
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    // 各リングの現在の角度を保持
-    const currentAngles = {
-      ring1: 0,
-      ring2: 0,
-      ring3: 0
-    };
-
-    // 指定されたリングを回転させる関数
-    function rotateRing(ringId, delta) {
-      currentAngles[ringId] = (currentAngles[ringId] + delta + 360) % 360;
-      // 対象のリングの回転を更新
-      document.getElementById(ringId).style.transform = "rotate(" + currentAngles[ringId] + "deg)";
-      // 表示される角度のテキストを更新
-      document.getElementById("angle-" + ringId).textContent = currentAngles[ringId] + "°";
-      // 正解チェック
-      checkSolution();
-    }
-
-    // 各リングの角度が正しいかを確認し、全て正しければ隠しメッセージを表示
-    function checkSolution() {
-      if (
-        currentAngles.ring1 === targetAngles.ring1 &&
-        currentAngles.ring2 === targetAngles.ring2 &&
-        currentAngles.ring3 === targetAngles.ring3
-      ) {
-        document.getElementById("hiddenMessage").style.display = "block";
-      } else {
-        document.getElementById("hiddenMessage").style.display = "none";
+    // グリッド設定（背景を塗るためのセル）
+    const cellSize = 20;
+    const cols = Math.ceil(canvas.width / cellSize);
+    const rows = Math.ceil(canvas.height / cellSize);
+    let grid = [];
+    for (let r = 0; r < rows; r++) {
+      grid[r] = [];
+      for (let c = 0; c < cols; c++) {
+        grid[r][c] = false;
       }
     }
+
+    // ボール（円）のオブジェクト
+    let ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: 20,
+      vx: 0,
+      vy: 0,
+      color: "black" // 通常は黒。全体が塗れたら青に変わる。
+    };
+
+    // 加速度（ジャイロセンサー）
+    let ax = 0, ay = 0;
+
+    // DeviceOrientation イベント
+    function handleOrientation(event) {
+      // event.gamma：左右の傾き, event.beta：前後の傾き
+      // 加速度に小さな倍率をかけて調整
+      ax = event.gamma * 0.1;
+      ay = event.beta * 0.1;
+    }
+
+    // iOS 13+ の場合はユーザーに許可を求める
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      const permissionBtn = document.getElementById("permissionBtn");
+      permissionBtn.style.display = "block";
+      permissionBtn.addEventListener("click", function() {
+        DeviceOrientationEvent.requestPermission().then(response => {
+          if (response === "granted") {
+            window.addEventListener("deviceorientation", handleOrientation);
+            permissionBtn.style.display = "none";
+          }
+        }).catch(console.error);
+      });
+    } else {
+      window.addEventListener("deviceorientation", handleOrientation);
+    }
+
+    // 前回の更新時間
+    let lastTime = performance.now();
+
+    function update() {
+      const now = performance.now();
+      const dt = (now - lastTime) / 1000; // 秒単位
+      lastTime = now;
+
+      // 加速度をボールの速度に反映
+      ball.vx += ax;
+      ball.vy += ay;
+      // 摩擦（徐々に減速）
+      ball.vx *= 0.99;
+      ball.vy *= 0.99;
+      // 位置更新
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // 画面端で反射
+      if (ball.x - ball.radius < 0) {
+        ball.x = ball.radius;
+        ball.vx = -ball.vx * 0.5;
+      } else if (ball.x + ball.radius > canvas.width) {
+        ball.x = canvas.width - ball.radius;
+        ball.vx = -ball.vx * 0.5;
+      }
+      if (ball.y - ball.radius < 0) {
+        ball.y = ball.radius;
+        ball.vy = -ball.vy * 0.5;
+      } else if (ball.y + ball.radius > canvas.height) {
+        ball.y = canvas.height - ball.radius;
+        ball.vy = -ball.vy * 0.5;
+      }
+
+      // ボールが通過したグリッドセルを塗る
+      const startCol = Math.floor((ball.x - ball.radius) / cellSize);
+      const endCol = Math.floor((ball.x + ball.radius) / cellSize);
+      const startRow = Math.floor((ball.y - ball.radius) / cellSize);
+      const endRow = Math.floor((ball.y + ball.radius) / cellSize);
+      for (let r = startRow; r <= endRow; r++) {
+        if (r < 0 || r >= rows) continue;
+        for (let c = startCol; c <= endCol; c++) {
+          if (c < 0 || c >= cols) continue;
+          // セル中心とボール中心の距離が半径内なら塗る
+          let cx = c * cellSize + cellSize / 2;
+          let cy = r * cellSize + cellSize / 2;
+          if (Math.hypot(cx - ball.x, cy - ball.y) <= ball.radius) {
+            grid[r][c] = true;
+          }
+        }
+      }
+
+      // キャンバスを再描画（毎フレームクリアして背景とボールを描画）
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // 塗られたセルを赤で表示
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (grid[r][c]) {
+            ctx.fillStyle = "red";
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+      // 囲いの枠
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      // ボールの描画
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = ball.color;
+      ctx.fill();
+      ctx.strokeStyle = "#333";
+      ctx.stroke();
+
+      // 全セルが塗られているかチェック
+      if (isAllPainted()) {
+        ball.color = "blue";
+        setTimeout(resetGame, 2000);
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    // すべてのグリッドセルが塗られているか確認する関数
+    function isAllPainted() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (!grid[r][c]) return false;
+        }
+      }
+      return true;
+    }
+
+    // ゲームのリセット（新たなラウンド）
+    function resetGame() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          grid[r][c] = false;
+        }
+      }
+      ball.color = "black";
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.vx = 0;
+      ball.vy = 0;
+    }
+
+    update();
   </script>
 </body>
 </html>
