@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ころころ</title>
+  <title>転がって画像完成パズル with 報酬ボタン</title>
   <style>
     body { margin: 0; padding: 0; overflow: hidden; background: white; }
     canvas { display: block; }
@@ -16,12 +16,36 @@
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
       font-size: 20px; padding: 10px 20px; z-index: 20;
     }
+    /* 報酬ボタンのスタイル */
+    #rewardContainer {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 30;
+    }
+    #rewardContainer a {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      text-decoration: none;
+      font-size: 20px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
-  <div id="info"></div>
-  <button id="permissionBtn" style="display:none;">端末を傾けてボールを転がし、画像を解読しよう！</button>
+  <div id="info">端末を傾けてボールを転がし、画像を完成させよう！</div>
+  <button id="permissionBtn" style="display:none;">センサー使用を許可する</button>
   <canvas id="gameCanvas"></canvas>
+  <!-- 報酬ボタン -->
+  <div id="rewardContainer">
+    <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%81%93%E3%82%8D%E3%81%93%E3%82%8D%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" target="_blank">
+      報酬を受け取る
+    </a>
+  </div>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -30,7 +54,7 @@
 
     // 画像をロード（画像全体がキャンバス全体に対応する前提）
     const korokoroImage = new Image();
-    korokoroImage.src = 'korokoro.png'; // 同じディレクトリに配置するか、適宜パスを変更
+    korokoroImage.src = 'korokoro.png'; // 画像のパスを適宜変更してください
 
     // グリッド設定（各セルが画像の一部を表示）
     const cellSize = 20;
@@ -56,6 +80,9 @@
 
     // ジャイロセンサーからの加速度
     let ax = 0, ay = 0;
+
+    // 報酬ボタンの表示状態
+    let gameCompleted = false;
 
     // DeviceOrientation イベントハンドラ
     function handleOrientation(event) {
@@ -122,7 +149,6 @@
         if (r < 0 || r >= rows) continue;
         for (let c = startCol; c <= endCol; c++) {
           if (c < 0 || c >= cols) continue;
-          // セル中心とボール中心の距離が半径以内ならマーク
           let cx = c * cellSize + cellSize / 2;
           let cy = r * cellSize + cellSize / 2;
           if (Math.hypot(cx - ball.x, cy - ball.y) <= ball.radius) {
@@ -169,7 +195,23 @@
       ctx.strokeStyle = "#333";
       ctx.stroke();
 
+      // 全セルが触れた場合、報酬ボタンを表示（1度だけ）
+      if (!gameCompleted && isAllPainted()) {
+        gameCompleted = true;
+        document.getElementById("rewardContainer").style.display = "block";
+      }
+
       requestAnimationFrame(update);
+    }
+
+    // 全セルが触れたかチェックする関数
+    function isAllPainted() {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (!grid[r][c]) return false;
+        }
+      }
+      return true;
     }
 
     update();
