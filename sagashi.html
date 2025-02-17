@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>転がるペイントパズル</title>
+  <title>転がって画像完成パズル</title>
   <style>
     body { margin: 0; padding: 0; overflow: hidden; background: white; }
     canvas { display: block; }
@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <div id="info">端末を傾けてボールを転がそう！</div>
+  <div id="info">端末を傾けてボールを転がし、画像を完成させよう！</div>
   <button id="permissionBtn" style="display:none;">センサー使用を許可する</button>
   <canvas id="gameCanvas"></canvas>
   <script>
@@ -28,7 +28,11 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // グリッド設定（背景を塗るためのセル）
+    // 画像をロード（画像全体がキャンバス全体に対応する前提）
+    const korokoroImage = new Image();
+    korokoroImage.src = 'korokoro.png'; // 同じディレクトリに配置するか、適宜パスを変更
+
+    // グリッド設定（各セルが画像の一部を表示）
     const cellSize = 20;
     const cols = Math.ceil(canvas.width / cellSize);
     const rows = Math.ceil(canvas.height / cellSize);
@@ -40,28 +44,27 @@
       }
     }
 
-    // ボール（円）のオブジェクト
+    // ボールのオブジェクト
     let ball = {
       x: canvas.width / 2,
       y: canvas.height / 2,
       radius: 20,
       vx: 0,
       vy: 0,
-      color: "black" // 通常は黒。全体が塗れたら青に変わる。
+      color: "black"
     };
 
-    // 加速度（ジャイロセンサー）
+    // ジャイロセンサーからの加速度
     let ax = 0, ay = 0;
 
-    // DeviceOrientation イベント
+    // DeviceOrientation イベントハンドラ
     function handleOrientation(event) {
-      // event.gamma：左右の傾き, event.beta：前後の傾き
-      // 加速度に小さな倍率をかけて調整
+      // event.gamma: 左右の傾き, event.beta: 前後の傾き
       ax = event.gamma * 0.1;
       ay = event.beta * 0.1;
     }
 
-    // iOS 13+ の場合はユーザーに許可を求める
+    // iOS 13+ 向けのセンサー使用許可処理
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
       const permissionBtn = document.getElementById("permissionBtn");
       permissionBtn.style.display = "block";
@@ -77,25 +80,24 @@
       window.addEventListener("deviceorientation", handleOrientation);
     }
 
-    // 前回の更新時間
     let lastTime = performance.now();
 
     function update() {
       const now = performance.now();
-      const dt = (now - lastTime) / 1000; // 秒単位
+      const dt = (now - lastTime) / 1000;
       lastTime = now;
 
-      // 加速度をボールの速度に反映
+      // ボールの速度更新
       ball.vx += ax;
       ball.vy += ay;
-      // 摩擦（徐々に減速）
+      // 摩擦で徐々に減速
       ball.vx *= 0.99;
       ball.vy *= 0.99;
       // 位置更新
       ball.x += ball.vx;
       ball.y += ball.vy;
 
-      // 画面端で反射
+      // 画面端での反射処理
       if (ball.x - ball.radius < 0) {
         ball.x = ball.radius;
         ball.vx = -ball.vx * 0.5;
@@ -111,7 +113,7 @@
         ball.vy = -ball.vy * 0.5;
       }
 
-      // ボールが通過したグリッドセルを塗る
+      // ボールが通過したグリッドセルを「触れた」としてマークする
       const startCol = Math.floor((ball.x - ball.radius) / cellSize);
       const endCol = Math.floor((ball.x + ball.radius) / cellSize);
       const startRow = Math.floor((ball.y - ball.radius) / cellSize);
@@ -120,7 +122,7 @@
         if (r < 0 || r >= rows) continue;
         for (let c = startCol; c <= endCol; c++) {
           if (c < 0 || c >= cols) continue;
-          // セル中心とボール中心の距離が半径内なら塗る
+          // セル中心とボール中心の距離が半径以内ならマーク
           let cx = c * cellSize + cellSize / 2;
           let cy = r * cellSize + cellSize / 2;
           if (Math.hypot(cx - ball.x, cy - ball.y) <= ball.radius) {
@@ -129,22 +131,37 @@
         }
       }
 
-      // キャンバスを再描画（毎フレームクリアして背景とボールを描画）
+      // キャンバスのクリア
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // 塗られたセルを赤で表示
+
+      // 各セルに画像の該当部分を描画（セルが触れた場合のみ）
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           if (grid[r][c]) {
-            ctx.fillStyle = "red";
-            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+            if (korokoroImage.complete) {
+              // 画像全体がキャンバス全体に対応する場合の、セルごとのソース座標を計算
+              const sx = c * (korokoroImage.width / cols);
+              const sy = r * (korokoroImage.height / rows);
+              const sWidth = korokoroImage.width / cols;
+              const sHeight = korokoroImage.height / rows;
+              const dx = c * cellSize;
+              const dy = r * cellSize;
+              ctx.drawImage(korokoroImage, sx, sy, sWidth, sHeight, dx, dy, cellSize, cellSize);
+            } else {
+              // 画像が未ロードなら赤い矩形で代用
+              ctx.fillStyle = "red";
+              ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+            }
           }
         }
       }
-      // 囲いの枠
+
+      // 枠線を描画
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
       ctx.strokeRect(0, 0, canvas.width, canvas.height);
-      // ボールの描画
+
+      // ボールを描画
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
       ctx.fillStyle = ball.color;
@@ -152,37 +169,7 @@
       ctx.strokeStyle = "#333";
       ctx.stroke();
 
-      // 全セルが塗られているかチェック
-      if (isAllPainted()) {
-        ball.color = "blue";
-        setTimeout(resetGame, 2000);
-      }
-
       requestAnimationFrame(update);
-    }
-
-    // すべてのグリッドセルが塗られているか確認する関数
-    function isAllPainted() {
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (!grid[r][c]) return false;
-        }
-      }
-      return true;
-    }
-
-    // ゲームのリセット（新たなラウンド）
-    function resetGame() {
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          grid[r][c] = false;
-        }
-      }
-      ball.color = "black";
-      ball.x = canvas.width / 2;
-      ball.y = canvas.height / 2;
-      ball.vx = 0;
-      ball.vy = 0;
     }
 
     update();
