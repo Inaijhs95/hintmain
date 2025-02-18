@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ニセモノ探しゲーム</title>
+  <title>稲井</title>
   <style>
     body {
       font-family: sans-serif;
@@ -26,7 +26,7 @@
       background: #eee;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 24px;
+      font-size: 32px;
       user-select: none;
     }
     .option:hover {
@@ -42,33 +42,52 @@
 </head>
 <body>
   <div id="gameContainer">
-    <!-- メッセージ・オプション表示用 -->
     <div id="message"></div>
     <div id="options"></div>
   </div>
 
   <script>
-    // 【設定】
-    // 正解の元文字（5文字） ※最初のミニゲームで「下記の５つをタッチするとクリア」として示されたもの
+    // 正解用の漢字（5文字）
     const realChars = ["升", "并", "弁", "＃", "丼"];
-    // 正解は「realChars」の各ターンで1文字を抜いた4文字列（例：ターン1なら「并弁＃丼」、ターン2なら「升弁＃丼」など）
-    // ダミー用フェイク文字（計15文字）
-    const fakeSourceStrings = ["卉介开刋丌", "末无廿元爿", "ヰ丰尺卅廾"];
-    // fakePool: 各文字を個別に配列化
-    let fakePool = [];
-    fakeSourceStrings.forEach(str => {
-      fakePool = fakePool.concat(str.split(''));
-    });
-    
-    // ゲームの状態管理
+    // ダミー用の漢字（15文字：各グループ5文字）
+    const dummyChars = ["卉", "介", "开", "刋", "丌",
+                        "末", "无", "廿", "元", "爿",
+                        "ヰ", "丰", "尺", "卅", "廾"];
+
+    // ゲーム全体の状態
+    let correctSequence = [];  // 5問分の正解文字（重複なしランダム順）
+    let dummyChunks = [];      // 5問分、各問で使用するダミー3文字の配列（重複なし）
     let currentTurn = 0;
     const totalTurns = 5;
-    let currentCorrect = "";
-
+    const rewardLink = "https://line.me/R/oaMessage/%40778unfqy/%E3%81%93%E3%82%8D%E3%81%93%E3%82%8D%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F";
+    
     const messageDiv = document.getElementById("message");
     const optionsDiv = document.getElementById("options");
-    
-    // 初期画面：説明文とスタートボタン
+
+    // 配列をシャッフルするユーティリティ
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // ゲーム初期化：正解・ダミーの順序をランダムにセット
+    function initializeGame() {
+      // 正解文字は realChars を複製してシャッフル
+      correctSequence = shuffleArray([...realChars]);
+      
+      // ダミー文字もシャッフルし、5問分（各問3文字）のチャンクに分割
+      let dummyPool = shuffleArray([...dummyChars]);
+      dummyChunks = [];
+      for (let i = 0; i < totalTurns; i++) {
+        dummyChunks.push(dummyPool.slice(i * 3, i * 3 + 3));
+      }
+      currentTurn = 0;
+    }
+
+    // 初期画面表示
     function showStartScreen() {
       messageDiv.innerHTML = "<h2>稲井に紛れていたニセモノを見つけろ</h2>";
       optionsDiv.innerHTML = "";
@@ -77,111 +96,78 @@
       startBtn.addEventListener("click", startGame);
       optionsDiv.appendChild(startBtn);
     }
-    
+
     // ゲーム開始
     function startGame() {
-      currentTurn = 0;
-      nextTurn();
+      initializeGame();
+      showTurn();
     }
-    
-    // 各ターンの正解文字列を生成
-    // ここでは、ターンごとに realChars のうち、順番に1文字を除外した4文字列を正解とする
-    function getCorrectString(turn) {
-      // 0～4のturn番号に応じ、該当のインデックスを除外
-      return realChars.filter((ch, index) => index !== turn).join('');
-    }
-    
-    // fake文字列生成：fakePool からランダムに4文字を選ぶ
-    function generateFakeString() {
-      let fake = "";
-      for (let i = 0; i < 4; i++) {
-        const randIndex = Math.floor(Math.random() * fakePool.length);
-        fake += fakePool[randIndex];
-      }
-      return fake;
-    }
-    
-    // 配列をシャッフルする関数
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-    
-    // ターン開始：正解とフェイク3つを作成し表示
-    function nextTurn() {
-      // クリア済みの場合
+
+    // 各問の表示
+    function showTurn() {
       if (currentTurn >= totalTurns) {
         gameClear();
         return;
       }
       
-      // ターン表示（例：「ターン1 / 5」）
-      messageDiv.innerHTML = `<h2>ターン ${currentTurn+1} / ${totalTurns}</h2>`;
+      // 問題番号表示
+      messageDiv.innerHTML = `<h2>第 ${currentTurn + 1} 問</h2>`;
       optionsDiv.innerHTML = "";
       
-      // 正解文字列生成
-      currentCorrect = getCorrectString(currentTurn);
+      // 正解オプション（重複しないランダム順の正解文字から1文字）
+      const correctOption = correctSequence[currentTurn];
+      // ダミーオプションは、事前にシャッフル済みの dummyChunks から取得（各ターン3文字）
+      const fakeOptions = dummyChunks[currentTurn];
       
-      // オプション作成：正解1件＋フェイク3件
-      let options = [];
-      options.push({text: currentCorrect, correct: true});
+      // 4択用オプション（正解＋ダミー3つ）
+      const options = [];
+      options.push({ text: correctOption, isCorrect: true });
+      fakeOptions.forEach(ch => {
+        options.push({ text: ch, isCorrect: false });
+      });
+      // オプションの表示順をシャッフル
+      shuffleArray(options);
       
-      // フェイクは、正解と重複しないように生成
-      while(options.length < 4) {
-        let fakeText = generateFakeString();
-        // もし偶然正解と一致してしまったら再生成
-        if (fakeText === currentCorrect) continue;
-        options.push({text: fakeText, correct: false});
-      }
-      
-      // シャッフルして表示
-      options = shuffleArray(options);
+      // 各オプションを表示
       options.forEach(opt => {
         const btn = document.createElement("div");
         btn.className = "option";
         btn.textContent = opt.text;
-        btn.addEventListener("click", () => { optionClicked(opt); });
+        btn.addEventListener("click", () => {
+          if (opt.isCorrect) {
+            currentTurn++;
+            showTurn();
+          } else {
+            gameOver();
+          }
+        });
         optionsDiv.appendChild(btn);
       });
     }
-    
-    // オプションクリック時の処理
-    function optionClicked(option) {
-      if (option.correct) {
-        currentTurn++;
-        nextTurn();
-      } else {
-        gameOver();
-      }
-    }
-    
-    // ゲームオーバー処理
+
+    // ゲームオーバー時の処理
     function gameOver() {
       messageDiv.innerHTML = "<h2>ゲームオーバー</h2>";
       optionsDiv.innerHTML = "";
-      const retryBtn = document.createElement("button");
-      retryBtn.textContent = "再チャレンジ";
-      retryBtn.addEventListener("click", showStartScreen);
-      optionsDiv.appendChild(retryBtn);
+      const restartBtn = document.createElement("button");
+      restartBtn.textContent = "リスタート";
+      restartBtn.addEventListener("click", showStartScreen);
+      optionsDiv.appendChild(restartBtn);
     }
-    
-    // ゲームクリア処理：報酬リンクへ誘導
+
+    // 全問正解時の処理：リンクボタンを表示
     function gameClear() {
       messageDiv.innerHTML = "<h2>クリア！</h2>";
       optionsDiv.innerHTML = "";
       const rewardBtn = document.createElement("button");
       rewardBtn.textContent = "報酬を受け取る";
-      // 指定のLINEリンクへ遷移
       rewardBtn.addEventListener("click", () => {
-        window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%81%93%E3%82%8D%E3%81%93%E3%82%8D%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F";
+        window.location.href = rewardLink;
       });
       optionsDiv.appendChild(rewardBtn);
     }
-    
-    // 初期画面表示
+
+    // 初期画面の表示
     showStartScreen();
   </script>
 </body>
