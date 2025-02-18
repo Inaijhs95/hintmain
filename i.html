@@ -112,10 +112,10 @@
 
     // 初期画面表示
     function showStartScreen() {
-      messageDiv.innerHTML = "<h2>稲井に紛れていたニセモノを見つけろ</h2>";
+      messageDiv.innerHTML = "<h2>ニセモノを見つけよう</h2>";
       optionsDiv.innerHTML = "";
       const startBtn = document.createElement("button");
-      startBtn.textContent = "START";
+      startBtn.textContent = "探す";
       startBtn.addEventListener("click", startGame);
       optionsDiv.appendChild(startBtn);
     }
