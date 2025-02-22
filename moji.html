@@ -28,10 +28,13 @@
     const config = {
       Title: "ありがとう\n会えるの\n楽しみ", // 複数行のテキスト
       backgroundColor: "#ffffff",
-      pixelSize: 16,            // 1ブロックの大きさ
-      animationInterval: 50,    // アニメーション更新のインターバル（ミリ秒）
-      imageSwitchInterval: 50,  // 画像切り替えのインターバル（ミリ秒）
-      imageBaseString: "img",   // ブロック画像ファイルのベース名 (例: img0.gif, img1.gif)
+
+      // ▼最初のデフォルト値。大きすぎる場合は自動で縮小されます
+      pixelSize: 16,             // ブロック1個の大きさ(横幅×高さ)
+
+      animationInterval: 50,     // アニメーション更新のインターバル（ミリ秒）
+      imageSwitchInterval: 50,   // 画像切り替えのインターバル（ミリ秒）
+      imageBaseString: "img",    // ブロック画像ファイルのベース名 (例: img0.gif, img1.gif)
       imageNum: 2
     };
 
@@ -43,24 +46,97 @@
     let lastFrameTime = 0;
     let lastImageSwitchTime = 0;
 
-    // ブロック画像の読み込みカウンタ
-    const blockImages = [];
-    let imagesLoaded = 0;
-
-    // ブロックを保持する配列
-    let blocks = [];
-
-    // ◆◆◆ ウィンドウサイズに合わせてキャンバスをリサイズ ◆◆◆
+    // 画面全体にキャンバスを合わせる
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
 
-    // ◆◆◆ 画像を読み込み、全て完了したら初期化を呼ぶ ◆◆◆
+    // ブロック画像の読み込みカウンタ
+    const blockImages = [];
+    let imagesLoaded = 0;
+
+    // ブロック配列
+    let blocks = [];
+
+    // ◆◆◆ MyBlockクラス：ブロックの動作を定義 ◆◆◆
+    class MyBlock {
+      constructor(sx, sy, gx, gy, maxState) {
+        // 開始位置 (sx, sy) / 目標位置 (gx, gy)
+        this.sx = sx;
+        this.sy = sy;
+        this.gx = gx;
+        this.gy = gy;
+        // 初期位置はキャンバス内のランダムな位置
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.dx = 0;
+        this.dy = 0;
+        // ランダムなステート
+        this.state = Math.floor(Math.random() * (maxState + 1));
+        this.maxState = maxState;
+        // 移動制御用パラメータ
+        this.a = 1;
+        this.b = 0.1;
+        // ある程度近づくための初期速度
+        const step = 30;
+        this.dx = (this.gx - this.sx) / step;
+        this.dy = (this.gy - this.sy) / step;
+      }
+
+      setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+
+      // マウスが動いていない場合の移動
+      update() {
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x - this.gx > 0) {
+          this.dx += -this.a - this.b * this.dx;
+        } else {
+          this.dx += this.a - this.b * this.dx;
+        }
+        if (this.y - this.gy > 0) {
+          this.dy += -this.a - this.b * this.dy;
+        } else {
+          this.dy += this.a - this.b * this.dy;
+        }
+      }
+
+      // マウス座標がある場合の移動
+      updateWithMouse(mx, my) {
+        const dist = Math.sqrt((this.x - mx) ** 2 + (this.y - my) ** 2);
+        this.dx += (this.x - mx) / (dist + 1);
+        this.dy += (this.y - my) / (dist + 1);
+        this.x += this.dx;
+        this.y += this.dy;
+
+        // 目標(gx, gy)に吸着しようとする挙動
+        if (this.x - this.gx > 0) {
+          this.dx += -this.a - this.b * this.dx;
+        } else {
+          this.dx += this.a - this.b * this.dx;
+        }
+        if (this.y - this.gy > 0) {
+          this.dy += -this.a - this.b * this.dy;
+        } else {
+          this.dy += this.a - this.b * this.dy;
+        }
+      }
+
+      // 画像の切り替え
+      setNextState() {
+        this.state = (this.state + 1) % (this.maxState + 1);
+      }
+    }
+
+    // ◆◆◆ 画像を読み込む → 全部終わったらアプレットを初期化 ◆◆◆
     function loadImagesAndInit() {
       for (let i = 0; i < config.imageNum; i++) {
         const img = new Image();
-        img.src = config.imageBaseString + i + ".gif";
+        img.src = config.imageBaseString + i + ".gif"; // img0.gif, img1.gif など
         img.onload = () => {
           imagesLoaded++;
           if (imagesLoaded === config.imageNum) {
@@ -86,94 +162,21 @@
       }
     }
 
-    // ◆◆◆ MyBlockクラス：各ブロックの動作を定義 ◆◆◆
-    class MyBlock {
-      constructor(sx, sy, gx, gy, maxState) {
-        // 開始位置(sx, sy), 目標位置(gx, gy)
-        this.sx = sx;
-        this.sy = sy;
-        this.gx = gx;
-        this.gy = gy;
-        // 初期位置はキャンバス内のランダムな位置
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.dx = 0;
-        this.dy = 0;
-        // ランダムなステート
-        this.state = Math.floor(Math.random() * (maxState + 1));
-        this.maxState = maxState;
-        // 移動制御用
-        this.a = 1;
-        this.b = 0.1;
-        // ある程度近づくための初期速度
-        const step = 30;
-        this.dx = (this.gx - this.sx) / step;
-        this.dy = (this.gy - this.sy) / step;
-      }
-
-      setPosition(x, y) {
-        this.x = x;
-        this.y = y;
-      }
-
-      // マウスが動いていない場合の更新
-      update() {
-        this.x += this.dx;
-        this.y += this.dy;
-        if (this.x - this.gx > 0) {
-          this.dx += -this.a - this.b * this.dx;
-        } else {
-          this.dx += this.a - this.b * this.dx;
-        }
-        if (this.y - this.gy > 0) {
-          this.dy += -this.a - this.b * this.dy;
-        } else {
-          this.dy += this.a - this.b * this.dy;
-        }
-      }
-
-      // マウス座標がある場合の更新
-      updateWithMouse(mx, my) {
-        const dist = Math.sqrt((this.x - mx) ** 2 + (this.y - my) ** 2);
-        this.dx += (this.x - mx) / (dist + 1);
-        this.dy += (this.y - my) / (dist + 1);
-        this.x += this.dx;
-        this.y += this.dy;
-
-        // 目標への吸着挙動
-        if (this.x - this.gx > 0) {
-          this.dx += -this.a - this.b * this.dx;
-        } else {
-          this.dx += this.a - this.b * this.dx;
-        }
-        if (this.y - this.gy > 0) {
-          this.dy += -this.a - this.b * this.dy;
-        } else {
-          this.dy += this.a - this.b * this.dy;
-        }
-      }
-
-      // 画像の切り替え
-      setNextState() {
-        this.state = (this.state + 1) % (this.maxState + 1);
-      }
-    }
-
-    // ◆◆◆ 文字→ブロック生成の初期化処理 ◆◆◆
+    // ◆◆◆ 文字 → ブロックの初期化処理 ◆◆◆
     function initApplet() {
       blocks = [];
 
-      // 改行で行を分割
+      // 行に分割
       const lines = config.Title.split("\n");
-      const fontSize = 12;       // 文字描画用フォントサイズ
-      const lineSpacing = 14;    // 行間
+      const fontSize = 12;       // テキスト描画時のフォントサイズ
+      const lineSpacing = 14;    // 行の高さ
       const padding = 4;         // 左右余白
 
+      // テキストの(行数 x 行間)や最大幅を計測する
       const tmpCanvas = document.createElement("canvas");
       const tmpCtx = tmpCanvas.getContext("2d");
       tmpCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
 
-      // 最大の行幅を計測
       let maxLineWidth = 0;
       lines.forEach(line => {
         const w = tmpCtx.measureText(line).width;
@@ -182,15 +185,39 @@
         }
       });
 
-      // 総幅と総高さを計算
+      // 総幅と総高さ（ドットフォント描画時のピクセル単位）
       const totalWidth = Math.ceil(maxLineWidth) + padding * 2;
       const totalHeight = lineSpacing * lines.length;
 
-      // キャンバス中心に配置するためのオフセット
-      const offsetX = (canvas.width - totalWidth * config.pixelSize) / 2;
-      const offsetY = (canvas.height - totalHeight * config.pixelSize) / 2;
+      // ★★★ ここで画面に収まるようにスケールを自動計算する ★★★
+      // デフォルトのブロックサイズをベースに必要なピクセルサイズを計算
+      let actualPixelSize = config.pixelSize;  // 最終的にこれを使う
+      const requiredWidth = totalWidth * actualPixelSize;
+      const requiredHeight = totalHeight * actualPixelSize;
 
-      // 行を順番に描画して、その黒ピクセルからブロックを生成
+      // 画面サイズを取得
+      const screenW = canvas.width;
+      const screenH = canvas.height;
+
+      // 「画面より大きいなら」縮小率を求める
+      const scaleX = screenW / requiredWidth;
+      const scaleY = screenH / requiredHeight;
+      const scale = Math.min(scaleX, scaleY);
+
+      // scale < 1 なら文字を縮小する (scaleが1以上なら変更なし)
+      if (scale < 1) {
+        actualPixelSize *= scale;
+      }
+
+      // 最終的な文字領域の幅・高さ（縮小考慮後）
+      const finalWidth = totalWidth * actualPixelSize;
+      const finalHeight = totalHeight * actualPixelSize;
+
+      // キャンバス中央に配置するためのオフセット
+      const offsetX = (screenW - finalWidth) / 2;
+      const offsetY = (screenH - finalHeight) / 2;
+
+      // 行を順番にピクセル化してブロック生成
       let currentY = 0;
       lines.forEach(line => {
         if (!line) {
@@ -198,21 +225,26 @@
           return;
         }
 
+        // この行だけを描画するオフスクリーンキャンバス
         const lineCanvas = document.createElement("canvas");
         lineCanvas.width = totalWidth;
         lineCanvas.height = lineSpacing;
         const lineCtx = lineCanvas.getContext("2d");
 
+        // 背景を白で塗りつぶし
         lineCtx.fillStyle = "#ffffff";
         lineCtx.fillRect(0, 0, lineCanvas.width, lineCanvas.height);
+
         lineCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
         lineCtx.fillStyle = "#000000";
         lineCtx.textBaseline = "top";
         lineCtx.fillText(line, padding, 0);
 
+        // ピクセルデータを取得し、黒ピクセルを探す
         const imageData = lineCtx.getImageData(0, 0, lineCanvas.width, lineCanvas.height);
         const data = imageData.data;
         const threshold = 200;
+
         for (let y = 0; y < lineCanvas.height; y++) {
           for (let x = 0; x < lineCanvas.width; x++) {
             const index = (y * lineCanvas.width + x) * 4;
@@ -220,8 +252,9 @@
             const g = data[index + 1];
             const b = data[index + 2];
             if (r < threshold && g < threshold && b < threshold) {
-              const scaledX = x * config.pixelSize;
-              const scaledY = (currentY + y) * config.pixelSize;
+              // 黒ピクセルの場合
+              const scaledX = x * actualPixelSize;
+              const scaledY = (currentY + y) * actualPixelSize;
               const targetX = scaledX + offsetX;
               const targetY = scaledY + offsetY;
 
@@ -238,15 +271,14 @@
       requestAnimationFrame(animate);
     }
 
-    // ◆◆◆ 毎フレームの描画処理 ◆◆◆
+    // ◆◆◆ フレーム毎に呼ばれる描画ループ ◆◆◆
     function animate(timestamp) {
       if (!isRunning) {
-        // 一時停止中でもフレームループは継続
         requestAnimationFrame(animate);
         return;
       }
-      
-      // アニメーション更新のタイミング
+
+      // アニメーション更新タイミング
       if (!lastFrameTime) lastFrameTime = timestamp;
       if (timestamp - lastFrameTime >= config.animationInterval) {
         blocks.forEach(block => {
@@ -258,52 +290,53 @@
         });
         lastFrameTime = timestamp;
       }
-      
-      // 画像ステート切り替えのタイミング
+
+      // 画像ステート切り替えタイミング
       if (!lastImageSwitchTime) lastImageSwitchTime = timestamp;
       if (timestamp - lastImageSwitchTime >= config.imageSwitchInterval) {
         blocks.forEach(block => block.setNextState());
         lastImageSwitchTime = timestamp;
       }
-      
-      // キャンバスをクリアしてブロック描画
+
+      // キャンバスをクリア
       ctx.fillStyle = config.backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // ブロックを描画
       blocks.forEach(block => {
         const state = block.state;
         const img = blockImages[state];
         if (img && img.complete) {
           ctx.drawImage(img, block.x, block.y, config.pixelSize, config.pixelSize);
         } else {
-          // ロード失敗時の代替色
+          // 読み込み失敗時の代替色
           ctx.fillStyle = state % 2 === 0 ? "#888888" : "#444444";
           ctx.fillRect(block.x, block.y, config.pixelSize, config.pixelSize);
         }
       });
-      
+
       requestAnimationFrame(animate);
     }
 
-    // ◆◆◆ イベントリスナー登録 ◆◆◆
-    // ウィンドウリサイズ時の処理
+    // ◆◆◆ イベントリスナー: リサイズ, マウス操作, クリック ◆◆◆
     window.addEventListener("resize", () => {
       resizeCanvas();
-      // リサイズと同時に再計算をするならここで initApplet() を呼ぶ
-      // ただしブロックが毎回初期位置に戻るため、好みに応じて再計算を行うか判断してください。
+      // リサイズ時に再計算したい場合は initApplet() を呼ぶ。
+      // 毎回文字が生成し直されるため、好みに応じて切り替えてください。
       initApplet();
     });
 
-    // マウス操作
     canvas.addEventListener("mousemove", function(e) {
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
       mouseY = e.clientY - rect.top;
     });
+
     canvas.addEventListener("mouseout", function() {
       mouseX = 0;
       mouseY = 0;
     });
+
     canvas.addEventListener("mousedown", function(e) {
       // シングルクリック判定
       if (e.detail === 1) {
@@ -314,6 +347,7 @@
         }, 200);
       }
     });
+
     canvas.addEventListener("dblclick", function() {
       // ダブルクリックしたらブロックをランダム位置へ
       blocks.forEach(block => {
@@ -323,8 +357,8 @@
 
     // ◆◆◆ ページ読み込み時に実行 ◆◆◆
     window.addEventListener("load", () => {
-      resizeCanvas();       // キャンバスを全画面に
-      loadImagesAndInit();  // 画像を読み込み、すべて完了後にinitApplet()を実行
+      resizeCanvas();
+      loadImagesAndInit();  // 画像を読み込み終わってから initApplet() を呼ぶ
     });
   </script>
 </body>
