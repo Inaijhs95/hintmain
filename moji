@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- スマホ・タブレットでの表示を最適化 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>こびとさんアプレット改訂版 - JavaScript版</title>
+  <!-- ドットフォントとして「Press Start 2P」を使用 -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    /* スマホ向け: キャンバスを画面幅に合わせる */
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background-color: #ffffff;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <br><br><br><br><br><br>
+  <h1 style="color: #00aa00; text-align: center;">
+    こびとさんアプレット改訂版 - JavaScript版
+  </h1>
+  <br><br><br>
+
+  <!-- キャンバスの初期幅と高さ。必要に応じて変更してください。 -->
+  <canvas id="appletCanvas" width="1200" height="300"></canvas>
+
+  <script>
+    // アプレットのパラメータ設定
+    const config = {
+      Title: "文字をありがとう",       // ★ここを変更
+      backgroundColor: "#ffffff",
+      pixelSize: 16,
+      animationInterval: 50,      // アニメーション更新のインターバル（ミリ秒）
+      imageSwitchInterval: 50,    // 画像切り替えのインターバル（ミリ秒）
+      imageBaseString: "img",     // ブロック画像のベース名 (例: img0.gif, img1.gif)
+      imageNum: 2
+    };
+
+    const canvas = document.getElementById("appletCanvas");
+    const ctx = canvas.getContext("2d");
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    let isRunning = true;
+    let mouseX = 0, mouseY = 0;
+    let lastFrameTime = 0;
+    let lastImageSwitchTime = 0;
+
+    // ブロック画像の読み込み
+    const blockImages = [];
+    let imagesLoaded = 0;
+    for (let i = 0; i < config.imageNum; i++) {
+      const img = new Image();
+      img.src = config.imageBaseString + i + ".gif"; // 例: img0.gif, img1.gif
+      img.onload = () => {
+        imagesLoaded++;
+        if (imagesLoaded === config.imageNum) {
+          initApplet();
+        }
+      };
+      img.onerror = () => {
+        console.warn("画像の読み込みに失敗しました:", img.src);
+        // 読み込み失敗時は代替画像を生成
+        const fallbackCanvas = document.createElement("canvas");
+        fallbackCanvas.width = config.pixelSize;
+        fallbackCanvas.height = config.pixelSize;
+        const fctx = fallbackCanvas.getContext("2d");
+        fctx.fillStyle = i % 2 === 0 ? "#888888" : "#444444";
+        fctx.fillRect(0, 0, config.pixelSize, config.pixelSize);
+        blockImages[i] = fallbackCanvas;
+        imagesLoaded++;
+        if (imagesLoaded === config.imageNum) {
+          initApplet();
+        }
+      };
+      blockImages.push(img);
+    }
+
+    // MyBlockクラス：各ブロックの動作定義
+    class MyBlock {
+      constructor(sx, sy, gx, gy, maxState) {
+        this.sx = sx;
+        this.sy = sy;
+        this.gx = gx;
+        this.gy = gy;
+        // 初期位置はキャンバス内のランダムな位置
+        this.x = Math.random() * canvasWidth;
+        this.y = Math.random() * canvasHeight;
+        this.dx = 0;
+        this.dy = 0;
+        this.state = Math.floor(Math.random() * (maxState + 1));
+        this.maxState = maxState;
+        this.a = 1;
+        this.b = 0.1;
+        const step = 30;
+        this.dx = (this.gx - this.sx) / step;
+        this.dy = (this.gy - this.sy) / step;
+      }
+      
+      setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+      
+      update() {
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x - this.gx > 0) {
+          this.dx += -this.a - this.b * this.dx;
+        } else {
+          this.dx += this.a - this.b * this.dx;
+        }
+        if (this.y - this.gy > 0) {
+          this.dy += -this.a - this.b * this.dy;
+        } else {
+          this.dy += this.a - this.b * this.dy;
+        }
+      }
+      
+      updateWithMouse(mx, my) {
+        const dist = Math.sqrt((this.x - mx) ** 2 + (this.y - my) ** 2);
+        this.dx += (this.x - mx) / (dist + 1);
+        this.dy += (this.y - my) / (dist + 1);
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x - this.gx > 0) {
+          this.dx += -this.a - this.b * this.dx;
+        } else {
+          this.dx += this.a - this.b * this.dx;
+        }
+        if (this.y - this.gy > 0) {
+          this.dy += -this.a - this.b * this.dy;
+        } else {
+          this.dy += this.a - this.b * this.dy;
+        }
+      }
+      
+      setNextState() {
+        this.state = (this.state + 1) % (this.maxState + 1);
+      }
+    }
+
+    let blocks = [];
+
+    function initApplet() {
+      // オフスクリーンcanvasでテキスト描画
+      const offCanvas = document.createElement("canvas");
+      const fontSize = 12;
+      const padding = 4; // 左右にパディングを追加して文字が切れないようにする
+      offCanvas.width = 300; // 仮の幅
+      offCanvas.height = 50;
+      const offCtx = offCanvas.getContext("2d");
+
+      // ドットフォント「Press Start 2P」を使用（フォールバックとして 'MS PGothic'）
+      offCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
+
+      const text = config.Title;
+      const textMetrics = offCtx.measureText(text);
+      const textWidth = Math.ceil(textMetrics.width);
+      const textHeight = fontSize; 
+      
+      // パディング分を加えたサイズに設定
+      offCanvas.width = textWidth + padding * 2;
+      offCanvas.height = textHeight * 1.2;
+      offCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
+      offCtx.fillStyle = "#ffffff";
+      offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+      offCtx.fillStyle = "#000000";
+      offCtx.textBaseline = "top";
+      offCtx.fillText(text, padding, 0);
+      
+      // ピクセルデータを取得
+      const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+      const data = imageData.data;
+      const pixels = [];
+      const threshold = 200;
+      for (let y = 0; y < offCanvas.height; y++) {
+        for (let x = 0; x < offCanvas.width; x++) {
+          const index = (y * offCanvas.width + x) * 4;
+          const r = data[index];
+          const g = data[index + 1];
+          const b = data[index + 2];
+          if (r < threshold && g < threshold && b < threshold) {
+            pixels.push({ x: x, y: y });
+          }
+        }
+      }
+      
+      // テキストをキャンバス中央に配置するためのオフセット計算
+      const scaledTextWidth = offCanvas.width * config.pixelSize;
+      const scaledTextHeight = offCanvas.height * config.pixelSize;
+      const offsetX = (canvasWidth - scaledTextWidth) / 2;
+      const offsetY = (canvasHeight - scaledTextHeight) / 2;
+      
+      // 黒ピクセルごとにブロック生成
+      blocks = [];
+      const maxState = config.imageNum - 1;
+      pixels.forEach(pixel => {
+        const targetX = pixel.x * config.pixelSize + offsetX;
+        const targetY = pixel.y * config.pixelSize + offsetY;
+        const block = new MyBlock(0, 0, targetX, targetY, maxState);
+        blocks.push(block);
+      });
+      
+      requestAnimationFrame(animate);
+    }
+
+    function animate(timestamp) {
+      if (!isRunning) {
+        requestAnimationFrame(animate);
+        return;
+      }
+      
+      // アニメーション更新のインターバルチェック
+      if (!lastFrameTime) lastFrameTime = timestamp;
+      if (timestamp - lastFrameTime >= config.animationInterval) {
+        blocks.forEach(block => {
+          if (mouseX === 0 && mouseY === 0) {
+            block.update();
+          } else {
+            block.updateWithMouse(mouseX, mouseY);
+          }
+        });
+        lastFrameTime = timestamp;
+      }
+      
+      // 画像切り替えのインターバルチェック
+      if (!lastImageSwitchTime) lastImageSwitchTime = timestamp;
+      if (timestamp - lastImageSwitchTime >= config.imageSwitchInterval) {
+        blocks.forEach(block => block.setNextState());
+        lastImageSwitchTime = timestamp;
+      }
+      
+      // キャンバスをクリアして描画
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      
+      blocks.forEach(block => {
+        const state = block.state;
+        const img = blockImages[state];
+        if (img && img.complete) {
+          ctx.drawImage(img, block.x, block.y, config.pixelSize, config.pixelSize);
+        } else {
+          ctx.fillStyle = state % 2 === 0 ? "#888888" : "#444444";
+          ctx.fillRect(block.x, block.y, config.pixelSize, config.pixelSize);
+        }
+      });
+      
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("mousemove", function(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    });
+    
+    canvas.addEventListener("mouseout", function() {
+      mouseX = 0;
+      mouseY = 0;
+    });
+    
+    canvas.addEventListener("mousedown", function(e) {
+      // シングルクリック判定
+      if (e.detail === 1) {
+        setTimeout(() => {
+          if (e.detail === 1) {
+            isRunning = !isRunning; // 一時停止／再開
+          }
+        }, 200);
+      }
+    });
+    
+    canvas.addEventListener("dblclick", function() {
+      // ダブルクリックしたらブロックをランダム位置へ
+      blocks.forEach(block => {
+        block.setPosition(Math.random() * canvasWidth, Math.random() * canvasHeight);
+      });
+    });
+  </script>
+
+  <!-- オリジナルに含まれていたタグ（必要がなければ削除可能） -->
+  <deepl-input-controller></deepl-input-controller>
+</body>
+</html>
