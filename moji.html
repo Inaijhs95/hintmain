@@ -24,16 +24,15 @@
   </style>
 </head>
 <body>
-  <br><br><br><br><br><br>
   <br><br><br>
-
   <!-- キャンバスの初期幅と高さ。必要に応じて変更してください。 -->
   <canvas id="appletCanvas" width="1200" height="300"></canvas>
 
   <script>
-    // アプレットのパラメータ設定
+    // ◆◆◆ ここを変える ◆◆◆
+    // 改行を含むテキスト
     const config = {
-      Title: "ありがとう\n会えるの\n楽しみ",       // ★ここを変更
+      Title: "ありがとう\n会えるの\n楽しみ",
       backgroundColor: "#ffffff",
       pixelSize: 16,
       animationInterval: 50,      // アニメーション更新のインターバル（ミリ秒）
@@ -81,7 +80,7 @@
       blockImages.push(img);
     }
 
-    // MyBlockクラス：各ブロックの動作定義
+    // --- MyBlockクラス：各ブロックの動作定義 ---
     class MyBlock {
       constructor(sx, sy, gx, gy, maxState) {
         this.sx = sx;
@@ -147,76 +146,98 @@
 
     let blocks = [];
 
+    // ◆◆◆ メインの初期化処理 ◆◆◆
     function initApplet() {
-      // オフスクリーンcanvasでテキスト描画
-      const offCanvas = document.createElement("canvas");
-      const fontSize = 12;
-      const padding = 4; // 左右にパディングを追加して文字が切れないようにする
-      offCanvas.width = 300; // 仮の幅
-      offCanvas.height = 50;
-      const offCtx = offCanvas.getContext("2d");
+      // Titleを改行で分割 -> 1行ごとに描画する
+      const lines = config.Title.split("\n");
 
-      // ドットフォント「Press Start 2P」を使用（フォールバックとして 'MS PGothic'）
-      offCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
+      // フォント設定等
+      const fontSize = 12;       // 1文字の基本サイズ
+      const lineSpacing = 14;    // 行間（フォントサイズより少し大きめに）
+      const padding = 4;         // 左右の余白
 
-      const text = config.Title;
-      const textMetrics = offCtx.measureText(text);
-      const textWidth = Math.ceil(textMetrics.width);
-      const textHeight = fontSize; 
-      
-      // パディング分を加えたサイズに設定
-      offCanvas.width = textWidth + padding * 2;
-      offCanvas.height = textHeight * 1.2;
-      offCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
-      offCtx.fillStyle = "#ffffff";
-      offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
-      offCtx.fillStyle = "#000000";
-      offCtx.textBaseline = "top";
-      offCtx.fillText(text, padding, 0);
-      
-      // ピクセルデータを取得
-      const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
-      const data = imageData.data;
-      const pixels = [];
-      const threshold = 200;
-      for (let y = 0; y < offCanvas.height; y++) {
-        for (let x = 0; x < offCanvas.width; x++) {
-          const index = (y * offCanvas.width + x) * 4;
-          const r = data[index];
-          const g = data[index + 1];
-          const b = data[index + 2];
-          if (r < threshold && g < threshold && b < threshold) {
-            pixels.push({ x: x, y: y });
+      // まず1行ずつ計測して、「最大幅(最大文字数)」と「行数」を求める
+      let maxLineWidth = 0;
+      const tmpCanvas = document.createElement("canvas");
+      const tmpCtx = tmpCanvas.getContext("2d");
+      tmpCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
+      lines.forEach(line => {
+        const width = tmpCtx.measureText(line).width;
+        if (width > maxLineWidth) {
+          maxLineWidth = width;
+        }
+      });
+      // 最終的にピクセル単位での幅/高さを計算
+      // （lineSpacingは行間も含むので、テキスト1行の高さとして使っている）
+      const totalWidth = Math.ceil(maxLineWidth) + padding * 2;
+      const totalHeight = lineSpacing * lines.length;
+
+      // 行の先頭Y位置
+      let currentY = 0;
+
+      // 行ごとにオフスクリーンキャンバスに文字を描画し、黒ピクセルを探して blocks を生成
+      lines.forEach(line => {
+        // 空行の場合はスキップしつつ currentY だけ行間分下げる
+        if (!line) {
+          currentY += lineSpacing;
+          return;
+        }
+        const lineCanvas = document.createElement("canvas");
+        lineCanvas.width = totalWidth;
+        lineCanvas.height = lineSpacing;
+        const lineCtx = lineCanvas.getContext("2d");
+
+        // 背景を白で塗りつぶし
+        lineCtx.fillStyle = "#ffffff";
+        lineCtx.fillRect(0, 0, lineCanvas.width, lineCanvas.height);
+        // 文字色を黒にして描画
+        lineCtx.font = `${fontSize}px 'Press Start 2P', 'MS PGothic'`;
+        lineCtx.fillStyle = "#000000";
+        lineCtx.textBaseline = "top";
+        lineCtx.fillText(line, padding, 0);
+
+        // ピクセルデータを取得
+        const imageData = lineCtx.getImageData(0, 0, lineCanvas.width, lineCanvas.height);
+        const data = imageData.data;
+        const threshold = 200;
+        // 黒ピクセルを探してブロックを生成
+        for (let y = 0; y < lineCanvas.height; y++) {
+          for (let x = 0; x < lineCanvas.width; x++) {
+            const index = (y * lineCanvas.width + x) * 4;
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+            if (r < threshold && g < threshold && b < threshold) {
+              // キャンバス全体の中央に配置するため、オフセットを計算
+              const scaledX = x * config.pixelSize;
+              const scaledY = (currentY + y) * config.pixelSize;
+              const offsetX = (canvasWidth - totalWidth * config.pixelSize) / 2;
+              const offsetY = (canvasHeight - totalHeight * config.pixelSize) / 2;
+              const targetX = scaledX + offsetX;
+              const targetY = scaledY + offsetY;
+
+              const maxState = config.imageNum - 1;
+              const block = new MyBlock(0, 0, targetX, targetY, maxState);
+              blocks.push(block);
+            }
           }
         }
-      }
-      
-      // テキストをキャンバス中央に配置するためのオフセット計算
-      const scaledTextWidth = offCanvas.width * config.pixelSize;
-      const scaledTextHeight = offCanvas.height * config.pixelSize;
-      const offsetX = (canvasWidth - scaledTextWidth) / 2;
-      const offsetY = (canvasHeight - scaledTextHeight) / 2;
-      
-      // 黒ピクセルごとにブロック生成
-      blocks = [];
-      const maxState = config.imageNum - 1;
-      pixels.forEach(pixel => {
-        const targetX = pixel.x * config.pixelSize + offsetX;
-        const targetY = pixel.y * config.pixelSize + offsetY;
-        const block = new MyBlock(0, 0, targetX, targetY, maxState);
-        blocks.push(block);
+        // 次の行へ
+        currentY += lineSpacing;
       });
-      
+
       requestAnimationFrame(animate);
     }
 
+    // ◆◆◆ アニメーション更新 ◆◆◆
     function animate(timestamp) {
       if (!isRunning) {
+        // 一時停止中でもループは回す
         requestAnimationFrame(animate);
         return;
       }
       
-      // アニメーション更新のインターバルチェック
+      // アニメーション更新のインターバル
       if (!lastFrameTime) lastFrameTime = timestamp;
       if (timestamp - lastFrameTime >= config.animationInterval) {
         blocks.forEach(block => {
@@ -229,7 +250,7 @@
         lastFrameTime = timestamp;
       }
       
-      // 画像切り替えのインターバルチェック
+      // 画像切り替えのインターバル
       if (!lastImageSwitchTime) lastImageSwitchTime = timestamp;
       if (timestamp - lastImageSwitchTime >= config.imageSwitchInterval) {
         blocks.forEach(block => block.setNextState());
@@ -254,6 +275,7 @@
       requestAnimationFrame(animate);
     }
 
+    // ◆◆◆ マウスイベントやクリックイベント ◆◆◆
     canvas.addEventListener("mousemove", function(e) {
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
@@ -283,8 +305,5 @@
       });
     });
   </script>
-
-  <!-- オリジナルに含まれていたタグ（必要がなければ削除可能） -->
-  <deepl-input-controller></deepl-input-controller>
 </body>
 </html>
