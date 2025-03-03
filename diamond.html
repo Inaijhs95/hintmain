@@ -8,6 +8,11 @@
   <style>
     /* すべての要素のボックスサイズをborder-boxに */
     * { box-sizing: border-box; }
+    /* 横幅が画面を超えないように */
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
 
     body {
       font-family: sans-serif;
