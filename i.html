@@ -3,75 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <title>紛れ者を見つけよう</title>
-  <!-- Googleフォント「Creepster」で不気味な雰囲気 -->
-  <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* 全体背景：パーチメント調の色と、薄いテクスチャ（背景画像をコメントアウトしています） */
     body {
-      font-family: 'Creepster', cursive;
+      font-family: 'Noto Sans JP', sans-serif;
       text-align: center;
-      background: #f5f5dc; /* パーチメントカラー */
-      /* 背景テクスチャ例（使う場合はコメントアウトを解除） */
-      /* background: url('https://www.transparenttextures.com/patterns/old-wall.png'); */
+      background: #f0f0f0;
       margin: 0;
       padding: 20px;
-      color: #000;
+      color: #333;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    /* ゲームコンテナ：指名手配ポスター風のデザイン */
     #gameContainer {
       max-width: 500px;
       width: 100%;
-      background: rgba(255, 255, 240, 0.9); /* やわらかなパーチメント調 */
+      background: #fff;
       padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      border: 5px solid #AA0000; /* 赤い枠で指名手配感 */
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    /* 見出し：大文字、赤い文字、緊迫感を演出 */
     h2 {
-      font-size: 36px;
+      font-size: 28px;
       margin: 20px 0;
-      color: #AA0000;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      color: #333;
     }
-    /* 選択肢ボタン：太い枠と背景色で強調 */
     .option {
       display: inline-block;
-      margin: 15px;
-      padding: 20px 30px;
-      background: #fff;
-      border-radius: 8px;
+      margin: 10px;
+      padding: 15px 25px;
+      background: #e9e9e9;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 48px;
+      font-size: 36px;
       user-select: none;
-      color: #2b1055;
-      border: 2px solid #2b1055;
+      color: #333;
+      border: 1px solid #ccc;
       transition: background 0.3s, transform 0.2s;
     }
     .option:hover {
-      background: #e0e0ff;
-      transform: scale(1.1);
+      background: #dcdcdc;
+      transform: scale(1.05);
     }
-    /* ボタン：指名手配ポスター風のデザイン */
     button {
-      padding: 15px 25px;
-      font-size: 24px;
+      padding: 10px 20px;
+      font-size: 18px;
       cursor: pointer;
       margin-top: 20px;
-      border: 2px solid #AA0000;
-      border-radius: 8px;
+      border: 1px solid #333;
+      border-radius: 4px;
       background: #fff;
-      color: #AA0000;
+      color: #333;
       transition: background 0.3s, transform 0.2s;
     }
     button:hover {
-      background: #e0e0ff;
-      transform: scale(1.05);
+      background: #f5f5f5;
+      transform: scale(1.02);
     }
   </style>
 </head>
@@ -110,10 +99,7 @@
 
     // ゲーム初期化：正解・ダミーの順序をランダムにセット
     function initializeGame() {
-      // 正解文字は realChars を複製してシャッフル
       correctSequence = shuffleArray([...realChars]);
-      
-      // ダミー文字もシャッフルし、5問分（各問3文字）のチャンクに分割
       let dummyPool = shuffleArray([...dummyChars]);
       dummyChunks = [];
       for (let i = 0; i < totalTurns; i++) {
@@ -124,11 +110,10 @@
 
     // 初期画面表示
     function showStartScreen() {
-      // 指名手配感を出す見出し
-      messageDiv.innerHTML = "<h2>指名手配 中！<br>紛れ者を見つけろ！</h2>";
+      messageDiv.innerHTML = "<h2>紛れ者を見つけよう</h2>";
       optionsDiv.innerHTML = "";
       const startBtn = document.createElement("button");
-      startBtn.textContent = "探す";
+      startBtn.textContent = "スタート";
       startBtn.addEventListener("click", startGame);
       optionsDiv.appendChild(startBtn);
     }
@@ -145,26 +130,16 @@
         gameClear();
         return;
       }
-      
-      // 問題番号表示
       messageDiv.innerHTML = `<h2>第 ${currentTurn + 1} 問</h2>`;
       optionsDiv.innerHTML = "";
-      
-      // 正解オプション（重複しないランダム順の正解文字から1文字）
       const correctOption = correctSequence[currentTurn];
-      // ダミーオプションは、事前にシャッフル済みの dummyChunks から取得（各ターン3文字）
       const fakeOptions = dummyChunks[currentTurn];
-      
-      // 4択用オプション（正解＋ダミー3つ）
       const options = [];
       options.push({ text: correctOption, isCorrect: true });
       fakeOptions.forEach(ch => {
         options.push({ text: ch, isCorrect: false });
       });
-      // オプションの表示順をシャッフル
       shuffleArray(options);
-      
-      // 各オプションを表示
       options.forEach(opt => {
         const btn = document.createElement("div");
         btn.className = "option";
