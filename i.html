@@ -2,34 +2,44 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>稲井</title>
-  <!-- 奇妙な雰囲気を演出するため、グーグルフォント「Creepster」を導入 -->
+  <title>稲井 - 指名手配</title>
+  <!-- Googleフォント「Creepster」で不気味な雰囲気 -->
   <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
   <style>
+    /* 全体背景：パーチメント調の色と、薄いテクスチャ（背景画像をコメントアウトしています） */
     body {
       font-family: 'Creepster', cursive;
       text-align: center;
-      background: linear-gradient(135deg, #2b1055, #7c1b9a);
+      background: #f5f5dc; /* パーチメントカラー */
+      /* 背景テクスチャ例（使う場合はコメントアウトを解除） */
+      /* background: url('https://www.transparenttextures.com/patterns/old-wall.png'); */
       margin: 0;
       padding: 20px;
-      color: #fff;
+      color: #000;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+    /* ゲームコンテナ：指名手配ポスター風のデザイン */
     #gameContainer {
       max-width: 500px;
       width: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(255, 255, 240, 0.9); /* やわらかなパーチメント調 */
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      border: 5px solid #AA0000; /* 赤い枠で指名手配感 */
     }
+    /* 見出し：大文字、赤い文字、緊迫感を演出 */
     h2 {
       font-size: 36px;
       margin: 20px 0;
+      color: #AA0000;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
+    /* 選択肢ボタン：太い枠と背景色で強調 */
     .option {
       display: inline-block;
       margin: 15px;
@@ -40,21 +50,23 @@
       font-size: 48px;
       user-select: none;
       color: #2b1055;
+      border: 2px solid #2b1055;
       transition: background 0.3s, transform 0.2s;
     }
     .option:hover {
       background: #e0e0ff;
       transform: scale(1.1);
     }
+    /* ボタン：指名手配ポスター風のデザイン */
     button {
       padding: 15px 25px;
       font-size: 24px;
       cursor: pointer;
       margin-top: 20px;
-      border: none;
+      border: 2px solid #AA0000;
       border-radius: 8px;
       background: #fff;
-      color: #2b1055;
+      color: #AA0000;
       transition: background 0.3s, transform 0.2s;
     }
     button:hover {
@@ -112,7 +124,8 @@
 
     // 初期画面表示
     function showStartScreen() {
-      messageDiv.innerHTML = "<h2>紛れ者を見つけよう</h2>";
+      // 指名手配感を出す見出し
+      messageDiv.innerHTML = "<h2>指名手配 中！<br>紛れ者を見つけろ！</h2>";
       optionsDiv.innerHTML = "";
       const startBtn = document.createElement("button");
       startBtn.textContent = "探す";
