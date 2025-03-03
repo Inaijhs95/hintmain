@@ -584,9 +584,9 @@
         </div>
       `;
       options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
-      // 現在時刻から5分後を設定
+      // 現在時刻から1分後を設定
       const now = new Date();
-      const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
+      const fiveMinutesLater = new Date(now.getTime() + 1 * 60 * 1000);
       const timeUntilReset = fiveMinutesLater - now;
       localStorage.setItem('lockTime', fiveMinutesLater.getTime());
       // 開始直後にゲージ更新し、その後1秒ごとに更新
