@@ -539,26 +539,25 @@
       }
     }
 
-    function lockGame() {
-      isGameLocked = true;
-      const dialogue = document.getElementById('dialogue');
-      const options = document.getElementById('options');
-      dialogue.innerHTML = `
-        <div class="character" id="inai-dialogue">
-          <img src="akirame.png" alt="イナイ">
-          <p>………今はもう話しかけないで。</p>
-        </div>
-      `;
-      options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
-      const now = new Date();
-      const tomorrow6AM = new Date();
-      tomorrow6AM.setDate(now.getDate() + 1);
-      tomorrow6AM.setHours(6, 0, 0, 0);
-      const timeUntilReset = tomorrow6AM - now;
-      localStorage.setItem('lockTime', tomorrow6AM.getTime());
-      // 一定時間後に自動でリロードしてロック解除する
-      setTimeout(() => { location.reload(); }, timeUntilReset);
-    }
+   function lockGame() {
+  isGameLocked = true;
+  const dialogue = document.getElementById('dialogue');
+  const options = document.getElementById('options');
+  dialogue.innerHTML = `
+    <div class="character" id="inai-dialogue">
+      <img src="akirame.png" alt="イナイ">
+      <p>………今はもう話しかけないで。</p>
+    </div>
+  `;
+  options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
+  // 現在時刻から5分後を設定
+  const now = new Date();
+  const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
+  const timeUntilReset = fiveMinutesLater - now;
+  localStorage.setItem('lockTime', fiveMinutesLater.getTime());
+  // 一定時間後に自動でリロードしてロック解除する
+  setTimeout(() => { location.reload(); }, timeUntilReset);
+}
 
     function displayLockedMessage() {
       const dialogue = document.getElementById('dialogue');
