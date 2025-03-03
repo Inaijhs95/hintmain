@@ -432,7 +432,7 @@
         options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
       } else if (negativeChoicesCount >= 3) {
         alert("今は話しかけてほしくないみたい");
-        lockGame();
+        location.reload();
       }
     }
 
