@@ -139,7 +139,7 @@
       background-position: center;
       cursor: pointer;
       transition: background-color 0.3s;
-      transform: translateX(15px); /* 右に10pxずらす */
+      transform: translateX(15px);
     }
     .call-button:hover {
       background-color: #45a049;
@@ -204,6 +204,33 @@
       background-color: #ffe6e6;
       border: 1px solid #ffb3b3;
       border-radius: 10px;
+    }
+    /* 怒りゲージ */
+    #anger-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    #anger-img {
+      width: 50px;
+      height: 50px;
+    }
+    #anger-bar {
+      width: 100%;
+      max-width: 300px;
+      height: 20px;
+      background-color: #ddd;
+      margin-left: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    #anger-bar-inner {
+      height: 100%;
+      width: 100%;
+      background-color: #f44336;
+      transition: width 1s linear;
     }
     /* レスポンシブ */
     p {
@@ -294,6 +321,12 @@
     <!-- ロックメッセージ -->
     <div id="lock-message">
       <p>今は話しかけないで</p>
+      <div id="anger-container">
+        <img src="oko.png" alt="怒りゲージ" id="anger-img">
+        <div id="anger-bar">
+          <div id="anger-bar-inner"></div>
+        </div>
+      </div>
       <button class="back-button" onclick="goToTop()">トップページに戻る</button>
     </div>
   </div>
@@ -302,6 +335,7 @@
     let dialedNumber = '';
     let negativeChoicesCount = 0;
     let isGameLocked = false;
+    let gaugeInterval; // 怒りゲージ更新用のinterval
 
     // 初期化: ローカルストレージからカウントとロック状態を取得
     window.onload = function() {
@@ -527,7 +561,7 @@
     }
 
     function receiveReward() {
-      window.open('https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F', '_blank');
+      window.open('https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%9F', '_blank');
     }
 
     function goToTop() {
@@ -539,25 +573,28 @@
       }
     }
 
-   function lockGame() {
-  isGameLocked = true;
-  const dialogue = document.getElementById('dialogue');
-  const options = document.getElementById('options');
-  dialogue.innerHTML = `
-    <div class="character" id="inai-dialogue">
-      <img src="akirame.png" alt="イナイ">
-      <p>………今はもう話しかけないで。</p>
-    </div>
-  `;
-  options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
-  // 現在時刻から5分後を設定
-  const now = new Date();
-  const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
-  const timeUntilReset = fiveMinutesLater - now;
-  localStorage.setItem('lockTime', fiveMinutesLater.getTime());
-  // 一定時間後に自動でリロードしてロック解除する
-  setTimeout(() => { location.reload(); }, timeUntilReset);
-}
+    function lockGame() {
+      isGameLocked = true;
+      const dialogue = document.getElementById('dialogue');
+      const options = document.getElementById('options');
+      dialogue.innerHTML = `
+        <div class="character" id="inai-dialogue">
+          <img src="akirame.png" alt="イナイ">
+          <p>………今はもう話しかけないで。</p>
+        </div>
+      `;
+      options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
+      // 現在時刻から5分後を設定
+      const now = new Date();
+      const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
+      const timeUntilReset = fiveMinutesLater - now;
+      localStorage.setItem('lockTime', fiveMinutesLater.getTime());
+      // 開始直後にゲージ更新し、その後1秒ごとに更新
+      updateAngerGauge();
+      gaugeInterval = setInterval(updateAngerGauge, 1000);
+      // 5分経過後に自動でリロード（ロック解除）
+      setTimeout(() => { location.reload(); }, timeUntilReset);
+    }
 
     function displayLockedMessage() {
       const dialogue = document.getElementById('dialogue');
@@ -574,7 +611,21 @@
     function showLockedState() {
       document.getElementById('top-page').style.display = 'none';
       document.getElementById('game-content').style.display = 'block';
+      document.getElementById('lock-message').style.display = 'block';
       displayLockedMessage();
+      updateAngerGauge();
+      gaugeInterval = setInterval(updateAngerGauge, 1000);
+    }
+
+    function updateAngerGauge() {
+      const lockTime = localStorage.getItem('lockTime');
+      if (!lockTime) return;
+      const totalDuration = 5 * 60 * 1000; // 5分
+      const now = new Date().getTime();
+      const remaining = parseInt(lockTime, 10) - now;
+      let percentage = (remaining / totalDuration) * 100;
+      if (percentage < 0) percentage = 0;
+      document.getElementById('anger-bar-inner').style.width = percentage + '%';
     }
 
     function resetDial() {
