@@ -432,7 +432,14 @@
         options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
       } else if (negativeChoicesCount >= 3) {
         alert("今は話しかけてほしくないみたい");
-        lockGame();
+        // ロックタイムが未設定なら1分後の時刻をセット
+        if (!localStorage.getItem('lockTime')) {
+          const now = new Date();
+          const oneMinuteLater = new Date(now.getTime() + 1 * 60 * 1000);
+          localStorage.setItem('lockTime', oneMinuteLater.getTime());
+        }
+        // alert後すぐにリロード（これでトップページ＆ゲージ表示に）
+        location.reload();
       }
     }
 
@@ -558,24 +565,8 @@
       document.getElementById('top-page').style.display = 'block';
     }
 
-    function lockGame() {
-      isGameLocked = true;
-      // 現在時刻から1分後を設定
-      const now = new Date();
-      const oneMinuteLater = new Date(now.getTime() + 1 * 60 * 1000);
-      const timeUntilReset = oneMinuteLater - now;
-      localStorage.setItem('lockTime', oneMinuteLater.getTime());
-      // トップページを表示し、怒りゲージを表示する
-      document.getElementById('top-page').style.display = 'block';
-      document.getElementById('anger-container-top').style.display = 'flex';
-      updateAngerGauge();
-      gaugeInterval = setInterval(updateAngerGauge, 1000);
-      // ロック期間終了時に自動リロード
-      setTimeout(() => { location.reload(); }, timeUntilReset);
-    }
-
     function showLockedState() {
-      // ロック状態ならトップページに怒りゲージのみ表示
+      // ロック状態ならトップページに怒りゲージを表示
       document.getElementById('top-page').style.display = 'block';
       document.getElementById('anger-container-top').style.display = 'flex';
       updateAngerGauge();
@@ -591,7 +582,7 @@
       let percentage = (remaining / totalDuration) * 100;
       if (percentage < 0) percentage = 0;
       document.getElementById('anger-bar-inner-top').style.width = percentage + '%';
-      // ゲージがゼロになったらリロード
+      // ゲージがゼロになったらリロード（ロック解除）
       if (remaining <= 0) {
         location.reload();
       }
