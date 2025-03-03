@@ -349,8 +349,7 @@
 
     function startConversation() {
       if (negativeChoicesCount >= 3 || isGameLocked) {
-        // ロック状態ならトップページに表示されているゲージで更新されるため、都度リロード
-        location.reload();
+        alert("今は話しかけてほしくないみたい");
         return;
       }
       document.getElementById('top-page').style.display = 'none';
@@ -371,7 +370,7 @@
 
     function selectOption(option) {
       if (isGameLocked) {
-        location.reload();
+        alert("今は話しかけてほしくないみたい");
         return;
       }
       const dialogue = document.getElementById('dialogue');
@@ -412,7 +411,6 @@
 
     function handleNegativeChoice() {
       negativeChoicesCount++;
-      console.log('Negative Choices Count:', negativeChoicesCount);
       localStorage.setItem('negativeChoicesCount', negativeChoicesCount);
       const dialogue = document.getElementById('dialogue');
       const options = document.getElementById('options');
@@ -433,13 +431,14 @@
         `;
         options.innerHTML = `<button onclick="goToTop()">トップページに戻る</button>`;
       } else if (negativeChoicesCount >= 3) {
+        alert("今は話しかけてほしくないみたい");
         lockGame();
       }
     }
 
     function showPhone() {
       if (isGameLocked) {
-        location.reload();
+        alert("今は話しかけてほしくないみたい");
         return;
       }
       const phone = document.getElementById('phone');
@@ -470,7 +469,7 @@
 
     function callService() {
       if (isGameLocked) {
-        location.reload();
+        alert("今は話しかけてほしくないみたい");
         return;
       }
       const number = dialedNumber;
@@ -547,13 +546,12 @@
     }
 
     function receiveReward() {
-      window.open('https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F', '_blank');
+      window.open('https://line.me/R/oaMessage/%40778unfqy/%E3%82%A4%E3%83%8A%E3%82%A4%E3%81%AE%E6%82%A9%E3%81%BF%E3%82%92%E8%A7%A3%E6%B1%BA%E3%81%97%E3%81%BE%E3%81%9F', '_blank');
     }
 
     function goToTop() {
-      // ロック中ならトップページに戻る際も即座にリロード
       if (isGameLocked) {
-        location.reload();
+        alert("今は話しかけてほしくないみたい");
         return;
       }
       document.getElementById('game-content').style.display = 'none';
@@ -577,7 +575,7 @@
     }
 
     function showLockedState() {
-      // ロック状態ならトップページに怒りゲージのみ表示（テキスト等は不要）
+      // ロック状態ならトップページに怒りゲージのみ表示
       document.getElementById('top-page').style.display = 'block';
       document.getElementById('anger-container-top').style.display = 'flex';
       updateAngerGauge();
