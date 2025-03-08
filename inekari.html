@@ -375,57 +375,105 @@ button:active:not(:disabled) {
     100% { transform: scale(1); }
 }
 
-/* 斬撃エフェクト (zan.png の代わり) */
+/* 斬撃エフェクト (zan.png の代わり) - 緑色バージョン */
 .slash-effect {
     position: relative;
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
     margin-bottom: 20px;
+    transform: rotate(-20deg);
 }
 
 .slash-line {
     position: absolute;
-    background-color: white;
     transform-origin: center;
-    animation: slash-animate 0.5s ease-out forwards;
-    box-shadow: 0 0 10px rgba(30, 144, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.8);
-    border-radius: 2px;
+    animation: slash-animate 0.7s ease-out forwards;
+    border-radius: 4px;
 }
 
 .slash-line-1 {
     width: 100%;
-    height: 8px;
+    height: 16px;
     top: 50%;
     left: 0;
-    transform: rotate(45deg) scale(0);
+    background: linear-gradient(90deg, rgba(144, 238, 144, 0.2), rgb(0, 255, 0), #6fff6f, rgb(210, 255, 210));
+    box-shadow: 0 0 20px rgb(0, 255, 128), 0 0 40px rgba(0, 255, 0, 0.8);
+    transform: rotate(30deg) scale(0);
     animation-delay: 0s;
 }
 
 .slash-line-2 {
     width: 100%;
-    height: 4px;
-    top: 50%;
+    height: 8px;
+    top: 45%;
     left: 0;
-    transform: rotate(-30deg) scale(0);
+    background: linear-gradient(90deg, rgba(144, 238, 144, 0.1), rgba(255, 255, 255, 0.9), #C1FFC1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(0, 255, 0, 0.8);
+    transform: rotate(30deg) scale(0);
+    animation-delay: 0.05s;
+    opacity: 0.9;
+}
+
+.slash-line-3 {
+    width: 100%;
+    height: 5px;
+    top: 55%;
+    left: 0;
+    background: linear-gradient(90deg, rgba(144, 238, 144, 0.1), rgba(255, 255, 255, 0.7), #E0FFE0);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(0, 255, 0, 0.6);
+    transform: rotate(30deg) scale(0);
     animation-delay: 0.1s;
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
 .slash-spark {
     position: absolute;
-    width: 10px;
-    height: 10px;
     background-color: white;
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(30, 144, 255, 0.8);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(0, 255, 0, 0.8);
     opacity: 0;
-    animation: spark-animate 0.6s ease-out forwards;
+    animation: spark-animate 0.7s ease-out forwards;
+}
+
+.slash-spark-1 {
+    width: 15px;
+    height: 15px;
+    background: radial-gradient(circle, #ffffff, #90ee90);
+    animation-delay: 0.1s;
+}
+
+.slash-spark-2 {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #ffffff, #90ee90);
+    animation-delay: 0.15s;
+}
+
+.slash-spark-3 {
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, #ffffff, #90ee90);
+    animation-delay: 0.2s;
+}
+
+.slash-burst {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(0, 255, 0, 0.7) 40%, transparent 70%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: burst-animate 0.4s ease-out forwards;
+    opacity: 0;
 }
 
 @keyframes slash-animate {
     0% {
         transform: rotate(var(--rotation)) scale(0);
         opacity: 0;
+        left: -50%;
     }
     10% {
         opacity: 1;
@@ -433,6 +481,7 @@ button:active:not(:disabled) {
     100% {
         transform: rotate(var(--rotation)) scale(1);
         opacity: 0;
+        left: 100%;
     }
 }
 
@@ -451,25 +500,39 @@ button:active:not(:disabled) {
     }
 }
 
-/* 失敗エフェクト */
+@keyframes burst-animate {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+    }
+}
+
+/* 失敗エフェクト - 血しぶき追加 */
 .miss-effect {
     position: relative;
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     margin-bottom: 20px;
 }
 
 .miss-x {
     position: absolute;
-    background-color: #FF6347;
+    background-color: #FF3333;
     border-radius: 4px;
     top: 50%;
     left: 50%;
     width: 100%;
-    height: 10px;
+    height: 12px;
     transform-origin: center;
     animation: miss-animate 0.5s ease-out forwards;
-    box-shadow: 0 0 10px rgba(255, 99, 71, 0.8);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
 }
 
 .miss-x-1 {
@@ -480,6 +543,14 @@ button:active:not(:disabled) {
 .miss-x-2 {
     transform: translate(-50%, -50%) rotate(-45deg) scale(0);
     animation-delay: 0.1s;
+}
+
+.blood-splatter {
+    position: absolute;
+    background-color: #FF0000;
+    border-radius: 50%;
+    opacity: 0;
+    animation: blood-splatter 0.8s ease-out forwards;
 }
 
 @keyframes miss-animate {
@@ -496,19 +567,18 @@ button:active:not(:disabled) {
     }
 }
 
-.overlay p {
-    margin-top: 30px;
-    font-size: 2.2em;
-    color: var(--accent-color);
-    text-shadow: var(--text-shadow);
-    animation: message-appear 0.8s ease-out;
-    max-width: 90%;
-    padding: 0 20px;
-}
-
-@keyframes message-appear {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+@keyframes blood-splatter {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
 }
 
 /* ルールオーバーレイのスタイル */
