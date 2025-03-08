@@ -5,104 +5,313 @@
     <title>お問い合わせ窓口</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --user-msg-color: #d8f3dc;
+            --bot-msg-color: #e9ecef;
+            --background-color: #f8f9fa;
+            --container-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            --message-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            --transition-speed: 0.3s;
+        }
+
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif; 
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: var(--background-color);
+            line-height: 1.6;
         }
+
         #chatContainer {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             height: 100vh;
             background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 10px;
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: var(--container-shadow);
+            position: relative;
         }
+
+        #chatHeader {
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
         #chatbox { 
             flex: 1;
-            padding: 10px;
+            padding: 20px;
             overflow-y: auto; 
-            background-color: #fafafa;
+            background-color: var(--background-color);
+            scroll-behavior: smooth;
         }
+
+        .message-container {
+            display: flex;
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .user-container {
+            justify-content: flex-end;
+        }
+
+        .bot-container {
+            justify-content: flex-start;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 8px;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .user-avatar {
+            background-color: #90be6d;
+            color: white;
+        }
+
         .message {
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
             word-wrap: break-word;
+            box-shadow: var(--message-shadow);
+            position: relative;
         }
+
         .user { 
-            background-color: #d1e7dd; 
-            align-self: flex-end;
+            background-color: var(--user-msg-color); 
+            border-bottom-right-radius: 4px;
         }
+
         .bot { 
-            background-color: #f8d7da; 
-            align-self: flex-start;
+            background-color: var(--bot-msg-color); 
+            border-bottom-left-radius: 4px;
         }
-        .options, .inputField {
-            margin: 10px 0;
+
+        .options-container, .input-container {
+            margin: 0;
+            padding: 12px 16px;
+            background-color: white;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .options {
             display: flex;
             flex-wrap: wrap;
+            gap: 10px;
             justify-content: center;
         }
-        .options button, .inputField button {
-            margin: 5px;
-            padding: 10px 15px;
+
+        .option-btn {
+            padding: 12px 16px;
             border: none;
-            border-radius: 5px;
-            background-color: #0d6efd;
-            color: #fff;
+            border-radius: 50px;
+            background-color: var(--primary-color);
+            color: white;
             cursor: pointer;
+            transition: all var(--transition-speed);
+            font-size: 0.95rem;
+            font-weight: 500;
             flex: 1 1 40%;
             max-width: 45%;
-            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .options button:hover, .inputField button:hover {
-            background-color: #0b5ed7;
+
+        .option-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .inputField input[type="text"] {
-            flex: 1 1 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
+
+        .option-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        a {
-            color: #0d6efd;
-            text-decoration: none;
+
+        .input-field {
+            display: flex;
+            align-items: center;
         }
-        a:hover {
-            text-decoration: underline;
+
+        .text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: border-color var(--transition-speed);
+            outline: none;
         }
-        /* スクロールバーのスタイルをカスタマイズ（オプション） */
+
+        .text-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .send-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all var(--transition-speed);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .send-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .send-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .image-container {
+            margin-top: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .heart-btn {
+            background-color: #e63946;
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(230, 57, 70, 0.3);
+            margin: 20px auto;
+            max-width: 80%;
+        }
+
+        .heart-btn:hover {
+            background-color: #d62828;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(230, 57, 70, 0.4);
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background-color: var(--bot-msg-color);
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #666;
+            margin: 0 2px;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
         #chatbox::-webkit-scrollbar {
             width: 6px;
         }
+
         #chatbox::-webkit-scrollbar-thumb {
             background-color: rgba(0,0,0,0.2);
             border-radius: 3px;
         }
-        /* 画像のスタイル（オプション） */
-        .bot img {
-            max-width: 100%;
-            height: auto;
-            margin-top: 10px;
-            border-radius: 5px;
+
+        #chatbox::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0,0,0,0.3);
+        }
+
+        .success-animation {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f1c40f;
+            border-radius: 0;
+            animation: confetti-fall 3s ease-in-out infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
     <div id="chatContainer">
+        <div id="chatHeader">お問い合わせ窓口</div>
         <div id="chatbox"></div>
     </div>
 
@@ -114,51 +323,102 @@
             responses: {}
         };
 
-        function addMessage(sender, text, imageUrl = null) { // 画像URLをオプション引数に追加
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message-container bot-container';
+            typingDiv.innerHTML = `
+                <div class="avatar bot-avatar">あ</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatbox.appendChild(typingDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+            return typingDiv;
+        }
+
+        function addMessage(sender, text, imageUrl = null) {
+            // タイピングインジケーターを削除（もしあれば）
+            const typingIndicators = document.querySelectorAll('.typing-indicator');
+            typingIndicators.forEach(indicator => {
+                const container = indicator.parentElement;
+                if (container) {
+                    container.remove();
+                }
+            });
+
+            const msgContainer = document.createElement('div');
+            msgContainer.className = `message-container ${sender === 'user' ? 'user-container' : 'bot-container'}`;
+
+            // アバター要素を作成
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${sender === 'user' ? 'user-avatar' : 'bot-avatar'}`;
+            avatar.textContent = sender === 'user' ? 'あ' : 'オ';
+            
+            // メッセージ要素を作成
             const msg = document.createElement('div');
-            msg.className = 'message ' + sender;
-            if (imageUrl && sender === 'bot') { // 画像が指定され、送信者がボットの場合
-                // テキストと画像を含むコンテナを作成
-                const content = document.createElement('div');
-                const textNode = document.createElement('div');
-                textNode.textContent = `${sender === 'user' ? 'あなた: ' : 'オペレーター: '}${text}`;
-                content.appendChild(textNode);
-                
+            msg.className = `message ${sender === 'user' ? 'user' : 'bot'}`;
+            msg.textContent = text;
+
+            // 画像があればメッセージ内に追加
+            if (imageUrl && sender === 'bot') {
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'image-container';
                 const img = document.createElement('img');
                 img.src = imageUrl;
                 img.alt = '関連画像';
-                content.appendChild(img);
-
-                msg.appendChild(content);
-            } else {
-                msg.textContent = `${sender === 'user' ? 'あなた: ' : 'オペレーター: '}${text}`;
+                imgContainer.appendChild(img);
+                msg.appendChild(imgContainer);
             }
-            chatbox.appendChild(msg);
+
+            // 要素を構成
+            if (sender === 'user') {
+                msgContainer.appendChild(msg);
+                msgContainer.appendChild(avatar);
+            } else {
+                msgContainer.appendChild(avatar);
+                msgContainer.appendChild(msg);
+            }
+
+            chatbox.appendChild(msgContainer);
             // 自動スクロール
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
         function showOptions(options) {
             const optionsContainer = document.createElement('div');
-            optionsContainer.className = 'options';
+            optionsContainer.className = 'options-container';
+            
+            const optionsWrapper = document.createElement('div');
+            optionsWrapper.className = 'options';
+            
             options.forEach(option => {
                 const btn = document.createElement('button');
+                btn.className = 'option-btn';
                 btn.textContent = option;
                 btn.onclick = () => handleResponse(option);
-                optionsContainer.appendChild(btn);
+                optionsWrapper.appendChild(btn);
             });
+            
+            optionsContainer.appendChild(optionsWrapper);
             chatbox.appendChild(optionsContainer);
             // 自動スクロール
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
-        function showInput(prompt, callback) {
+        function showInput(prompt) {
             const inputContainer = document.createElement('div');
-            inputContainer.className = 'inputField';
+            inputContainer.className = 'input-container';
+            
+            const inputField = document.createElement('div');
+            inputField.className = 'input-field';
             
             const input = document.createElement('input');
             input.type = 'text';
-            input.placeholder = prompt;
+            input.className = 'text-input';
+            input.placeholder = prompt || 'メッセージを入力...';
             input.onkeypress = function(e) {
                 if (e.key === 'Enter') {
                     btn.click();
@@ -166,7 +426,12 @@
             };
 
             const btn = document.createElement('button');
-            btn.textContent = '送信';
+            btn.className = 'send-btn';
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+            `;
             btn.onclick = () => {
                 const value = input.value.trim();
                 if (value) {
@@ -174,9 +439,14 @@
                 }
             };
 
-            inputContainer.appendChild(input);
-            inputContainer.appendChild(btn);
+            inputField.appendChild(input);
+            inputField.appendChild(btn);
+            inputContainer.appendChild(inputField);
             chatbox.appendChild(inputContainer);
+            
+            // 自動的に入力フィールドにフォーカス
+            setTimeout(() => input.focus(), 100);
+            
             // 自動スクロール
             chatbox.scrollTop = chatbox.scrollHeight;
         }
@@ -185,127 +455,178 @@
             // メッセージとオプション/入力フィールドをクリア
             removeLastOptionsOrInput();
             addMessage('user', response);
-            switch(state.step) {
-                case 'start':
-                    if (response === 'ある物を探している') {
-                        state.step = 'got_club';
-                        botQuestion('♣のトランプをゲットしましたか？', ['はい', 'いいえ']);
-                    } else if (response === 'たまたま開いた') {
-                        state.step = 'end_random';
-                        botEndRandom();
-                    } else {
-                        state.step = 'error';
+            
+            // タイピングインジケーターを表示
+            const typingIndicator = showTypingIndicator();
+            
+            // 少し遅延させてボットの応答を表示（自然な感じに）
+            setTimeout(() => {
+                switch(state.step) {
+                    case 'start':
+                        if (response === 'ある物を探している') {
+                            state.step = 'got_club';
+                            botQuestion('♣のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                        } else if (response === 'とくにない') {
+                            state.step = 'end_random';
+                            botEndRandom();
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    case 'got_club':
+                        if (response === 'はい') {
+                            state.step = 'ask_tengu';
+                            botQuestion('登場したキャラの中で一番鼻の長いキャラクターを漢字二文字で答えてください', []);
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    case 'ask_tengu':
+                        if (response === '天狗') {
+                            state.step = 'got_club_again';
+                            botQuestion('♠のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    case 'got_club_again':
+                        if (response === 'はい') {
+                            state.step = 'ask_oni';
+                            botQuestion('追加モードの名前を漢字一文字で答えてください', []);
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    case 'ask_oni':
+                        if (response === '鬼') {
+                            state.step = 'got_diamond';
+                            botQuestion('♦のトランプをゲットしましたか？', ['はい', 'いいえ']);
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    case 'got_diamond':
+                        if (response === 'はい') {
+                            state.step = 'ask_final';
+                            botQuestion('絵柄が完成したときに欠けていた箇所はどこでしたか？数字のみでお答えください', [], 'number.png');
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    case 'ask_final':
+                        if (response === '3' || response === '３') {
+                            state.step = 'end_success';
+                            botEndSuccess();
+                        } else {
+                            state.step = 'error';
+                            botError();
+                        }
+                        break;
+                    default:
                         botError();
-                    }
-                    break;
-                case 'got_club':
-                    if (response === 'はい') {
-                        state.step = 'ask_tengu';
-                        botQuestion('登場したキャラの中で一番鼻の長いキャラクターを漢字二文字で答えてください', []);
-                    } else {
-                        state.step = 'error';
-                        botError();
-                    }
-                    break;
-                case 'ask_tengu':
-                    if (response === '天狗') {
-                        state.step = 'got_club_again';
-                        botQuestion('♠のトランプをゲットしましたか？', ['はい', 'いいえ']);
-                    } else {
-                        state.step = 'error';
-                        botError();
-                    }
-                    break;
-                case 'got_club_again':
-                    if (response === 'はい') {
-                        state.step = 'ask_oni';
-                        botQuestion('追加モードの名前を漢字一文字で答えてください', []);
-                    } else {
-                        state.step = 'error';
-                        botError();
-                    }
-                    break;
-                case 'ask_oni':
-                    if (response === '鬼') {
-                        state.step = 'got_diamond';
-                        botQuestion('♦のトランプをゲットしましたか？', ['はい', 'いいえ']);
-                    } else {
-                        state.step = 'error';
-                        botError();
-                    }
-                    break;
-                case 'got_diamond':
-                    if (response === 'はい') {
-                        state.step = 'ask_final';
-                        // number.png を表示するために imageUrl を追加
-                        botQuestion('絵柄が完成したときに欠けていた箇所はどこでしたか？数字のみでお答えください', [], 'number.png');
-                    } else {
-                        state.step = 'error';
-                        botError();
-                    }
-                    break;
-                case 'ask_final':
-                    if (response === '3' || response === '３') { // ここを変更
-                        state.step = 'end_success';
-                        botEndSuccess();
-                    } else {
-                        state.step = 'error';
-                        botError();
-                    }
-                    break;
-                default:
-                    botError();
-            }
+                }
+            }, 800);
         }
 
         function removeLastOptionsOrInput() {
             const lastChild = chatbox.lastElementChild;
-            if (lastChild && (lastChild.classList.contains('options') || lastChild.classList.contains('inputField'))) {
+            if (lastChild && (lastChild.classList.contains('options-container') || lastChild.classList.contains('input-container'))) {
                 chatbox.removeChild(lastChild);
             }
         }
 
-        function botQuestion(text, options, imageUrl = null) { // imageUrl をオプション引数に追加
-            addMessage('bot', text, imageUrl); // 画像URLを渡す
+        function botQuestion(text, options, imageUrl = null) {
+            addMessage('bot', text, imageUrl);
             if (options.length > 0) {
                 showOptions(options);
             } else {
-                showInput('', handleResponse);
+                showInput('');
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#f1c40f', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.width = `${Math.random() * 10 + 5}px`;
+                    confetti.style.height = `${Math.random() * 10 + 5}px`;
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                    document.body.appendChild(confetti);
+                    
+                    // 数秒後に紙吹雪を削除
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }, i * 100);
             }
         }
 
         function botEndSuccess() {
-            addMessage('bot', '正解です。それでは最後のトランプをお受け取り下さい。');
-            const btn = document.createElement('button');
-            btn.textContent = '♥のトランプをゲットする';
-            btn.onclick = () => {
-                window.open('https://inaijhs95.github.io/4lamp/?l=he9f44', '_blank');
-            };
-            const successContainer = document.createElement('div');
-            successContainer.className = 'options';
-            successContainer.appendChild(btn);
-            chatbox.appendChild(successContainer);
-            // 自動スクロール
-            chatbox.scrollTop = chatbox.scrollHeight;
+            addMessage('bot', '🎉 正解です！おめでとうございます 🎉');
+            
+            // 成功アニメーション
+            createConfetti();
+            
+            setTimeout(() => {
+                addMessage('bot', 'それでは最後のトランプをお受け取り下さい。');
+                
+                const successContainer = document.createElement('div');
+                successContainer.className = 'success-animation';
+                
+                const btn = document.createElement('button');
+                btn.className = 'heart-btn';
+                btn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="white"/>
+                    </svg>
+                    ♥のトランプをゲットする
+                `;
+                btn.onclick = () => {
+                    window.open('https://inaijhs95.github.io/4lamp/?l=he9f44', '_blank');
+                };
+                
+                successContainer.appendChild(btn);
+                chatbox.appendChild(successContainer);
+                
+                // 自動スクロール
+                chatbox.scrollTop = chatbox.scrollHeight;
+            }, 1500);
         }
 
         function botEndRandom() {
-            addMessage('bot', 'またのお越しをお待ちしております');
+            addMessage('bot', 'またのお越しをお待ちしております。ご質問があれば、いつでもお気軽にどうぞ。');
             // 自動的にリンクを開く
             setTimeout(() => {
                 window.location.href = 'https://line.me/R/oaMessage/%40778unfqy';
-            }, 2000);
+            }, 3000);
         }
 
         function botError() {
-            addMessage('bot', 'またのお越しをお待ちしております');
+            addMessage('bot', '申し訳ありませんが、トレジャーハントをリセットします。またチャレンジしてみてください。');
             setTimeout(() => {
                 window.location.href = 'https://line.me/R/oaMessage/%40778unfqy';
-            }, 2000);
+            }, 3000);
         }
 
-        // 初期質問
-        botQuestion('ご用件をお伺いいたします。', ['ある物を探している', 'とくにない']);
+        // 初期メッセージ（少し遅延させて表示）
+        setTimeout(() => {
+            addMessage('bot', 'ようこそ、お問い合わせ窓口へ');
+            setTimeout(() => {
+                botQuestion('ご用件をお伺いいたします。', ['ある物を探している', 'とくにない']);
+            }, 800);
+        }, 500);
     </script>
 </body>
 </html>
