@@ -16,8 +16,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            background-color: #222;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #121212;
             color: #fff;
         }
 
@@ -27,6 +27,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
         }
 
         /* 上部の情報バー */
@@ -35,18 +36,20 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            padding: 10px 20px;
-            background-color: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            background-color: rgba(20, 20, 20, 0.95);
             z-index: 1000;
             height: 120px; /* 高さを固定 */
-            transition: background-color 0.5s;
+            transition: all 0.5s ease;
+            border-bottom: 3px solid #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         /* 点滅アニメーション */
         @keyframes flashRed {
-            0% { background-color: rgba(255, 0, 0, 0.8); }
-            50% { background-color: rgba(0, 0, 0, 0.8); }
-            100% { background-color: rgba(255, 0, 0, 0.8); }
+            0% { background-color: rgba(180, 20, 20, 0.95); }
+            50% { background-color: rgba(20, 20, 20, 0.95); }
+            100% { background-color: rgba(180, 20, 20, 0.95); }
         }
 
         /* タイマーが5秒未満の時に適用されるクラス */
@@ -58,9 +61,27 @@
         #hud {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
             font-size: 18px;
-            color: #fff; /* 白色に変更 */
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            background-color: rgba(40, 40, 40, 0.6);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border-left: 3px solid #555;
+        }
+
+        #level {
+            font-weight: bold;
+            color: #f5d742;
+        }
+
+        #timer {
+            color: #5dade2;
+        }
+
+        #score {
+            color: #5cd65c;
         }
 
         /* 手配書のスタイル */
@@ -68,27 +89,49 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 120px;
-            height: 100px; /* 高さをトップバーに収まるように調整 */
-            background-color: #444; /* ダークグレーに変更 */
-            border-radius: 0px; /* 四角枠に変更 */
+            width: 140px;
+            height: 100px;
+            background: linear-gradient(to bottom, #3c3c3c, #262626);
+            border-radius: 5px;
             padding: 10px;
             text-align: center;
-            color: #fff; /* テキスト色を白に変更 */
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+            border: 1px solid #555;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #wanted-poster::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ff0000, #ff7300, #ffb700);
         }
 
         #wanted-poster img {
-            width: 60px; /* 20%小さく */
-            height: 60px; /* 20%小さく */
-            border-radius: 0px; /* 四角枠に変更 */
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+            border: 2px solid #222;
+        }
+
+        #wanted-poster:hover img {
+            transform: scale(1.05);
         }
 
         #wanted-poster p {
-            margin-top: 5px;
+            margin-top: 8px;
             font-weight: bold;
-            font-size: 14px; /* フォントサイズを小さく */
-            color: #fff; /* テキスト色を白に変更 */
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* テキストの視認性向上 */
+            font-size: 14px;
+            color: #ff3333;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            letter-spacing: 1px;
         }
 
         /* ゲームエリアのスタイル */
@@ -96,8 +139,9 @@
             position: relative;
             flex-grow: 1;
             width: 100%;
-            background-color: #333;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
             overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
         }
 
         .character {
@@ -105,13 +149,20 @@
             cursor: pointer;
             user-select: none;
             touch-action: manipulation;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            border-radius: 5px;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.7));
+        }
+
+        .character:hover {
+            filter: brightness(1.1) drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.8));
+            transform: scale(1.05);
         }
 
         /* サイズ変化アニメーション */
         @keyframes sizeVariation {
             0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
 
@@ -125,37 +176,50 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0,0,0,0.85);
-            padding: 25px 30px;
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(15, 15, 15, 0.95) 100%);
+            padding: 30px 40px;
             border-radius: 15px;
             text-align: center;
             z-index: 1001;
             display: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            border: 1px solid #444;
+            min-width: 280px;
         }
 
         #message h2 {
-            margin-bottom: 15px;
-            color: #fff; /* テキスト色を白に変更 */
-            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            letter-spacing: 2px;
         }
 
         #message a, #message button {
             display: inline-block;
-            margin-top: 15px;
+            margin-top: 20px;
             padding: 12px 25px;
-            background-color: #555; /* シンプルなグレーに変更 */
-            color: #fff; /* テキスト色を白に変更 */
+            background: linear-gradient(to bottom, #555, #333);
+            color: #fff;
             text-decoration: none;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 18px;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
         }
 
         #message a:hover, #message button:hover {
-            background-color: #777; /* ホバー時の色を変更 */
-            color: #fff;
+            background: linear-gradient(to bottom, #666, #444);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        #message a:active, #message button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         /* 暗闇オーバーレイのスタイル */
@@ -165,7 +229,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0, 0, 0, 0.92);
             pointer-events: none;
             z-index: 500;
             overflow: hidden;
@@ -173,11 +237,12 @@
 
         .light-spot {
             position: absolute;
-            width: 100px; /* 照らす範囲の直径を小さく */
-            height: 100px;
-            background: radial-gradient(circle at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%);
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 30%, rgba(255, 255, 255, 0) 70%);
             border-radius: 50%;
             pointer-events: none;
+            filter: blur(8px);
             animation: moveSpot 5s linear infinite;
         }
 
@@ -208,37 +273,31 @@
         @media (max-width: 600px) {
             #hud {
                 font-size: 14px;
+                padding: 10px 15px;
             }
 
-            /* 手配書のスタイル */
             #wanted-poster {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
                 width: 120px;
-                height: 100px; /* 高さをトップバーに収まるように調整 */
-                background-color: rgba(0, 0, 0, 0.7); /* 半透明の暗い背景色に変更 */
-                border-radius: 0px; /* 四角枠に変更 */
-                padding: 10px;
-                text-align: center;
-                color: #fff; /* テキスト色を白に変更 */
+                height: 95px;
             }
 
-            /* 手配書内のテキストスタイル */
+            #wanted-poster img {
+                width: 55px;
+                height: 55px;
+            }
+
             #wanted-poster p {
-                margin-top: 5px;
-                font-weight: bold;
-                font-size: 14px; /* フォントサイズを小さく */
-                color: #fff; /* テキスト色を白に変更 */
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* テキストの視認性向上 */
+                font-size: 13px;
+                margin-top: 6px;
             }
 
-            .character {
-                cursor: pointer;
+            #message {
+                padding: 25px 30px;
+                min-width: 260px;
             }
 
             #message h2 {
-                font-size: 20px;
+                font-size: 24px;
             }
 
             #message a, #message button {
