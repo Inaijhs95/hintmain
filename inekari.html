@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>刹那の稲刈り</title>
     <style>
-      /* 基本スタイル */
+/* 基本スタイル */
 :root {
     --primary-color: #1E90FF;
     --primary-dark: #0066CC;
@@ -375,16 +375,125 @@ button:active:not(:disabled) {
     100% { transform: scale(1); }
 }
 
-.overlay img {
-    max-width: 80%;
-    max-height: 80%;
-    animation: zoom-in 0.5s ease-out;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.7));
+/* 斬撃エフェクト (zan.png の代わり) */
+.slash-effect {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 20px;
 }
 
-@keyframes zoom-in {
-    from { transform: scale(0.8); opacity: 0.5; }
-    to { transform: scale(1); opacity: 1; }
+.slash-line {
+    position: absolute;
+    background-color: white;
+    transform-origin: center;
+    animation: slash-animate 0.5s ease-out forwards;
+    box-shadow: 0 0 10px rgba(30, 144, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+}
+
+.slash-line-1 {
+    width: 100%;
+    height: 8px;
+    top: 50%;
+    left: 0;
+    transform: rotate(45deg) scale(0);
+    animation-delay: 0s;
+}
+
+.slash-line-2 {
+    width: 100%;
+    height: 4px;
+    top: 50%;
+    left: 0;
+    transform: rotate(-30deg) scale(0);
+    animation-delay: 0.1s;
+    opacity: 0.7;
+}
+
+.slash-spark {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(30, 144, 255, 0.8);
+    opacity: 0;
+    animation: spark-animate 0.6s ease-out forwards;
+}
+
+@keyframes slash-animate {
+    0% {
+        transform: rotate(var(--rotation)) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(var(--rotation)) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes spark-animate {
+    0% {
+        transform: translate(0, 0) scale(0.2);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* 失敗エフェクト */
+.miss-effect {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.miss-x {
+    position: absolute;
+    background-color: #FF6347;
+    border-radius: 4px;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 10px;
+    transform-origin: center;
+    animation: miss-animate 0.5s ease-out forwards;
+    box-shadow: 0 0 10px rgba(255, 99, 71, 0.8);
+}
+
+.miss-x-1 {
+    transform: translate(-50%, -50%) rotate(45deg) scale(0);
+    animation-delay: 0s;
+}
+
+.miss-x-2 {
+    transform: translate(-50%, -50%) rotate(-45deg) scale(0);
+    animation-delay: 0.1s;
+}
+
+@keyframes miss-animate {
+    0% {
+        transform: translate(-50%, -50%) rotate(var(--rotation)) scale(0);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(var(--rotation)) scale(1);
+        opacity: 1;
+    }
 }
 
 .overlay p {
@@ -546,6 +655,16 @@ button:active:not(:disabled) {
         font-size: 1.6em;
         padding: 20px;
     }
+    
+    .slash-effect {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .miss-effect {
+        width: 120px;
+        height: 120px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -576,8 +695,18 @@ button:active:not(:disabled) {
     .overlay p {
         font-size: 1.5em;
     }
+    
+    .slash-effect {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .miss-effect {
+        width: 100px;
+        height: 100px;
+    }
 }
-    </style>
+</style>
 </head>
 <body>
     <!-- 初期画面 -->
