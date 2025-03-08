@@ -2,141 +2,250 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>刹那の稲刈り</title>
     <style>
-        /* CSSスタイル */
+        /* 基本スタイル */
+        :root {
+            --primary-color: #1E90FF;
+            --primary-dark: #0066CC;
+            --accent-color: #FFD700;
+            --background-color: #000;
+            --success-color: #32CD32;
+            --success-hover: #3CB371;
+            --button-glow: 0 0 20px rgba(30, 144, 255, 0.8);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
 
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
+        @font-face {
+            font-family: 'JapaneseFont';
+            src: url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #020300; /* 背景を黒色に変更 */
+        }
+
+        body {
+            font-family: 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif;
+            text-align: center;
+            background-color: var(--background-color);
+            background-image: radial-gradient(circle, #0A0A0A 0%, #000000 100%);
             color: #fff;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            box-sizing: border-box;
             position: relative;
             overflow: hidden;
         }
 
+        /* 背景アニメーション */
+        .background-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .rice-particle {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            animation: falling 5s linear infinite;
+        }
+
+        @keyframes falling {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* タイトルとヘッダー */
         h1 {
-            font-size: 2.5em;
+            font-size: 3.2em;
             margin-bottom: 20px;
-            color: #FFD700; /* ゴールド色 */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
-            white-space: nowrap; /* 一行に表示 */
+            color: var(--accent-color);
+            text-shadow: var(--text-shadow), 0 0 15px rgba(255, 215, 0, 0.7);
+            white-space: nowrap;
+            letter-spacing: 2px;
+            transform: perspective(500px) rotateX(10deg);
+            animation: title-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes title-glow {
+            from { text-shadow: var(--text-shadow), 0 0 10px rgba(255, 215, 0, 0.7); }
+            to { text-shadow: var(--text-shadow), 0 0 20px rgba(255, 215, 0, 1); }
         }
 
         #levelDisplay {
-            font-size: 1.8em;
-            margin-bottom: 10px;
-            color: #FFD700; /* ゴールド色 */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-shadow: var(--text-shadow);
+            font-weight: bold;
+            transition: all 0.3s ease;
         }
 
         #statusDisplay {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            color: #FFD700; /* ゴールド色 */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            font-size: 1.4em;
+            margin-bottom: 25px;
+            color: #FFF;
+            text-shadow: var(--text-shadow);
+            min-height: 2em;
+            padding: 5px 20px;
+            background-color: rgba(30, 144, 255, 0.15);
+            border-radius: 20px;
+            border: 1px solid rgba(30, 144, 255, 0.3);
+            display: inline-block;
+            transition: all 0.3s ease;
         }
 
+        /* メッセージコンテナ */
         #messageContainer {
-            width: 250px; /* サイズをさらに大きく */
-            height: 250px; /* サイズをさらに大きく */
+            width: 280px;
+            height: 280px;
             margin: 20px 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 固定サイズ */
             flex-shrink: 0;
+            position: relative;
         }
 
         #message {
             max-width: 100%;
             max-height: 100%;
             display: none;
-                   transform: translate(70px, 0px); /* 右に10px、上に5px移動 */
+            transform: translate(70px, 0px);
+            animation: pulse 0.5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
         }
 
+        @keyframes pulse {
+            from { transform: translate(70px, 0px) scale(1); }
+            to { transform: translate(70px, 0px) scale(1.1); }
+        }
+
+        /* ボタンコンテナとボタンスタイル */
         .button-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 90%;
             max-width: 400px;
+            gap: 20px;
         }
 
         button {
             position: relative;
-            font-size: 1em; /* テキストを表示 */
+            font-size: 1.3em;
+            font-weight: bold;
             padding: 15px 30px;
-            margin: 15px 0; /* マージンを増やす */
             cursor: pointer;
             border: none;
-            border-radius: 10px;
-            background-color: rgba(30, 144, 255, 0.8); /* 半透明のボタン色 */
+            border-radius: 15px;
+            background-color: rgba(30, 144, 255, 0.8);
             color: #fff;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: all 0.3s ease;
             width: 100%;
             box-sizing: border-box;
-            white-space: nowrap; /* 一行に表示 */
+            white-space: nowrap;
             overflow: hidden;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
+            text-shadow: var(--text-shadow);
+            box-shadow: var(--button-glow);
+            letter-spacing: 1px;
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover:not(:disabled):before {
+            left: 100%;
         }
 
         button:disabled {
             background-color: #696969;
+            box-shadow: none;
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
         button:hover:not(:disabled) {
-            background-color: rgba(0, 191, 255, 0.8);
-            transform: scale(1.05);
+            background-color: rgba(0, 191, 255, 0.9);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 7px 20px rgba(30, 144, 255, 0.5);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(30, 144, 255, 0.5);
         }
 
         /* 「斬」ボタンのスタイル */
         #slashButton {
-            width: 90vw; /* 画面横幅の約4分の3に拡大 */
-            height: 90vw; /* 画面横幅の約4分の3、角が丸い正方形にするため同じ値 */
-            max-width: 400px; /* 最大幅を設定 */
-            max-height: 400px; /* 最大高さを設定 */
-            background-image: url('kama.png'); /* kama.pngを設定 */
-            background-size: contain; /* 背景画像を完全に表示 */
+            width: 90vw;
+            height: 90vw;
+            max-width: 400px;
+            max-height: 400px;
+            background-image: url('kama.png');
+            background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            border: 3px solid #1E90FF; /* ボーダー色を青色に変更し太さを減少 */
-            border-radius: 20px; /* 丸みを帯びた角に変更 */
-            background-color: transparent; /* 塗りつぶしなし */
-            box-shadow: 0 0 20px #1E90FF; /* ボーダーと同じ色に変更 */
-            font-size: 0; /* テキストを非表示 */
+            border: 3px solid var(--primary-color);
+            border-radius: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 20px var(--primary-color);
+            font-size: 0;
             margin: 20px 0;
-            transition: border-radius 0.3s, box-shadow 0.3s;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* 「斬」ボタンのホバー時 */
         #slashButton:hover:not(:disabled) {
-            background-image: url('kama_hover.png'); /* ホバー時の画像 */
-            box-shadow: 0 0 25px #1E90FF; /* 輝きを強調 */
+            background-image: url('kama_hover.png');
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 0 30px var(--primary-color);
+            background-color: rgba(30, 144, 255, 0.1);
         }
 
-        /* 「斬」ボタンの無効時 */
+        #slashButton:active:not(:disabled) {
+            transform: scale(0.98) rotate(0deg);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
         #slashButton:disabled {
-            background-image: url('kama_disabled.png'); /* 無効時の画像 */
-            box-shadow: none; /* 輝きを削除 */
-        }
-
-        /* 他のボタン（「田んぼに行く」「鬼モード」「♣のトランプをゲットする」）のスタイル */
-        .button-container button:not(#slashButton) {
-            font-size: 1.2em; /* フォントサイズを調整 */
-            padding: 15px 30px; /* パディングを調整 */
-            white-space: nowrap; /* 一行に表示 */
-            background-color: rgba(30, 144, 255, 0.8); /* 半透明のボタン色 */
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
+            background-image: url('kama_disabled.png');
+            box-shadow: none;
+            opacity: 0.5;
+            transform: scale(0.95);
+            border-color: #696969;
         }
 
         /* 初期画面のスタイル */
@@ -146,155 +255,308 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            padding: 20px;
+            padding: 30px;
+            animation: fadeIn 1s ease;
+            max-width: 800px;
         }
 
-        /* 鬼モード選択時の注意表示 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #gameScreen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+            max-width: 800px;
+        }
+
+        /* ホーム画面ボタン */
+        #normalModeButton, #oniModeButton, #getTrumpButton {
+            margin: 10px 0;
+            padding: 18px 35px;
+            font-size: 1.6em;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: linear-gradient(45deg, rgba(30, 144, 255, 0.8), rgba(0, 191, 255, 0.8));
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(30, 144, 255, 0.4);
+        }
+
+        #normalModeButton:hover, #oniModeButton:hover, #getTrumpButton:hover {
+            background: linear-gradient(45deg, rgba(0, 191, 255, 0.9), rgba(30, 144, 255, 0.9));
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(30, 144, 255, 0.6);
+        }
+
+        #oniModeButton {
+            background: linear-gradient(45deg, rgba(220, 20, 60, 0.8), rgba(255, 99, 71, 0.8));
+            box-shadow: 0 5px 15px rgba(220, 20, 60, 0.5);
+        }
+
+        #oniModeButton:hover {
+            background: linear-gradient(45deg, rgba(255, 99, 71, 0.9), rgba(220, 20, 60, 0.9));
+            box-shadow: 0 10px 25px rgba(220, 20, 60, 0.7);
+        }
+
+        #getTrumpButton {
+            background: linear-gradient(45deg, rgba(50, 205, 50, 0.8), rgba(60, 179, 113, 0.8));
+            box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
+        }
+
+        #getTrumpButton:hover {
+            background: linear-gradient(45deg, rgba(60, 179, 113, 0.9), rgba(50, 205, 50, 0.9));
+            box-shadow: 0 10px 25px rgba(50, 205, 50, 0.7);
+        }
+
+        #startButton {
+            padding: 20px 40px;
+            font-size: 1.8em;
+            background: linear-gradient(45deg, rgba(30, 144, 255, 0.8), rgba(0, 191, 255, 0.8));
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(0deg);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #startButton:hover:not(:disabled) {
+            background: linear-gradient(45deg, rgba(0, 191, 255, 0.9), rgba(30, 144, 255, 0.9));
+            transform: perspective(1000px) rotateX(-10deg) translateY(-5px);
+        }
+
+        #startButton:disabled {
+            background: #696969;
+            transform: perspective(1000px) rotateX(5deg) translateY(0);
+        }
+
+        /* 鬼モード警告 */
         #oniWarning {
             font-size: 1.2em;
             color: #FF6347;
-            margin-top: 10px;
+            margin: 15px 0;
             display: none;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
+            text-shadow: var(--text-shadow);
+            padding: 10px 20px;
+            background-color: rgba(255, 99, 71, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 99, 71, 0.3);
+            animation: pulse-warning 2s ease-in-out infinite alternate;
         }
 
-        /* 成功・失敗画像のスタイル */
+        @keyframes pulse-warning {
+            from { opacity: 0.7; }
+            to { opacity: 1; }
+        }
+
+        /* オーバーレイのスタイル */
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 1s ease, visibility 1s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
             z-index: 1000;
             flex-direction: column;
+            backdrop-filter: blur(5px);
         }
 
         .overlay.visible {
             opacity: 1;
             visibility: visible;
+            animation: overlay-pulse 0.5s ease-out;
+        }
+
+        @keyframes overlay-pulse {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         .overlay img {
             max-width: 80%;
             max-height: 80%;
+            animation: zoom-in 0.5s ease-out;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.7));
+        }
+
+        @keyframes zoom-in {
+            from { transform: scale(0.8); opacity: 0.5; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .overlay p {
-            margin-top: 20px;
-            font-size: 2em;
-            color: #FFD700;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
+            margin-top: 30px;
+            font-size: 2.2em;
+            color: var(--accent-color);
+            text-shadow: var(--text-shadow);
+            animation: message-appear 0.8s ease-out;
+            max-width: 90%;
+            padding: 0 20px;
+        }
+
+        @keyframes message-appear {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         /* ルールオーバーレイのスタイル */
         #rulesOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-            z-index: 1100; /* 成功・失敗オーバーレイより前面 */
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        #rulesOverlay.visible {
-            opacity: 1;
-            visibility: visible;
+            z-index: 1100;
+            padding: 40px;
         }
 
         #rulesOverlay p {
-            font-size: 1.5em;
-            color: #FFD700;
-            margin-bottom: 30px;
-            line-height: 1.5;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
+            font-size: 1.6em;
+            line-height: 1.7;
+            margin-bottom: 40px;
+            background-color: rgba(30, 144, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(30, 144, 255, 0.3);
+            max-width: 800px;
+        }
+
+        #rulesOverlay img {
+            vertical-align: middle;
+            margin: 0 10px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
         }
 
         #closeRulesButton {
-            font-size: 1.2em;
-            padding: 10px 20px;
+            font-size: 1.3em;
+            padding: 15px 40px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            background-color: #32CD32;
+            border-radius: 15px;
+            background: var(--success-color);
             color: white;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
             text-shadow: none;
+            width: auto;
         }
 
         #closeRulesButton:hover {
-            background-color: #3CB371;
+            background: var(--success-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(50, 205, 50, 0.7);
+        }
+
+        #closeRulesButton:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 10px rgba(50, 205, 50, 0.6);
         }
 
         /* クリアオーバーレイのスタイル */
         #clearOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-            z-index: 1200; /* 他のオーバーレイより前面 */
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        #clearOverlay.visible {
-            opacity: 1;
-            visibility: visible;
+            z-index: 1200;
+            padding: 40px;
         }
 
         #clearOverlay p {
-            font-size: 1.8em;
-            color: #FFD700;
-            margin-bottom: 30px;
-            line-height: 1.5;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* 文字の視認性向上 */
+            font-size: 2em;
+            margin-bottom: 40px;
+            animation: celebrate 1.5s ease-in-out infinite alternate;
+            background-color: rgba(255, 215, 0, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        @keyframes celebrate {
+            from { transform: scale(1); text-shadow: var(--text-shadow), 0 0 10px rgba(255, 215, 0, 0.7); }
+            to { transform: scale(1.05); text-shadow: var(--text-shadow), 0 0 20px rgba(255, 215, 0, 1); }
         }
 
         #returnHomeButton {
-            font-size: 1.2em;
-            padding: 10px 20px;
+            font-size: 1.3em;
+            padding: 15px 40px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            background-color: #32CD32;
+            border-radius: 15px;
+            background: var(--success-color);
             color: white;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
             text-shadow: none;
+            width: auto;
         }
 
         #returnHomeButton:hover {
-            background-color: #3CB371;
+            background: var(--success-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(50, 205, 50, 0.7);
+        }
+
+        #returnHomeButton:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 10px rgba(50, 205, 50, 0.6);
         }
 
         /* レスポンシブデザイン */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             h1 {
-                font-size: 2em;
+                font-size: 2.5em;
+            }
+
+            #levelDisplay {
+                font-size: 1.7em;
+            }
+
+            #statusDisplay {
+                font-size: 1.2em;
+                padding: 5px 15px;
+            }
+
+            #messageContainer {
+                width: 180px;
+                height: 180px;
+            }
+
+            #slashButton {
+                width: 80vw;
+                height: 80vw;
+                max-width: 300px;
+                max-height: 300px;
+            }
+
+            #normalModeButton, #oniModeButton, #getTrumpButton {
+                font-size: 1.4em;
+                padding: 15px 30px;
+            }
+
+            #startButton {
+                font-size: 1.5em;
+                padding: 15px 30px;
+            }
+
+            .overlay p {
+                font-size: 1.8em;
+            }
+
+            #rulesOverlay p {
+                font-size: 1.3em;
+                padding: 20px;
+            }
+
+            #clearOverlay p {
+                font-size: 1.6em;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.2em;
             }
 
             #levelDisplay {
@@ -306,57 +568,27 @@
             }
 
             #messageContainer {
-                width: 150px; /* スマホ向けにサイズ調整 */
+                width: 150px;
                 height: 150px;
             }
 
-            /* 「斬」ボタンのサイズ調整 */
             #slashButton {
-                width: 90vw; /* 画面横幅の約4分の3 */
-                height: 90vw; /* 画面横幅の約4分の3、角が丸い正方形にするため同じ値 */
-                max-width: 250px; /* 最大幅を設定 */
-                max-height: 250px; /* 最大高さを設定 */
-                border: 3px solid #1E90FF; /* ボーダー色を青色に変更 */
-                box-shadow: 0 0 15px #1E90FF; /* ボーダーと同じ色に変更 */
-                background-size: contain; /* 背景画像を完全に表示 */
-                border-radius: 15px; /* 少し丸みを小さく */
+                width: 90vw;
+                height: 90vw;
+                max-width: 250px;
+                max-height: 250px;
             }
 
-            /* ルールオーバーレイのスタイル調整 */
-            #rulesOverlay p {
-                font-size: 1.2em;
-            }
-
-            #closeRulesButton {
-                font-size: 1em;
-                padding: 8px 16px;
-            }
-
-            /* 他のボタン（「田んぼに行く」「鬼モード」「♣のトランプをゲットする」）のスタイル調整 */
-            .button-container button:not(#slashButton) {
-                font-size: 2em; /* スマホでもさらに大きめ */
-                padding: 20px 40px;
-                width: 100%;
-            }
-
-            /* .overlay p */
             .overlay p {
                 font-size: 1.5em;
-            }
-
-            /* クリアオーバーレイのスタイル調整 */
-            #clearOverlay p {
-                font-size: 1.5em;
-            }
-
-            #returnHomeButton {
-                font-size: 1em;
-                padding: 8px 16px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- 背景エフェクト -->
+    <div class="background-effects" id="backgroundEffects"></div>
+
     <!-- 初期画面 -->
     <div id="initialScreen">
         <h1>刹那の稲刈り</h1>
@@ -364,30 +596,29 @@
             <button id="normalModeButton">田んぼに行く</button>
             <button id="oniModeButton" style="display: none;">鬼モード</button>
             <button id="getTrumpButton" style="display: none;">♣のトランプをゲットする</button>
-            <!-- URLボタンを完全に削除 -->
         </div>
         <div id="oniWarning">鬼モードをクリアしても報酬はありません。</div>
     </div>
 
     <!-- ゲーム画面 -->
-    <div id="gameScreen" style="display: none;">
+    <div id="gameScreen">
         <h1>刹那の稲刈り</h1>
         <div id="levelDisplay">稲魂レベル: 1</div>
         <div id="statusDisplay">準備ができたら"構える!!"をタップ</div>
         
-        <!-- 「構える!!」ボタンを追加 -->
+        <!-- 「構える!!」ボタン -->
         <div class="button-container">
             <button id="startButton">構える!!</button>
         </div>
         
-        <!-- bikkuri.png を表示 -->
+        <!-- びっくりマーク表示 -->
         <div id="messageContainer">
             <img id="message" src="bikkuri.png" alt="びっくりマーク">
         </div>
         
-        <!-- kama.png を表示する「斬」ボタン -->
+        <!-- 鎌ボタン -->
         <div class="button-container">
-            <button id="slashButton" disabled></button> <!-- テキストを削除 -->
+            <button id="slashButton" disabled></button>
         </div>
     </div>
 
@@ -410,7 +641,7 @@
             「構える!!」をタップし、　<img src="bikkuri.png" alt="びっくりマーク" style="width: 60px; height: 60px;">　が出るまで待とう！<br>
             <img src="bikkuri.png" alt="びっくりマーク" style="width: 60px; height: 60px;">　が表示されたらすぐに　<img src="kama.png" alt="かたな" style="width: 60px; height: 60px;">　をタップしよう
         </p>
-        <button id="closeRulesButton">OK</button>
+        <button id="closeRulesButton">始める</button>
     </div>
 
     <!-- クリアオーバーレイ -->
@@ -421,295 +652,108 @@
 
     <script>
         // JavaScript機能
-
-        // レベルタイミング設定
-        const levels = [2.0, 1.5, 1.0, 0.8, 0.5]; // 通常モードのレベルタイム（秒）
-        const oniLevels = [0.4, 0.34, 0.32, 0.3, 0.28]; // 鬼モードのレベルタイミング（秒）
-        let currentLevel = 0;
-        let isOniMode = false;
-        let reactionTimeout;
-        let randomDelayTimeout;
-        let isWaitingForSlash = false;
-        let reactionHandled = false; // イベント重複防止フラグ
-
-        // 要素の取得
-        const initialScreen = document.getElementById('initialScreen');
-        const normalModeButton = document.getElementById('normalModeButton');
-        const oniModeButton = document.getElementById('oniModeButton');
-        const getTrumpButton = document.getElementById('getTrumpButton');
-        const oniWarning = document.getElementById('oniWarning');
-
-        const gameScreen = document.getElementById('gameScreen');
-        const startButton = document.getElementById('startButton');
-        const slashButton = document.getElementById('slashButton');
-        const levelDisplay = document.getElementById('levelDisplay');
-        const statusDisplay = document.getElementById('statusDisplay');
-        const message = document.getElementById('message');
-
-        const successOverlay = document.getElementById('successOverlay');
-        const successMessage = document.getElementById('successMessage');
-        const failOverlay = document.getElementById('failOverlay');
-        const failMessage = document.getElementById('failMessage');
-
-        const rulesOverlay = document.getElementById('rulesOverlay');
-        const closeRulesButton = document.getElementById('closeRulesButton');
-
-        const clearOverlay = document.getElementById('clearOverlay');
-        const returnHomeButton = document.getElementById('returnHomeButton');
-
-        let exclamationTime = 0;
-
-        // ローカルストレージから通常モードクリアのフラグを取得
-        const normalModeCleared = localStorage.getItem('normalModeCleared') === 'true';
-        const rulesShown = localStorage.getItem('rulesShown') === 'true';
-
-        // 初期画面のボタン表示制御
-        if (normalModeCleared) {
-            oniModeButton.style.display = 'block';
-            getTrumpButton.style.display = 'block';
-        }
-
-        // 「♣のトランプをゲットする」ボタンのイベント設定
-        getTrumpButton.addEventListener('click', () => {
-            window.location.href = 'https://inaijhs95.github.io/4lamp/?l=s4b519'; // ここに実際のLINE URLを入力してください
-        });
-
-        // ゲームの初期化
-        function resetGame() {
-            currentLevel = 0;
-            levelDisplay.textContent = `稲魂レベル: ${currentLevel + 1}`;
-            statusDisplay.textContent = '準備ができたら"構える!!"をタップ';
-            message.style.display = 'none';
-            startButton.disabled = false;
-            slashButton.disabled = true;
-            isWaitingForSlash = false;
-            reactionHandled = false;
-
-            // タイムアウトをクリア
-            if (reactionTimeout) {
-                clearTimeout(reactionTimeout);
-            }
-            if (randomDelayTimeout) {
-                clearTimeout(randomDelayTimeout);
-            }
-
-            // 「構える!!」ボタンのスタイルをリセット
-            startButton.style.backgroundColor = 'rgba(30, 144, 255, 0.8)';
-            startButton.style.cursor = 'pointer';
-        }
-
-        // 次のレベルに進む
-        function nextLevel() {
-            currentLevel++;
-            reactionHandled = false; // レベル進行時にフラグをリセット
-
-            if (isOniMode && currentLevel >= oniLevels.length) {
-                // 鬼モードクリア
-                statusDisplay.textContent = '鬼モードをクリアしました！';
-                message.style.display = 'none';
-                slashButton.disabled = true;
-                startButton.disabled = true;
-                return;
-            } else if (!isOniMode && currentLevel >= levels.length) {
-                // 通常モードクリア、クリアオーバーレイを表示
-                // 通常モードクリアのフラグをローカルストレージに保存
-                localStorage.setItem('normalModeCleared', 'true');
-
-                // 成功オーバーレイを非表示にし、クリアオーバーレイを表示
-                successOverlay.classList.remove('visible');
-                clearOverlay.classList.add('visible');
-
-                return;
-            }
-
-            levelDisplay.textContent = isOniMode ? `鬼モード レベル: ${currentLevel + 1}` : `レベル: ${currentLevel + 1}`;
-            startButton.disabled = false;
-            slashButton.disabled = true;
-            statusDisplay.textContent = '準備ができたら"構える!!"をタップ';
-
-            // 「構える!!」ボタンのスタイルをリセット
-            startButton.style.backgroundColor = 'rgba(30, 144, 255, 0.8)';
-            startButton.style.cursor = 'pointer';
-
-            // 次のレベル開始前にメッセージを非表示にする
-            message.style.display = 'none';
-        }
-
-        // ゲームオーバー
-        function gameOver() {
-            // 失敗オーバーレイを表示
-            showFailOverlay();
-        }
-
-        // "斬"ボタンの反応処理
-        function handleSlashEvent() {
-            if (!isWaitingForSlash || reactionHandled) {
-                return;
-            }
-
-            reactionHandled = true;
-
-            const reactionTime = (Date.now() - exclamationTime) / 1000; // 秒
-            const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
-
-            if (reactionTime <= timeLimit) {
-                // 成功処理
-                showSuccessOverlay(reactionTime);
-            } else {
-                // 失敗処理
-                showFailOverlay();
-            }
-
-            clearTimeout(reactionTimeout);
-            isWaitingForSlash = false;
-        }
-
-        // 成功オーバーレイを表示
-        function showSuccessOverlay(reactionTime) {
-            successMessage.textContent = `成功! ${reactionTime.toFixed(3)}秒`;
-            successOverlay.classList.add('visible');
-
-            setTimeout(() => {
-                successOverlay.classList.remove('visible');
-                nextLevel();
-            }, 1000); // 1秒後にフェードアウト
-        }
-
-        // 失敗オーバーレイを表示
-        function showFailOverlay() {
-            failMessage.textContent = '失敗!';
-            failOverlay.classList.add('visible');
-
-            setTimeout(() => {
-                failOverlay.classList.remove('visible');
-                resetToInitialScreen();
-            }, 1000); // 1秒後にフェードアウト
-        }
-
-        // 初期画面に戻る
-        function resetToInitialScreen() {
-            gameScreen.style.display = 'none';
-            initialScreen.style.display = 'flex';
-            resetGame();
-        }
-
-        // ルールオーバーレイを表示
-        function showRulesOverlay() {
-            rulesOverlay.classList.add('visible');
-        }
-
-        // ルールオーバーレイを閉じる
-        function closeRulesOverlay() {
-            rulesOverlay.classList.remove('visible');
-            localStorage.setItem('rulesShown', 'true');
-            startGame();
-        }
-
-        // クリアオーバーレイからホームに戻る
-        function returnToHome() {
-            clearOverlay.classList.remove('visible');
-            window.location.reload(); // ページをリロードしてホーム画面を再読み込み
-        }
-
-        // ゲーム開始のフロー
-        function startGame() {
-            initialScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            oniWarning.style.display = isOniMode ? 'block' : 'none';
-            resetGame();
-        }
-
-        // スタートボタンのクリックイベント
-        startButton.addEventListener('click', () => {
-            startButton.disabled = true;
-            slashButton.disabled = false;
-            statusDisplay.textContent = '待機中...';
-
-            // 「構える!!」ボタンをグレーに変更
-            startButton.style.backgroundColor = '#696969';
-            startButton.style.cursor = 'not-allowed';
-
-            // ランダムな遅延（2〜10秒）
-            const randomDelay = Math.random() * (10 - 2) + 2; // 秒
-            randomDelayTimeout = setTimeout(() => {
-                showExclamation();
-            }, randomDelay * 1000);
-        });
-
-        // "斬"ボタンのクリックイベント
-        slashButton.addEventListener('click', () => {
-            if (isWaitingForSlash) {
-                // "!!"が表示されている場合
-                handleSlashEvent();
-            } else {
-                // "!!"が表示される前または待機中に"斬"を押した場合は失敗判定
-                gameOver();
-            }
-        });
-
-        // "斬"ボタンのタッチイベント
-        slashButton.addEventListener('touchstart', (e) => {
-            if (isWaitingForSlash) {
-                // "!!"が表示されている場合
-                handleSlashEvent();
-            } else {
-                // "!!"が表示される前または待機中に"斬"を押した場合は失敗判定
-                gameOver();
-            }
-            // Prevents the subsequent click event from firing
-            e.preventDefault();
-        });
-
-        // "！"を表示する
-        function showExclamation() {
-            message.style.display = 'block';
-            exclamationTime = Date.now();
-            isWaitingForSlash = true;
-            statusDisplay.textContent = '';
-
-            // 既定時間内に"斬"をタップしなければ負け
-            const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
-            reactionTimeout = setTimeout(() => {
-                if (isWaitingForSlash) {
-                    isWaitingForSlash = false;
-                    showFailOverlay();
+        document.addEventListener('DOMContentLoaded', function() {
+            // 背景エフェクトの生成
+            const backgroundEffects = document.getElementById('backgroundEffects');
+            
+            // 背景の稲粒子を生成
+            function createRiceParticles() {
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('rice-particle');
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.width = `${Math.random() * 3 + 1}px`;
+                    particle.style.height = `${Math.random() * 15 + 5}px`;
+                    particle.style.opacity = Math.random() * 0.7 + 0.3;
+                    particle.style.animationDuration = `${Math.random() * 6 + 4}s`;
+                    particle.style.animationDelay = `${Math.random() * 5}s`;
+                    backgroundEffects.appendChild(particle);
                 }
-            }, timeLimit * 1000); // ミリ秒に修正
-        }
-
-        // 初期画面のボタンイベント
-        normalModeButton.addEventListener('click', () => {
-            isOniMode = false;
-            // ルールを表示する必要があるか確認
-            if (!rulesShown) {
-                showRulesOverlay();
-            } else {
-                startGame();
             }
-        });
+            
+            createRiceParticles();
 
-        oniModeButton.addEventListener('click', () => {
-            isOniMode = true;
-            initialScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            oniWarning.style.display = 'block'; // 鬼モード選択時に警告表示
-            // ポップアップで警告メッセージを表示
-            alert('鬼モードを選択しました。鬼モードをクリアしても報酬はありません。');
-            resetGame();
-        });
+            // レベルタイミング設定
+            const levels = [2.0, 1.5, 1.0, 0.8, 0.5]; // 通常モードのレベルタイム（秒）
+            const oniLevels = [0.4, 0.34, 0.32, 0.3, 0.28]; // 鬼モードのレベルタイミング（秒）
+            let currentLevel = 0;
+            let isOniMode = false;
+            let reactionTimeout;
+            let randomDelayTimeout;
+            let isWaitingForSlash = false;
+            let reactionHandled = false; // イベント重複防止フラグ
+            let gameActive = false; // ゲームアクティブ状態フラグ
 
-        // ルールオーバーレイのボタンイベント
-        closeRulesButton.addEventListener('click', () => {
-            closeRulesOverlay();
-        });
+            // 要素の取得
+            const initialScreen = document.getElementById('initialScreen');
+            const normalModeButton = document.getElementById('normalModeButton');
+            const oniModeButton = document.getElementById('oniModeButton');
+            const getTrumpButton = document.getElementById('getTrumpButton');
+            const oniWarning = document.getElementById('oniWarning');
 
-        // クリアオーバーレイのボタンイベント
-        returnHomeButton.addEventListener('click', () => {
-            returnToHome();
-        });
+            const gameScreen = document.getElementById('gameScreen');
+            const startButton = document.getElementById('startButton');
+            const slashButton = document.getElementById('slashButton');
+            const levelDisplay = document.getElementById('levelDisplay');
+            const statusDisplay = document.getElementById('statusDisplay');
+            const message = document.getElementById('message');
 
-        // ゲーム開始時の初期化
-        resetGame();
-    </script>
-</body>
-</html>
+            const successOverlay = document.getElementById('successOverlay');
+            const successMessage = document.getElementById('successMessage');
+            const failOverlay = document.getElementById('failOverlay');
+            const failMessage = document.getElementById('failMessage');
+
+            const rulesOverlay = document.getElementById('rulesOverlay');
+            const closeRulesButton = document.getElementById('closeRulesButton');
+
+            const clearOverlay = document.getElementById('clearOverlay');
+            const returnHomeButton = document.getElementById('returnHomeButton');
+
+            let exclamationTime = 0;
+            let bestTimes = [null, null, null, null, null]; // 各レベルのベストタイム記録
+
+            // ローカルストレージから通常モードクリアのフラグとベストタイムを取得
+            const normalModeCleared = localStorage.getItem('normalModeCleared') === 'true';
+            const rulesShown = localStorage.getItem('rulesShown') === 'true';
+            
+            // ベストタイムを読み込み
+            const savedBestTimes = localStorage.getItem('bestTimes');
+            if (savedBestTimes) {
+                bestTimes = JSON.parse(savedBestTimes);
+            }
+
+            // 初期画面のボタン表示制御
+            if (normalModeCleared) {
+                oniModeButton.style.display = 'block';
+                getTrumpButton.style.display = 'block';
+            }
+
+            // 「♣のトランプをゲットする」ボタンのイベント設定
+            getTrumpButton.addEventListener('click', () => {
+                // アニメーション効果
+                getTrumpButton.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    window.location.href = 'https://inaijhs95.github.io/4lamp/?l=s4b519';
+                }, 300);
+            });
+
+            // ゲームの初期化
+            function resetGame() {
+                currentLevel = 0;
+                updateLevelDisplay();
+                statusDisplay.textContent = '準備ができたら"構える!!"をタップ';
+                message.style.display = 'none';
+                startButton.disabled = false;
+                slashButton.disabled = true;
+                isWaitingForSlash = false;
+                reactionHandled = false;
+                gameActive = false;
+
+                // タイムアウトをクリア
+                if (reactionTimeout) {
+                    clearTimeout(reactionTimeout);
+                }
+                if (randomDelayTimeout) {
+                    clearTimeout(randomDelayTimeout);
+                }
+            }
