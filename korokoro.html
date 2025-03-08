@@ -5,18 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ころころ</title>
   <style>
-    body { margin: 0; padding: 0; overflow: hidden; background: white; }
-    canvas { display: block; }
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: white;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    canvas {
+      display: block;
+    }
+    
     #info {
-      position: absolute; top: 10px; left: 10px; z-index: 10;
-      background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 5px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 5px;
       font-family: sans-serif;
     }
+    
     #permissionBtn {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      font-size: 20px; padding: 10px 20px; z-index: 20;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      padding: 12px 24px;
+      z-index: 20;
+      background: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s;
     }
-    /* 報酬ボタンのスタイル */
+    
+    #permissionBtn:hover {
+      background: #3367D6;
+    }
+    
     #rewardContainer {
       display: none;
       position: absolute;
@@ -24,197 +56,296 @@
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 30;
+      text-align: center;
     }
+    
     #rewardContainer a {
       display: inline-block;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: #4CAF50;
       color: white;
       text-decoration: none;
       font-size: 20px;
       border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s;
+    }
+    
+    #rewardContainer a:hover {
+      background: #3E8E41;
     }
   </style>
 </head>
 <body>
   <button id="permissionBtn" style="display:none;">開始する</button>
   <canvas id="gameCanvas"></canvas>
-  <!-- 報酬ボタン -->
   <div id="rewardContainer">
     <a href="https://inaijhs95.github.io/hintmain/i.html" target="_blank">
       次に進む
     </a>
   </div>
+  
   <script>
+    // ゲームの状態管理
+    const gameState = {
+      rewardShown: false,
+      lastTime: performance.now(),
+      ax: 0,
+      ay: 0
+    };
+    
+    // キャンバスの設定
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    // 画像をロード（画像全体がキャンバス全体に対応する前提）
+    
+    // 画像のロード
     const korokoroImage = new Image();
-    korokoroImage.src = 'korokoro.png'; // 画像のパスを適宜変更してください
-
-    // グリッド設定（各セルが画像の一部を表示）
-    const cellSize = 20;
-    const cols = Math.ceil(canvas.width / cellSize);
-    const rows = Math.ceil(canvas.height / cellSize);
-    let grid = [];
-    for (let r = 0; r < rows; r++) {
-      grid[r] = [];
-      for (let c = 0; c < cols; c++) {
-        grid[r][c] = false;
+    korokoroImage.src = 'korokoro.png';
+    
+    // グリッド設定
+    const grid = {
+      cellSize: 20,
+      cols: Math.ceil(canvas.width / 20),
+      rows: Math.ceil(canvas.height / 20),
+      cells: []
+    };
+    
+    // グリッドの初期化
+    function initializeGrid() {
+      for (let r = 0; r < grid.rows; r++) {
+        grid.cells[r] = [];
+        for (let c = 0; c < grid.cols; c++) {
+          grid.cells[r][c] = false;
+        }
       }
     }
-
-    // ボールのオブジェクト
-    let ball = {
+    
+    // ボールの設定
+    const ball = {
       x: canvas.width / 2,
       y: canvas.height / 2,
       radius: 20,
       vx: 0,
       vy: 0,
-      color: "black"
-    };
-
-    // ジャイロセンサーからの加速度
-    let ax = 0, ay = 0;
-
-    // 報酬ボタンの表示状態（1度だけ表示するためのフラグ）
-    let rewardShown = false;
-
-    // DeviceOrientation イベントハンドラ
-    function handleOrientation(event) {
-      // event.gamma: 左右の傾き, event.beta: 前後の傾き
-      ax = event.gamma * 0.1;
-      ay = event.beta * 0.1;
-    }
-
-    // iOS 13+ 向けのセンサー使用許可処理
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-      const permissionBtn = document.getElementById("permissionBtn");
-      permissionBtn.style.display = "block";
-      permissionBtn.addEventListener("click", function() {
-        DeviceOrientationEvent.requestPermission().then(response => {
-          if (response === "granted") {
-            window.addEventListener("deviceorientation", handleOrientation);
-            permissionBtn.style.display = "none";
+      color: "black",
+      
+      // ボールの更新
+      update: function(dt) {
+        // 速度の更新
+        this.vx += gameState.ax;
+        this.vy += gameState.ay;
+        
+        // 摩擦による減速
+        this.vx *= 0.99;
+        this.vy *= 0.99;
+        
+        // 位置の更新
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // 画面端での反射
+        this.handleBoundary();
+        
+        // グリッドの更新
+        this.updateGrid();
+      },
+      
+      // 画面端での反射処理
+      handleBoundary: function() {
+        if (this.x - this.radius < 0) {
+          this.x = this.radius;
+          this.vx = -this.vx * 0.5;
+        } else if (this.x + this.radius > canvas.width) {
+          this.x = canvas.width - this.radius;
+          this.vx = -this.vx * 0.5;
+        }
+        
+        if (this.y - this.radius < 0) {
+          this.y = this.radius;
+          this.vy = -this.vy * 0.5;
+        } else if (this.y + this.radius > canvas.height) {
+          this.y = canvas.height - this.radius;
+          this.vy = -this.vy * 0.5;
+        }
+      },
+      
+      // ボールが通過したグリッドセルを更新
+      updateGrid: function() {
+        const startCol = Math.floor((this.x - this.radius) / grid.cellSize);
+        const endCol = Math.floor((this.x + this.radius) / grid.cellSize);
+        const startRow = Math.floor((this.y - this.radius) / grid.cellSize);
+        const endRow = Math.floor((this.y + this.radius) / grid.cellSize);
+        
+        for (let r = startRow; r <= endRow; r++) {
+          if (r < 0 || r >= grid.rows) continue;
+          for (let c = startCol; c <= endCol; c++) {
+            if (c < 0 || c >= grid.cols) continue;
+            
+            const cx = c * grid.cellSize + grid.cellSize / 2;
+            const cy = r * grid.cellSize + grid.cellSize / 2;
+            
+            if (Math.hypot(cx - this.x, cy - this.y) <= this.radius) {
+              grid.cells[r][c] = true;
+            }
           }
-        }).catch(console.error);
-      });
-    } else {
-      window.addEventListener("deviceorientation", handleOrientation);
-    }
-
-    let lastTime = performance.now();
-
-    // 80%達成の割合を計算する関数
+        }
+      },
+      
+      // ボールの描画
+      draw: function() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.strokeStyle = "#333";
+        ctx.stroke();
+      }
+    };
+    
+    // 塗られた割合を計算
     function getPaintedPercentage() {
       let painted = 0;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (grid[r][c]) painted++;
+      const totalCells = grid.rows * grid.cols;
+      
+      for (let r = 0; r < grid.rows; r++) {
+        for (let c = 0; c < grid.cols; c++) {
+          if (grid.cells[r][c]) painted++;
         }
       }
-      return painted / (rows * cols);
+      
+      return painted / totalCells;
     }
-
-    function update() {
-      const now = performance.now();
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-
-      // ボールの速度更新
-      ball.vx += ax;
-      ball.vy += ay;
-      // 摩擦で徐々に減速
-      ball.vx *= 0.99;
-      ball.vy *= 0.99;
-      // 位置更新
-      ball.x += ball.vx;
-      ball.y += ball.vy;
-
-      // 画面端での反射処理
-      if (ball.x - ball.radius < 0) {
-        ball.x = ball.radius;
-        ball.vx = -ball.vx * 0.5;
-      } else if (ball.x + ball.radius > canvas.width) {
-        ball.x = canvas.width - ball.radius;
-        ball.vx = -ball.vx * 0.5;
-      }
-      if (ball.y - ball.radius < 0) {
-        ball.y = ball.radius;
-        ball.vy = -ball.vy * 0.5;
-      } else if (ball.y + ball.radius > canvas.height) {
-        ball.y = canvas.height - ball.radius;
-        ball.vy = -ball.vy * 0.5;
-      }
-
-      // ボールが通過したグリッドセルを「触れた」としてマークする
-      const startCol = Math.floor((ball.x - ball.radius) / cellSize);
-      const endCol = Math.floor((ball.x + ball.radius) / cellSize);
-      const startRow = Math.floor((ball.y - ball.radius) / cellSize);
-      const endRow = Math.floor((ball.y + ball.radius) / cellSize);
-      for (let r = startRow; r <= endRow; r++) {
-        if (r < 0 || r >= rows) continue;
-        for (let c = startCol; c <= endCol; c++) {
-          if (c < 0 || c >= cols) continue;
-          let cx = c * cellSize + cellSize / 2;
-          let cy = r * cellSize + cellSize / 2;
-          if (Math.hypot(cx - ball.x, cy - ball.y) <= ball.radius) {
-            grid[r][c] = true;
-          }
-        }
-      }
-
-      // キャンバスのクリア
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // 各セルに画像の該当部分を描画（セルが触れた場合のみ）
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (grid[r][c]) {
+    
+    // グリッドの描画
+    function drawGrid() {
+      for (let r = 0; r < grid.rows; r++) {
+        for (let c = 0; c < grid.cols; c++) {
+          if (grid.cells[r][c]) {
             if (korokoroImage.complete) {
-              // 画像全体がキャンバス全体に対応する場合の、セルごとのソース座標を計算
-              const sx = c * (korokoroImage.width / cols);
-              const sy = r * (korokoroImage.height / rows);
-              const sWidth = korokoroImage.width / cols;
-              const sHeight = korokoroImage.height / rows;
-              const dx = c * cellSize;
-              const dy = r * cellSize;
-              ctx.drawImage(korokoroImage, sx, sy, sWidth, sHeight, dx, dy, cellSize, cellSize);
+              // 画像の該当部分を描画
+              const sx = c * (korokoroImage.width / grid.cols);
+              const sy = r * (korokoroImage.height / grid.rows);
+              const sWidth = korokoroImage.width / grid.cols;
+              const sHeight = korokoroImage.height / grid.rows;
+              const dx = c * grid.cellSize;
+              const dy = r * grid.cellSize;
+              
+              ctx.drawImage(
+                korokoroImage, 
+                sx, sy, sWidth, sHeight, 
+                dx, dy, grid.cellSize, grid.cellSize
+              );
             } else {
-              // 画像が未ロードなら赤い矩形で代用
+              // 画像未ロード時は赤い矩形で表示
               ctx.fillStyle = "red";
-              ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+              ctx.fillRect(c * grid.cellSize, r * grid.cellSize, grid.cellSize, grid.cellSize);
             }
           }
         }
       }
-
-      // 枠線を描画
+    }
+    
+    // ゲームの描画
+    function render() {
+      // キャンバスのクリア
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // グリッドの描画
+      drawGrid();
+      
+      // 枠線の描画
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
       ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-      // ボールを描画
-      ctx.beginPath();
-      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-      ctx.fillStyle = ball.color;
-      ctx.fill();
-      ctx.strokeStyle = "#333";
-      ctx.stroke();
-
-      // 95%以上のセルが触れた場合、報酬ボタンを表示（1度だけ）
-      if (!rewardShown && getPaintedPercentage() >= 0.951) {
-        rewardShown = true;
-        document.getElementById("rewardContainer").style.display = "block";
-      }
-
+      
+      // ボールの描画
+      ball.draw();
+    }
+    
+    // ゲームの更新
+    function update() {
+      const now = performance.now();
+      const dt = (now - gameState.lastTime) / 1000;
+      gameState.lastTime = now;
+      
+      // ボールの更新
+      ball.update(dt);
+      
+      // レンダリング
+      render();
+      
+      // 進捗の確認と報酬表示
+      checkProgress();
+      
+      // 次のフレームの要求
       requestAnimationFrame(update);
     }
-
-    update();
+    
+    // 進捗の確認
+    function checkProgress() {
+      if (!gameState.rewardShown && getPaintedPercentage() >= 0.951) {
+        gameState.rewardShown = true;
+        document.getElementById("rewardContainer").style.display = "block";
+      }
+    }
+    
+    // 傾きの処理
+    function handleOrientation(event) {
+      gameState.ax = event.gamma *.1;  // 左右の傾き
+      gameState.ay = event.beta * .1;   // 前後の傾き
+    }
+    
+    // イベントリスナーの設定
+    function setupEventListeners() {
+      // デバイスの向きの変化を検知
+      if (typeof DeviceOrientationEvent !== 'undefined' && 
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // iOS 13+ の場合、許可が必要
+        const permissionBtn = document.getElementById("permissionBtn");
+        permissionBtn.style.display = "block";
+        
+        permissionBtn.addEventListener("click", function() {
+          DeviceOrientationEvent.requestPermission()
+            .then(response => {
+              if (response === "granted") {
+                window.addEventListener("deviceorientation", handleOrientation);
+                permissionBtn.style.display = "none";
+              }
+            })
+            .catch(console.error);
+        });
+      } else {
+        // その他のデバイスの場合
+        window.addEventListener("deviceorientation", handleOrientation);
+      }
+      
+      // ウィンドウのリサイズ処理
+      window.addEventListener('resize', function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // グリッドの再設定
+        grid.cols = Math.ceil(canvas.width / grid.cellSize);
+        grid.rows = Math.ceil(canvas.height / grid.cellSize);
+        initializeGrid();
+        
+        // ボールの位置リセット
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+      });
+    }
+    
+    // ゲームの初期化と開始
+    function init() {
+      initializeGrid();
+      setupEventListeners();
+      update();
+    }
+    
+    // ゲーム開始
+    init();
   </script>
 </body>
 </html>
