@@ -815,28 +815,36 @@ button:active:not(:disabled) {
         </div>
     </div>
 
-    <!-- 成功オーバーレイ -->
-    <div id="successOverlay" class="overlay">
-        <div class="slash-effect">
-            <div class="slash-line slash-line-1" style="--rotation: 45deg;"></div>
-            <div class="slash-line slash-line-2" style="--rotation: -30deg;"></div>
-            <div class="slash-spark" style="--tx: 30px; --ty: -40px;"></div>
-            <div class="slash-spark" style="--tx: -40px; --ty: 20px;"></div>
-            <div class="slash-spark" style="--tx: 50px; --ty: 30px;"></div>
-            <div class="slash-spark" style="--tx: -20px; --ty: -30px;"></div>
-            <div class="slash-spark" style="--tx: 10px; --ty: 50px;"></div>
-        </div>
-        <p id="successMessage">成功!</p>
+   <!-- 成功オーバーレイ -->
+<div id="successOverlay" class="overlay">
+    <div class="slash-effect">
+        <div class="slash-line slash-line-1" style="--rotation: 30deg;"></div>
+        <div class="slash-line slash-line-2" style="--rotation: 30deg;"></div>
+        <div class="slash-line slash-line-3" style="--rotation: 30deg;"></div>
+        <div class="slash-burst"></div>
+        <div class="slash-spark slash-spark-1" style="--tx: 50px; --ty: -60px;"></div>
+        <div class="slash-spark slash-spark-2" style="--tx: -70px; --ty: 30px;"></div>
+        <div class="slash-spark slash-spark-3" style="--tx: 30px; --ty: 70px;"></div>
+        <div class="slash-spark slash-spark-1" style="--tx: -40px; --ty: -50px;"></div>
+        <div class="slash-spark slash-spark-2" style="--tx: 60px; --ty: 20px;"></div>
     </div>
+    <p id="successMessage">成功!</p>
+</div>
 
-    <!-- 失敗オーバーレイ -->
-    <div id="failOverlay" class="overlay">
-        <div class="miss-effect">
-            <div class="miss-x miss-x-1" style="--rotation: 45deg;"></div>
-            <div class="miss-x miss-x-2" style="--rotation: -45deg;"></div>
-        </div>
-        <p id="failMessage">失敗!</p>
+<!-- 失敗オーバーレイ -->
+<div id="failOverlay" class="overlay">
+    <div class="miss-effect">
+        <div class="miss-x miss-x-1" style="--rotation: 45deg;"></div>
+        <div class="miss-x miss-x-2" style="--rotation: -45deg;"></div>
+        <!-- 血しぶき効果 -->
+        <div class="blood-splatter" style="width: 15px; height: 15px; top: 40%; left: 30%; --tx: -40px; --ty: -50px; animation-delay: 0.1s;"></div>
+        <div class="blood-splatter" style="width: 10px; height: 10px; top: 60%; left: 70%; --tx: 60px; --ty: 40px; animation-delay: 0.15s;"></div>
+        <div class="blood-splatter" style="width: 12px; height: 12px; top: 30%; left: 60%; --tx: 50px; --ty: -30px; animation-delay: 0.2s;"></div>
+        <div class="blood-splatter" style="width: 8px; height: 8px; top: 70%; left: 40%; --tx: -30px; --ty: 60px; animation-delay: 0.25s;"></div>
+        <div class="blood-splatter" style="width: 14px; height: 14px; top: 45%; left: 50%; --tx: 45px; --ty: 20px; animation-delay: 0.3s;"></div>
     </div>
+    <p id="failMessage">失敗!</p>
+</div>
 
     <!-- ルールオーバーレイ -->
     <div id="rulesOverlay" class="overlay">
