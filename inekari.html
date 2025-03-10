@@ -7,35 +7,41 @@
     <style>
 /* 基本スタイル */
 :root {
-    --primary-color: #1E90FF;
-    --primary-dark: #0066CC;
-    --accent-color: #FFD700;
-    --background-color: #000;
-    --success-color: #32CD32;
-    --success-hover: #3CB371;
-    --button-glow: 0 0 20px rgba(30, 144, 255, 0.8);
-    --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --accent-color: #f1c40f;
+    --background-color: #0a0a0a;
+    --success-color: #2ecc71;
+    --success-hover: #27ae60;
+    --danger-color: #e74c3c;
+    --danger-hover: #c0392b;
+    --text-color: #f8f9fa;
+    --button-glow: 0 0 20px rgba(52, 152, 219, 0.6);
+    --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    --card-bg: rgba(20, 20, 20, 0.85);
+    --card-border: rgba(52, 152, 219, 0.3);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif;
 }
 
 body {
-    font-family: 'Yu Gothic', 'Meiryo', sans-serif;
     text-align: center;
     background-color: var(--background-color);
-    background-image: radial-gradient(circle, #0A0A0A 0%, #000000 100%);
-    color: #fff;
+    background-image: radial-gradient(circle, #111 0%, #000 100%);
+    color: var(--text-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    position: relative;
     overflow: hidden;
+    position: relative;
+    line-height: 1.6;
 }
 
 /* 田んぼの背景エフェクト */
@@ -45,7 +51,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, #000000, #001a00);
+    background: linear-gradient(to bottom, #000000, #001500);
     z-index: -2;
 }
 
@@ -56,27 +62,29 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .rice-star {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 50%;
     animation: twinkle 4s infinite alternate;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 @keyframes twinkle {
-    0% { opacity: 0.2; }
-    100% { opacity: 1; }
+    0% { opacity: 0.2; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 /* 稲粒子のアニメーション */
 .rice-particle {
     position: absolute;
-    background-color: rgba(255, 215, 0, 0.3);
-    border-radius: 50%;
+    background-color: rgba(241, 196, 15, 0.4);
+    border-radius: 40% 60% 70% 30% / 40% 50% 50% 60%;
     animation: falling 6s linear infinite;
+    filter: drop-shadow(0 0 2px rgba(241, 196, 15, 0.5));
 }
 
 @keyframes falling {
@@ -98,29 +106,32 @@ body {
 
 /* タイトルとヘッダー */
 h1 {
-    font-size: 3.2em;
-    margin-bottom: 20px;
+    font-size: 3.5rem;
+    margin: 0 0 1.5rem 0;
     color: var(--accent-color);
-    text-shadow: var(--text-shadow), 0 0 15px rgba(255, 215, 0, 0.7);
+    text-shadow: var(--text-shadow), 0 0 15px rgba(241, 196, 15, 0.7);
     white-space: nowrap;
-    letter-spacing: 2px;
+    letter-spacing: 0.1em;
     transform: perspective(500px) rotateX(10deg);
-    animation: title-glow 2s ease-in-out infinite alternate;
+    animation: title-glow 2.5s ease-in-out infinite alternate;
+    font-weight: 900;
 }
 
 @keyframes title-glow {
-    from { text-shadow: var(--text-shadow), 0 0 10px rgba(255, 215, 0, 0.7); }
-    to { text-shadow: var(--text-shadow), 0 0 20px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.5); }
+    from { text-shadow: var(--text-shadow), 0 0 10px rgba(241, 196, 15, 0.7); }
+    to { text-shadow: var(--text-shadow), 0 0 25px rgba(241, 196, 15, 1), 0 0 35px rgba(241, 196, 15, 0.5); }
 }
 
 #levelDisplay {
-    font-size: 2em;
-    margin-bottom: 15px;
+    font-size: 2.2rem;
+    margin-bottom: 1.2rem;
     color: var(--accent-color);
     text-shadow: var(--text-shadow);
     font-weight: bold;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     position: relative;
+    display: inline-block;
+    padding: 0.3rem 1rem;
 }
 
 #levelDisplay::after {
@@ -140,19 +151,20 @@ h1 {
 }
 
 #statusDisplay {
-    font-size: 1.4em;
-    margin-bottom: 25px;
-    color: #FFF;
+    font-size: 1.5rem;
+    margin: 0 auto 2rem auto;
+    color: var(--text-color);
     text-shadow: var(--text-shadow);
-    min-height: 2em;
-    padding: 8px 25px;
-    background-color: rgba(30, 144, 255, 0.15);
-    border-radius: 20px;
-    border: 1px solid rgba(30, 144, 255, 0.3);
+    min-height: 3rem;
+    padding: 0.8rem 2rem;
+    background-color: rgba(52, 152, 219, 0.15);
+    border-radius: 2rem;
+    border: 1px solid rgba(52, 152, 219, 0.3);
     display: inline-block;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    max-width: 90%;
 }
 
 #statusDisplay::before {
@@ -174,7 +186,7 @@ h1 {
 #messageContainer {
     width: 280px;
     height: 280px;
-    margin: 20px 0;
+    margin: 1.5rem 0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -188,12 +200,13 @@ h1 {
     display: none;
     transform: translate(70px, 0px);
     animation: pulse 0.5s ease-in-out infinite alternate;
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+    transition: all 0.3s ease;
 }
 
 @keyframes pulse {
-    from { transform: translate(70px, 0px) scale(1); filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
-    to { transform: translate(70px, 0px) scale(1.1); filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.9)); }
+    from { transform: translate(70px, 0px) scale(1); filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); }
+    to { transform: translate(70px, 0px) scale(1.1); filter: drop-shadow(0 0 25px rgba(255, 255, 255, 1)); }
 }
 
 /* ボタンコンテナとボタンスタイル */
@@ -203,27 +216,27 @@ h1 {
     align-items: center;
     width: 90%;
     max-width: 400px;
-    gap: 20px;
+    gap: 1.5rem;
 }
 
 button {
     position: relative;
-    font-size: 1.3em;
+    font-size: 1.4rem;
     font-weight: bold;
-    padding: 15px 30px;
+    padding: 1rem 2rem;
     cursor: pointer;
     border: none;
-    border-radius: 15px;
-    background-color: rgba(30, 144, 255, 0.8);
-    color: #fff;
-    transition: all 0.3s ease;
+    border-radius: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     width: 100%;
     box-sizing: border-box;
     white-space: nowrap;
     overflow: hidden;
-    text-shadow: var(--text-shadow);
-    box-shadow: var(--button-glow);
-    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    letter-spacing: 0.05em;
 }
 
 button:before {
@@ -242,21 +255,21 @@ button:hover:not(:disabled):before {
 }
 
 button:disabled {
-    background-color: #696969;
+    background-color: #5a5a5a;
     box-shadow: none;
     cursor: not-allowed;
     opacity: 0.7;
 }
 
 button:hover:not(:disabled) {
-    background-color: rgba(0, 191, 255, 0.9);
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 7px 20px rgba(30, 144, 255, 0.5);
+    background-color: var(--primary-dark);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.5);
 }
 
 button:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: 0 2px 10px rgba(30, 144, 255, 0.5);
+    transform: translateY(2px);
+    box-shadow: 0 3px 10px rgba(52, 152, 219, 0.4);
 }
 
 /* 「斬」ボタンのスタイル */
@@ -272,10 +285,10 @@ button:active:not(:disabled) {
     border: 3px solid var(--primary-color);
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.3);
-    box-shadow: 0 0 20px var(--primary-color);
+    box-shadow: 0 0 30px var(--primary-color);
     font-size: 0;
-    margin: 20px 0;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin: 2rem 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
 }
@@ -287,7 +300,7 @@ button:active:not(:disabled) {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(30, 144, 255, 0.3) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.3) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.5s ease;
 }
@@ -298,21 +311,21 @@ button:active:not(:disabled) {
 }
 
 @keyframes pulse-glow {
-    0% { transform: scale(0.9); opacity: 0.3; }
-    50% { transform: scale(1); opacity: 0.5; }
-    100% { transform: scale(0.9); opacity: 0.3; }
+    0% { transform: scale(0.95); opacity: 0.3; }
+    50% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(0.95); opacity: 0.3; }
 }
 
 #slashButton:hover:not(:disabled) {
     background-image: url('kama_hover.png');
     transform: scale(1.05) rotate(5deg);
-    box-shadow: 0 0 30px var(--primary-color), 0 0 60px rgba(30, 144, 255, 0.4);
-    background-color: rgba(30, 144, 255, 0.1);
+    box-shadow: 0 0 40px var(--primary-color), 0 0 80px rgba(52, 152, 219, 0.4);
+    background-color: rgba(52, 152, 219, 0.1);
 }
 
 #slashButton:active:not(:disabled) {
     transform: scale(0.98) rotate(0deg);
-    box-shadow: 0 0 15px var(--primary-color);
+    box-shadow: 0 0 20px var(--primary-color);
 }
 
 #slashButton:disabled {
@@ -320,7 +333,7 @@ button:active:not(:disabled) {
     box-shadow: none;
     opacity: 0.5;
     transform: scale(0.95);
-    border-color: #696969;
+    border-color: #5a5a5a;
 }
 
 /* 初期画面のスタイル */
@@ -330,8 +343,8 @@ button:active:not(:disabled) {
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 30px;
-    animation: fadeIn 1s ease;
+    padding: 2rem;
+    animation: fadeIn 1.2s ease;
     max-width: 800px;
     position: relative;
     z-index: 1;
@@ -348,27 +361,31 @@ button:active:not(:disabled) {
     align-items: center;
     justify-content: flex-start;
     width: 100%;
-    animation: fadeIn 0.5s ease;
+    animation: fadeIn 0.6s ease;
     max-width: 800px;
     position: relative;
     z-index: 1;
+    padding: 1.5rem;
 }
 
 /* ホーム画面ボタン */
 #normalModeButton, #oniModeButton, #getTrumpButton {
-    margin: 10px 0;
-    padding: 18px 35px;
-    font-size: 1.6em;
+    margin: 0.8rem 0;
+    padding: 1.3rem 2.5rem;
+    font-size: 1.7rem;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: linear-gradient(45deg, rgba(30, 144, 255, 0.8), rgba(0, 191, 255, 0.8));
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(30, 144, 255, 0.4);
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.5);
 }
 
-#normalModeButton:hover, #oniModeButton:hover, #getTrumpButton:hover {
-    background: linear-gradient(45deg, rgba(0, 191, 255, 0.9), rgba(30, 144, 255, 0.9));
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(30, 144, 255, 0.6);
+#normalModeButton {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+#normalModeButton:hover {
+    background: linear-gradient(45deg, #2980b9, #3498db);
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 12px 25px rgba(52, 152, 219, 0.7);
 }
 
 #normalModeButton::before, #oniModeButton::before, #getTrumpButton::before {
@@ -379,7 +396,7 @@ button:active:not(:disabled) {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: 0.5s;
+    transition: 0.6s;
 }
 
 #normalModeButton:hover::before, #oniModeButton:hover::before, #getTrumpButton:hover::before {
@@ -387,61 +404,66 @@ button:active:not(:disabled) {
 }
 
 #oniModeButton {
-    background: linear-gradient(45deg, rgba(220, 20, 60, 0.8), rgba(255, 99, 71, 0.8));
-    box-shadow: 0 5px 15px rgba(220, 20, 60, 0.5);
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.5);
 }
 
 #oniModeButton:hover {
-    background: linear-gradient(45deg, rgba(255, 99, 71, 0.9), rgba(220, 20, 60, 0.9));
-    box-shadow: 0 10px 25px rgba(220, 20, 60, 0.7);
+    background: linear-gradient(45deg, #c0392b, #e74c3c);
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 12px 25px rgba(231, 76, 60, 0.7);
 }
 
 #getTrumpButton {
-    background: linear-gradient(45deg, rgba(50, 205, 50, 0.8), rgba(60, 179, 113, 0.8));
-    box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.5);
 }
 
 #getTrumpButton:hover {
-    background: linear-gradient(45deg, rgba(60, 179, 113, 0.9), rgba(50, 205, 50, 0.9));
-    box-shadow: 0 10px 25px rgba(50, 205, 50, 0.7);
+    background: linear-gradient(45deg, #27ae60, #2ecc71);
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 12px 25px rgba(46, 204, 113, 0.7);
 }
 
 #startButton {
-    padding: 20px 40px;
-    font-size: 1.8em;
-    background: linear-gradient(45deg, rgba(30, 144, 255, 0.8), rgba(0, 191, 255, 0.8));
+    padding: 1.4rem 3rem;
+    font-size: 1.8rem;
+    background: linear-gradient(45deg, #3498db, #2980b9);
     transform-style: preserve-3d;
     transform: perspective(1000px) rotateX(0deg);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.5);
+    border-radius: 1rem;
 }
 
 #startButton:hover:not(:disabled) {
-    background: linear-gradient(45deg, rgba(0, 191, 255, 0.9), rgba(30, 144, 255, 0.9));
-    transform: perspective(1000px) rotateX(-10deg) translateY(-5px);
+    background: linear-gradient(45deg, #2980b9, #3498db);
+    transform: perspective(1000px) rotateX(-10deg) translateY(-8px);
+    box-shadow: 0 15px 30px rgba(52, 152, 219, 0.6);
 }
 
 #startButton:disabled {
-    background: #696969;
+    background: #5a5a5a;
     transform: perspective(1000px) rotateX(5deg) translateY(0);
 }
 
 /* 鬼モード警告 */
 #oniWarning {
-    font-size: 1.2em;
-    color: #FF6347;
-    margin: 15px 0;
+    font-size: 1.2rem;
+    color: #e74c3c;
+    margin: 1.5rem 0;
     display: none;
     text-shadow: var(--text-shadow);
-    padding: 10px 20px;
-    background-color: rgba(255, 99, 71, 0.1);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 99, 71, 0.3);
+    padding: 1rem 1.5rem;
+    background-color: rgba(231, 76, 60, 0.15);
+    border-radius: 0.8rem;
+    border: 1px solid rgba(231, 76, 60, 0.3);
     animation: pulse-warning 2s ease-in-out infinite alternate;
 }
 
 @keyframes pulse-warning {
-    from { opacity: 0.7; }
-    to { opacity: 1; }
+    from { opacity: 0.8; background-color: rgba(231, 76, 60, 0.1); }
+    to { opacity: 1; background-color: rgba(231, 76, 60, 0.2); }
 }
 
 /* オーバーレイのスタイル */
@@ -478,95 +500,100 @@ button:active:not(:disabled) {
 /* ルールオーバーレイのスタイル */
 #rulesOverlay {
     z-index: 1100;
-    padding: 40px;
+    padding: 2.5rem;
 }
 
 #rulesOverlay p {
-    font-size: 1.6em;
-    line-height: 1.7;
-    margin-bottom: 40px;
-    background-color: rgba(30, 144, 255, 0.1);
-    padding: 25px;
-    border-radius: 15px;
-    border: 1px solid rgba(30, 144, 255, 0.3);
+    font-size: 1.6rem;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    background-color: rgba(52, 152, 219, 0.15);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(52, 152, 219, 0.3);
     max-width: 800px;
+    text-shadow: var(--text-shadow);
 }
 
 #rulesOverlay img {
     vertical-align: middle;
-    margin: 0 10px;
+    margin: 0 0.6rem;
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
 }
 
 #closeRulesButton {
-    font-size: 1.3em;
-    padding: 15px 40px;
+    font-size: 1.4rem;
+    padding: 1rem 3rem;
     cursor: pointer;
     border: none;
-    border-radius: 15px;
+    border-radius: 1rem;
     background: var(--success-color);
     color: white;
     transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
-    text-shadow: none;
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.5);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     width: auto;
 }
 
 #closeRulesButton:hover {
     background: var(--success-hover);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(50, 205, 50, 0.7);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(46, 204, 113, 0.7);
 }
 
 #closeRulesButton:active {
-    transform: translateY(1px);
-    box-shadow: 0 3px 10px rgba(50, 205, 50, 0.6);
+    transform: translateY(2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.6);
 }
 
 /* クリアオーバーレイのスタイル */
 #clearOverlay {
     z-index: 1200;
-    padding: 40px;
+    padding: 2.5rem;
 }
 
 #clearOverlay p {
-    font-size: 2em;
-    margin-bottom: 40px;
+    font-size: 2.2rem;
+    margin-bottom: 2.5rem;
     animation: celebrate 1.5s ease-in-out infinite alternate;
-    background-color: rgba(255, 215, 0, 0.1);
-    padding: 30px;
-    border-radius: 15px;
-    border: 2px solid rgba(255, 215, 0, 0.3);
+    background-color: rgba(241, 196, 15, 0.15);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 2px solid rgba(241, 196, 15, 0.3);
+    text-shadow: var(--text-shadow);
 }
 
 @keyframes celebrate {
-    from { transform: scale(1); text-shadow: var(--text-shadow), 0 0 10px rgba(255, 215, 0, 0.7); }
-    to { transform: scale(1.05); text-shadow: var(--text-shadow), 0 0 20px rgba(255, 215, 0, 1); }
+    from { transform: scale(1); text-shadow: var(--text-shadow), 0 0 10px rgba(241, 196, 15, 0.7); }
+    to { transform: scale(1.05); text-shadow: var(--text-shadow), 0 0 20px rgba(241, 196, 15, 1); }
 }
 
 #returnHomeButton {
-    font-size: 1.3em;
-    padding: 15px 40px;
+    font-size: 1.4rem;
+    padding: 1rem 3rem;
     cursor: pointer;
     border: none;
-    border-radius: 15px;
+    border-radius: 1rem;
     background: var(--success-color);
     color: white;
     transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
-    text-shadow: none;
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.5);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     width: auto;
 }
 
 #returnHomeButton:hover {
     background: var(--success-hover);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(50, 205, 50, 0.7);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(46, 204, 113, 0.7);
 }
 
 #returnHomeButton:active {
-    transform: translateY(1px);
-    box-shadow: 0 3px 10px rgba(50, 205, 50, 0.6);
+    transform: translateY(2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.6);
 }
 
 /* 成功エフェクト (ZAN) */
@@ -574,15 +601,15 @@ button:active:not(:disabled) {
     position: relative;
     width: 300px;
     height: 300px;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
     overflow: hidden;
 }
 
 .zan-slash {
     position: absolute;
     height: 20px;
-    background: linear-gradient(90deg, transparent, lime, white, lime, transparent);
-    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, #00ff00, white, #00ff00, transparent);
+    border-radius: 3px;
     transform-origin: center;
     box-shadow: 0 0 30px #00ff00, 0 0 60px #00ff00;
     animation: zan-slash-anim 0.6s ease-out forwards;
@@ -625,7 +652,7 @@ button:active:not(:disabled) {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: radial-gradient(circle, white, lime, transparent 70%);
+    background: radial-gradient(circle, white, #00ff00, transparent 70%);
     border-radius: 50%;
     opacity: 0;
     animation: zan-burst-anim 0.8s ease-out forwards;
@@ -637,11 +664,11 @@ button:active:not(:disabled) {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: radial-gradient(circle, white, lime);
+    background: radial-gradient(circle, white, #00ff00);
     opacity: 0;
     animation: zan-spark-anim 0.7s ease-out forwards;
     z-index: 4;
-    box-shadow: 0 0 10px lime, 0 0 20px white;
+    box-shadow: 0 0 10px #00ff00, 0 0 20px white;
 }
 
 .zan-flash {
@@ -709,14 +736,14 @@ button:active:not(:disabled) {
     position: relative;
     width: 250px;
     height: 250px;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
 }
 
 .miss-x {
     position: absolute;
-    background: linear-gradient(90deg, #ff0000, #ff5555);
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
     border-radius: 4px;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.8);
     animation: miss-x-anim 0.5s ease-out forwards;
 }
 
@@ -739,12 +766,12 @@ button:active:not(:disabled) {
 
 .blood-splash {
     position: absolute;
-    background: radial-gradient(circle, #ff0000, #990000);
+    background: radial-gradient(circle, #e74c3c, #c0392b);
     border-radius: 50%;
     opacity: 0;
     animation: blood-splash-anim 1s ease-out forwards;
     z-index: 1;
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+    box-shadow: 0 0 12px rgba(231, 76, 60, 0.8);
 }
 
 .blood-spray {
@@ -763,7 +790,7 @@ button:active:not(:disabled) {
     position: absolute;
     width: 3px;
     height: 10px;
-    background-color: #ff0000;
+    background-color: #e74c3c;
     border-radius: 50%;
     opacity: 0;
     transform-origin: center bottom;
@@ -823,105 +850,144 @@ button:active:not(:disabled) {
     }
 }
 
+/* カード効果 */
+.game-card {
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    border: 1px solid var(--card-border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    max-width: 90%;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--primary-color);
+}
+
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
     h1 {
-        font-size: 2.5em;
+        font-size: 2.8rem;
     }
 
     #levelDisplay {
-        font-size: 1.7em;
+        font-size: 1.8rem;
     }
 
     #statusDisplay {
-        font-size: 1.2em;
-        padding: 5px 15px;
+        font-size: 1.3rem;
+        padding: 0.6rem 1.5rem;
     }
 
     #messageContainer {
-        width: 180px;
-        height: 180px;
+        width: 220px;
+        height: 220px;
     }
 
     #slashButton {
         width: 80vw;
         height: 80vw;
-        max-width: 300px;
-        max-height: 300px;
+        max-width: 320px;
+        max-height: 320px;
     }
 
     #normalModeButton, #oniModeButton, #getTrumpButton {
-        font-size: 1.4em;
-        padding: 15px 30px;
+        font-size: 1.5rem;
+        padding: 1.2rem 2rem;
     }
 
     #startButton {
-        font-size: 1.5em;
-        padding: 15px 30px;
+        font-size: 1.6rem;
+        padding: 1.2rem 2.5rem;
     }
 
     .overlay p {
-        font-size: 1.8em;
+        font-size: 1.8rem;
     }
 
     #rulesOverlay p {
-        font-size: 1.3em;
-        padding: 20px;
+        font-size: 1.4rem;
+        padding: 1.5rem;
     }
 
     #clearOverlay p {
-        font-size: 1.6em;
-        padding: 20px;
+        font-size: 1.7rem;
+        padding: 1.5rem;
     }
     
     .zan-effect-container {
-        width: 220px;
-        height: 220px;
+        width: 250px;
+        height: 250px;
     }
     
     .miss-effect-container {
-        width: 180px;
-        height: 180px;
+        width: 200px;
+        height: 200px;
     }
 }
 
 @media (max-width: 480px) {
    h1 {
-       font-size: 2.2em;
+       font-size: 2.3rem;
    }
 
    #levelDisplay {
-       font-size: 1.5em;
+       font-size: 1.5rem;
    }
 
    #statusDisplay {
-       font-size: 1.1em;
+       font-size: 1.1rem;
+       padding: 0.5rem 1.2rem;
    }
 
    #messageContainer {
-       width: 150px;
-       height: 150px;
-   }
-
-   #slashButton {
-       width: 90vw;
-       height: 90vw;
-       max-width: 250px;
-       max-height: 250px;
-   }
-
-   .overlay p {
-       font-size: 1.5em;
-   }
-   
-   .zan-effect-container {
        width: 180px;
        height: 180px;
    }
+
+   #slashButton {
+       width: 85vw;
+       height: 85vw;
+       max-width: 280px;
+       max-height: 280px;
+       margin: 1.5rem 0;
+   }
+
+   .overlay p {
+       font-size: 1.5rem;
+   }
+   
+   .zan-effect-container {
+       width: 200px;
+       height: 200px;
+   }
    
    .miss-effect-container {
-       width: 150px;
-       height: 150px;
+       width: 180px;
+       height: 180px;
+   }
+
+   #rulesOverlay img {
+       width: 45px;
+       height: 45px;
+   }
+
+   button {
+       font-size: 1.3rem;
+       padding: 0.8rem 1.5rem;
+   }
+
+   #startButton {
+       font-size: 1.5rem;
+   }
+
+   #closeRulesButton, #returnHomeButton {
+       font-size: 1.3rem;
+       padding: 0.8rem 2rem;
    }
 }
 </style>
@@ -943,22 +1009,24 @@ button:active:not(:disabled) {
    </div>
 
    <!-- ゲーム画面 -->
-   <div id="gameScreen" style="display: none;">
+   <div id="gameScreen">
        <h1>刹那の稲刈り</h1>
-       <div id="levelDisplay">稲魂レベル: 1</div>
-       <div id="statusDisplay">準備ができたら"構える!!"をタップ</div>
+       <div class="game-card">
+           <div id="levelDisplay">稲魂レベル: 1</div>
+           <div id="statusDisplay">準備ができたら"構える!!"をタップ</div>
+       </div>
        
        <!-- 「構える!!」ボタンを追加 -->
        <div class="button-container">
            <button id="startButton">構える!!</button>
        </div>
        
-       <!-- bikkuri.png を表示 -->
+       <!-- びっくりマークを表示 -->
        <div id="messageContainer">
            <img id="message" src="bikkuri.png" alt="びっくりマーク">
        </div>
        
-       <!-- kama.png を表示する「斬」ボタン -->
+       <!-- 「斬」ボタン -->
        <div class="button-container">
            <button id="slashButton" disabled></button>
        </div>
@@ -1020,7 +1088,7 @@ button:active:not(:disabled) {
        // 星の背景エフェクト生成
        function createStarBackground() {
            const starsContainer = document.getElementById('riceStars');
-           const starCount = 100;
+           const starCount = 120; // 星の数を増やす
            
            for (let i = 0; i < starCount; i++) {
                const star = document.createElement('div');
@@ -1030,8 +1098,8 @@ button:active:not(:disabled) {
                const x = Math.random() * 100;
                const y = Math.random() * 100;
                
-               // サイズはランダム
-               const size = Math.random() * 3 + 1;
+               // サイズはランダム（少し大きくする）
+               const size = Math.random() * 3.5 + 1;
                
                star.style.left = `${x}%`;
                star.style.top = `${y}%`;
@@ -1048,7 +1116,7 @@ button:active:not(:disabled) {
        // 稲粒子生成
        function createRiceParticles() {
            const starsContainer = document.getElementById('riceStars');
-           const particleCount = 30;
+           const particleCount = 40; // 粒子の数を増やす
            
            for (let i = 0; i < particleCount; i++) {
                const particle = document.createElement('div');
@@ -1057,9 +1125,9 @@ button:active:not(:disabled) {
                // ランダム配置
                const x = Math.random() * 100;
                
-               // サイズはランダム
-               const width = Math.random() * 3 + 1;
-               const height = Math.random() * 15 + 5;
+               // サイズはランダム（少し大きく）
+               const width = Math.random() * 4 + 1;
+               const height = Math.random() * 18 + 5;
                
                particle.style.left = `${x}%`;
                particle.style.width = `${width}px`;
@@ -1349,7 +1417,7 @@ button:active:not(:disabled) {
                    isWaitingForSlash = false;
                    showFailOverlay();
                }
-           }, timeLimit * 1000); // ミリ秒に修正
+           }, timeLimit * 1000); // ミリ秒に変換
        }
 
        // 初期画面のボタンイベント
