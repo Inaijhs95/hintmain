@@ -39,9 +39,10 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      overflow: hidden;
+      overflow-x: hidden;
       position: relative;
       line-height: 1.6;
+      padding: 0 10px;
     }
     
     /* 田んぼの背景エフェクト */
@@ -186,11 +187,10 @@
     #messageContainer {
       width: 280px;
       height: 280px;
-      margin: 1.5rem 0;
+      margin: 1rem auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-shrink: 0;
       position: relative;
     }
     
@@ -198,15 +198,51 @@
       max-width: 100%;
       max-height: 100%;
       display: none;
-      transform: translate(70px, 0px);
+      transform: translate(0, 0);
       animation: pulse 0.5s ease-in-out infinite alternate;
       filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
-      transition: all 0.3s ease;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
     
     @keyframes pulse {
-      from { transform: translate(70px, 0px) scale(1); filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); }
-      to { transform: translate(70px, 0px) scale(1.1); filter: drop-shadow(0 0 25px rgba(255, 255, 255, 1)); }
+      from { 
+        transform: translate(-50%, -50%) scale(1); 
+        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); 
+      }
+      to { 
+        transform: translate(-50%, -50%) scale(1.1); 
+        filter: drop-shadow(0 0 25px rgba(255, 255, 255, 1)); 
+      }
+    }
+    
+    /* 斬撃エフェクト */
+    #zanEffectContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #zanEffect {
+      max-width: 90%;
+      max-height: 90%;
+      animation: zanFlash 0.6s ease-out forwards;
+    }
+    
+    @keyframes zanFlash {
+      0% { opacity: 0; transform: scale(0.7); }
+      30% { opacity: 1; transform: scale(1.05); }
+      70% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.1); }
     }
     
     /* ボタンコンテナとボタンスタイル */
@@ -216,7 +252,7 @@
       align-items: center;
       width: 90%;
       max-width: 400px;
-      gap: 1.5rem;
+      gap: 1rem;
     }
     
     button {
@@ -274,10 +310,10 @@
     
     /* 「斬」ボタンのスタイル */
     #slashButton {
-      width: 90vw;
-      height: 90vw;
-      max-width: 400px;
-      max-height: 400px;
+      width: 70vw;
+      height: 70vw;
+      max-width: 300px;
+      max-height: 300px;
       background-image: url('kama.png');
       background-size: contain;
       background-repeat: no-repeat;
@@ -287,7 +323,7 @@
       background-color: rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 30px var(--primary-color);
       font-size: 0;
-      margin: 2rem 0;
+      margin: 1rem 0 2rem 0;
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       overflow: hidden;
@@ -298,6 +334,7 @@
       from { opacity: 1; }
       to { opacity: 0; }
     }
+    
     .fade-out {
       animation: fadeOut 0.8s forwards;
     }
@@ -352,7 +389,7 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      padding: 2rem;
+      padding: 1.5rem;
       animation: fadeIn 1.2s ease;
       max-width: 800px;
       position: relative;
@@ -374,7 +411,7 @@
       max-width: 800px;
       position: relative;
       z-index: 1;
-      padding: 1.5rem;
+      padding: 1rem;
     }
     
     /* ホーム画面ボタン */
@@ -867,10 +904,11 @@
       border-radius: 1rem;
       border: 1px solid var(--card-border);
       padding: 2rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
       max-width: 90%;
+      width: 100%;
     }
     
     .game-card:hover {
@@ -882,7 +920,7 @@
     /* レスポンシブデザイン */
     @media (max-width: 768px) {
       h1 {
-        font-size: 2.8rem;
+        font-size: 2.5rem;
       }
     
       #levelDisplay {
@@ -900,10 +938,10 @@
       }
     
       #slashButton {
-        width: 80vw;
-        height: 80vw;
-        max-width: 320px;
-        max-height: 320px;
+        width: 70vw;
+        height: 70vw;
+        max-width: 280px;
+        max-height: 280px;
       }
     
       #normalModeButton, #oniModeButton, #getTrumpButton {
@@ -917,7 +955,7 @@
       }
     
       .overlay p {
-        font-size: 1.8rem;
+        font-size: 1.7rem;
       }
     
       #rulesOverlay p {
@@ -943,7 +981,7 @@
     
     @media (max-width: 480px) {
       h1 {
-        font-size: 2.3rem;
+        font-size: 2.2rem;
       }
     
       #levelDisplay {
@@ -953,23 +991,25 @@
       #statusDisplay {
         font-size: 1.1rem;
         padding: 0.5rem 1.2rem;
+        margin-bottom: 1.5rem;
       }
     
       #messageContainer {
         width: 180px;
         height: 180px;
+        margin: 0.5rem auto;
       }
     
       #slashButton {
-        width: 85vw;
-        height: 85vw;
-        max-width: 260px;
-        max-height: 260px;
-        margin: 1rem 0;
+        width: 70vw;
+        height: 70vw;
+        max-width: 240px;
+        max-height: 240px;
+        margin: 0.8rem 0 1.5rem 0;
       }
     
       .overlay p {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
       }
       
       .zan-effect-container {
@@ -999,6 +1039,10 @@
       #closeRulesButton, #returnHomeButton {
         font-size: 1.3rem;
         padding: 0.8rem 2rem;
+      }
+      
+      .game-card {
+        padding: 1.5rem;
       }
     }
   </style>
@@ -1041,6 +1085,11 @@
     <div class="button-container">
       <button id="slashButton" disabled></button>
     </div>
+  </div>
+  
+  <!-- 斬撃エフェクト -->
+  <div id="zanEffectContainer">
+    <img id="zanEffect" src="zan.png" alt="斬撃エフェクト">
   </div>
   
   <!-- 成功オーバーレイ (ZAN) -->
@@ -1099,7 +1148,7 @@
     // 星の背景エフェクト生成
     function createStarBackground() {
       const starsContainer = document.getElementById('riceStars');
-      const starCount = 120; // 星の数を増やす
+      const starCount = 120;
       
       for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
@@ -1109,7 +1158,7 @@
         const x = Math.random() * 100;
         const y = Math.random() * 100;
         
-        // サイズはランダム（少し大きくする）
+        // サイズはランダム
         const size = Math.random() * 3.5 + 1;
         
         star.style.left = `${x}%`;
@@ -1127,7 +1176,7 @@
     // 稲粒子生成
     function createRiceParticles() {
       const starsContainer = document.getElementById('riceStars');
-      const particleCount = 40; // 粒子の数を増やす
+      const particleCount = 40;
       
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -1136,7 +1185,7 @@
         // ランダム配置
         const x = Math.random() * 100;
         
-        // サイズはランダム（少し大きく）
+        // サイズはランダム
         const width = Math.random() * 4 + 1;
         const height = Math.random() * 18 + 5;
         
@@ -1184,6 +1233,9 @@
     const statusDisplay = document.getElementById('statusDisplay');
     const message = document.getElementById('message');
     
+    const zanEffectContainer = document.getElementById('zanEffectContainer');
+    const zanEffect = document.getElementById('zanEffect');
+    
     const successOverlay = document.getElementById('successOverlay');
     const successMessage = document.getElementById('successMessage');
     const failOverlay = document.getElementById('failOverlay');
@@ -1221,6 +1273,14 @@
         window.location.href = 'https://inaijhs95.github.io/4lamp/?l=s4b519'; 
       }, 300);
     });
+    
+    // 斬撃エフェクトを表示
+    function showZanEffect() {
+      zanEffectContainer.style.display = 'flex';
+      setTimeout(() => {
+        zanEffectContainer.style.display = 'none';
+      }, 600); // エフェクトアニメーションの長さと合わせる
+    }
     
     // ゲームの初期化
     function resetGame() {
@@ -1305,13 +1365,8 @@
       const timeLimit = isOniMode ? oniLevels[currentLevel] : levels[currentLevel];
       
       if (reactionTime <= timeLimit) {
-        // 成功処理：タップ時、背景画像をzan.pngに変更し、フェードアウト効果を適用
-        slashButton.style.backgroundImage = "url('zan.png')";
-        slashButton.classList.add('fade-out');
-        setTimeout(() => {
-          slashButton.classList.remove('fade-out');
-          slashButton.style.backgroundImage = "url('kama.png')";
-        }, 800);
+        // 成功処理：斬撃エフェクトを表示
+        showZanEffect();
         
         showSuccessOverlay(reactionTime);
         
